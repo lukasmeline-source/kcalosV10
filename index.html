@@ -1461,6 +1461,17 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 .sri-brand{font-size:0.7rem;color:var(--muted2);margin-top:2px}
 .sri-kcal{font-size:0.75rem;color:var(--muted);flex-shrink:0}
 .sri-no-data{font-size:0.65rem;color:var(--orange);flex-shrink:0}
+/* Vignette produit (photo OFF ou placeholder si absente/CIQUAL/perso) */
+.sri-thumb{
+  width:38px;height:38px;border-radius:10px;flex-shrink:0;object-fit:cover;
+  background:var(--s2);border:1px solid var(--border2);
+}
+.sri-thumb-placeholder{
+  width:38px;height:38px;border-radius:10px;flex-shrink:0;
+  background:var(--s2);border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.95rem;color:var(--muted2);
+}
 /* Checkmark circle (SH style) */
 .sri-check{
   width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border2);
@@ -3262,7 +3273,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <div class="search-panel" id="food-search-panel">
   <div class="search-sticky">
     <div class="search-top">
-      <button class="ap-back-btn" onclick="closeSearchPanel()">‹</button>
+      <button class="ap-back-btn" onclick="closeSearchPanel()" aria-label="Retour">‹</button>
       <div class="search-bar-wrap">
         <input type="text" id="food-search-input" placeholder="Rech. aliment, marque, code-barres…" autocomplete="off" autocorrect="off" spellcheck="false" oninput="onSearchInput(this)">
         <button class="scan-btn" onclick="openBarcodeScanner()" title="Scanner un code-barres" aria-label="Scanner un code-barres">
@@ -3272,7 +3283,12 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
             <line x1="13" y1="8" x2="13" y2="16"/><line x1="16" y1="9" x2="16" y2="15"/>
           </svg>
         </button>
-        <button class="search-clear" id="search-clear-btn" onclick="clearSearch()">✕</button>
+        <button class="scan-btn" onclick="openCustomFoodPanel()" title="Créer un aliment personnalisé" aria-label="Créer un aliment personnalisé">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
+        <button class="search-clear" id="search-clear-btn" onclick="clearSearch()" aria-label="Effacer la recherche">✕</button>
       </div>
     </div>
     <div class="search-spinner" id="search-spinner">Recherche en cours…</div>
@@ -3280,10 +3296,10 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     <div id="search-brand-bar" style="padding:0 1rem 0.5rem;gap:6px;flex-wrap:wrap;align-items:center">
       <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0;background:var(--s2);border:1px solid var(--border2);border-radius:20px;padding:4px 10px">
         <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.5"><circle cx="7" cy="7" r="4.5"/><line x1="10.5" y1="10.5" x2="13.5" y2="13.5"/></svg>
-        <input id="search-brand-input" type="text" placeholder="Filtrer par marque (Lidl, Carrefour…)"
+        <input id="search-brand-input" type="text" placeholder="Filtrer par marque (Lidl, Carrefour…)" aria-label="Filtrer les résultats par marque"
           style="border:none;background:none;outline:none;font-size:0.8rem;color:var(--text);font-family:DM Sans,sans-serif;width:100%"
           oninput="onBrandFilterInput(this)" autocomplete="off" autocorrect="off" spellcheck="false">
-        <button id="search-brand-clear" onclick="clearBrandFilter()" style="display:none;background:none;border:none;color:var(--muted2);cursor:pointer;font-size:0.9rem;padding:0;line-height:1">✕</button>
+        <button id="search-brand-clear" onclick="clearBrandFilter()" aria-label="Effacer le filtre marque" style="display:none;background:none;border:none;color:var(--muted2);cursor:pointer;font-size:0.9rem;padding:0;line-height:1">✕</button>
       </div>
     </div>
     <div class="search-tab-bar">
@@ -3307,13 +3323,16 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     <button class="qty-cancel-btn" onclick="closeQtyPanel()">Annuler</button>
     <div class="qty-header-title">Aliment</div>
     <div style="display:flex;align-items:center;gap:4px">
-      <button id="qty-fav-btn" onclick="toggleFavorite()" style="background:var(--s2);border:1.5px solid var(--border2);border-radius:50%;width:34px;height:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--muted);transition:all 0.2s" title="Ajouter aux favoris"><svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M8 2l1.8 3.7 4 .6-2.9 2.8.7 4L8 11.2 4.4 13.1l.7-4L2.2 6.3l4-.6z"/></svg></button>
+      <button id="qty-fav-btn" onclick="toggleFavorite()" style="background:var(--s2);border:1.5px solid var(--border2);border-radius:50%;width:34px;height:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--muted);transition:all 0.2s" title="Ajouter aux favoris" aria-label="Ajouter aux favoris"><svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M8 2l1.8 3.7 4 .6-2.9 2.8.7 4L8 11.2 4.4 13.1l.7-4L2.2 6.3l4-.6z"/></svg></button>
     </div>
   </div>
-  <div class="qty-product-block">
-    <div class="qty-product-name" id="qty-name">—</div>
-    <div class="qty-product-brand" id="qty-brand"></div>
-    <div class="qty-product-kcal" id="qty-product-kcal"></div>
+  <div class="qty-product-block" style="display:flex;align-items:center;gap:12px">
+    <img id="qty-thumb" class="sri-thumb" src="" alt="" style="display:none;width:48px;height:48px;border-radius:12px">
+    <div style="flex:1;min-width:0">
+      <div class="qty-product-name" id="qty-name">—</div>
+      <div class="qty-product-brand" id="qty-brand"></div>
+      <div class="qty-product-kcal" id="qty-product-kcal"></div>
+    </div>
   </div>
   <div class="qty-mode-bar">
     <button class="qty-mode-btn active" id="qmb-grams" onclick="setQtyMode('grams')">
@@ -3414,6 +3433,57 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     </div>
   </div>
   <button class="btn-confirm-add" onclick="confirmAddFood()">Ajouter au repas</button>
+</div>
+
+<!-- ═══ CRÉER UN ALIMENT PERSO ═══ -->
+<div class="qty-panel" id="custom-food-panel">
+  <div class="qty-header">
+    <button class="qty-cancel-btn" onclick="closeCustomFoodPanel()">Annuler</button>
+    <div class="qty-header-title">Créer un aliment</div>
+    <button class="qty-ok-btn" onclick="saveCustomFood()">Enregistrer</button>
+  </div>
+  <div style="padding:1rem 1rem 2rem">
+    <div style="font-size:0.72rem;color:var(--muted2);margin-bottom:1rem;line-height:1.5">
+      Valeurs pour 100g. Utile pour un plat maison ou un produit introuvable dans la recherche.
+    </div>
+    <div class="field">
+      <label for="cf-name">Nom de l'aliment</label>
+      <div class="inp-wrap"><input type="text" id="cf-name" placeholder="Ex : Gratin de courgettes maison" autocomplete="off"></div>
+    </div>
+    <div class="field">
+      <label for="cf-kcal">Calories <span class="hint">/ 100g</span></label>
+      <div class="inp-wrap"><input type="number" id="cf-kcal" placeholder="120" min="0" max="900"><span class="unit">kcal</span></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.7rem">
+      <div class="field">
+        <label for="cf-prot">Protéines</label>
+        <div class="inp-wrap"><input type="number" id="cf-prot" placeholder="10" min="0" max="100" step="0.1"><span class="unit">g</span></div>
+      </div>
+      <div class="field">
+        <label for="cf-gluc">Glucides</label>
+        <div class="inp-wrap"><input type="number" id="cf-gluc" placeholder="15" min="0" max="100" step="0.1"><span class="unit">g</span></div>
+      </div>
+      <div class="field">
+        <label for="cf-lip">Lipides</label>
+        <div class="inp-wrap"><input type="number" id="cf-lip" placeholder="5" min="0" max="100" step="0.1"><span class="unit">g</span></div>
+      </div>
+    </div>
+    <div style="font-size:0.68rem;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:0.06em;margin:0.5rem 0 0.7rem">Optionnel</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.7rem">
+      <div class="field">
+        <label for="cf-sucres">Sucres</label>
+        <div class="inp-wrap"><input type="number" id="cf-sucres" placeholder="—" min="0" max="100" step="0.1"><span class="unit">g</span></div>
+      </div>
+      <div class="field">
+        <label for="cf-fibres">Fibres</label>
+        <div class="inp-wrap"><input type="number" id="cf-fibres" placeholder="—" min="0" max="50" step="0.1"><span class="unit">g</span></div>
+      </div>
+      <div class="field">
+        <label for="cf-sodium">Sodium</label>
+        <div class="inp-wrap"><input type="number" id="cf-sodium" placeholder="—" min="0" max="5000" step="1"><span class="unit">mg</span></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══ PROGRESSION ═══ -->
@@ -10981,6 +11051,144 @@ function _searchCiqual(query) {
 }
 
 /* ════════════════════════════════════════
+   PORTIONS "MAISON" — CIQUAL ne fournit que du g/100g, contrairement à OFF qui
+   a parfois serving_quantity. On enrichit ici les aliments du quotidien les
+   plus recherchés avec des mesures usuelles ("1 banane", "1 oeuf"…), pour un
+   rendu plus proche de Cronometer. Liste volontairement ciblée sur les
+   aliments les plus fréquents plutôt qu'exhaustive — à étendre au besoin.
+   Ordre important : les mots-clés les plus spécifiques doivent précéder les
+   plus génériques (ex: "yaourt grec" avant "yaourt").
+════════════════════════════════════════ */
+const _HOME_PORTIONS = [
+  { kw:'yaourt grec',        portions:[{l:'1 pot',                     g:150}] },
+  { kw:'yaourt nature',      portions:[{l:'1 pot',                     g:125}] },
+  { kw:'yaourt',             portions:[{l:'1 pot',                     g:125}] },
+  { kw:'fromage blanc',      portions:[{l:'1 pot',                     g:100}] },
+  { kw:'pain de mie',        portions:[{l:'1 tranche',                 g:25}]  },
+  { kw:'pain complet',       portions:[{l:'1 tranche',                 g:35}]  },
+  { kw:'baguette',           portions:[{l:'1/4 de baguette',           g:65}]  },
+  { kw:'pain',               portions:[{l:'1 tranche',                 g:35}]  },
+  { kw:'banane',             portions:[{l:'1 banane',                  g:120}] },
+  { kw:'pomme',              portions:[{l:'1 pomme',                   g:150}] },
+  { kw:'orange',             portions:[{l:'1 orange',                  g:180}] },
+  { kw:'kiwi',               portions:[{l:'1 kiwi',                    g:75}]  },
+  { kw:'avocat',             portions:[{l:'1 avocat',                  g:150}] },
+  { kw:'oeuf',               portions:[{l:'1 oeuf',                    g:60}]  },
+  { kw:'tomate',             portions:[{l:'1 tomate',                  g:120}] },
+  { kw:'carotte',            portions:[{l:'1 carotte',                 g:80}]  },
+  { kw:'pomme de terre',     portions:[{l:'1 pomme de terre',          g:150}] },
+  { kw:'beurre',             portions:[{l:'1 noix',                    g:10},{l:'1 c. à soupe', g:15}] },
+  { kw:'huile',              portions:[{l:'1 c. à soupe',              g:14},{l:'1 c. à café',  g:5}]  },
+  { kw:'miel',               portions:[{l:'1 c. à soupe',              g:20},{l:'1 c. à café',  g:7}]  },
+  { kw:'sucre',              portions:[{l:'1 morceau',                 g:5}, {l:'1 c. à café',  g:5}]  },
+  { kw:'riz',                portions:[{l:'1 portion cuite',           g:180}] },
+  { kw:'pates',              portions:[{l:'1 portion cuite',           g:200}] },
+  { kw:'lait',               portions:[{l:'1 verre',                  g:200}] },
+  { kw:'amande',             portions:[{l:'1 poignée (~20 amandes)',   g:30}]  },
+  { kw:'noix',               portions:[{l:'1 poignée (~8 noix)',       g:30}]  },
+  { kw:'chocolat',           portions:[{l:'1 carré',                   g:6}]   },
+  { kw:'jambon',             portions:[{l:'1 tranche',                 g:25}]  },
+  { kw:'fromage',            portions:[{l:'1 portion',                 g:30}]  },
+];
+function _homePortionsFor(name) {
+  const n = (name||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const hit = _HOME_PORTIONS.find(hp => n.includes(hp.kw));
+  return hit ? hit.portions : [];
+}
+
+/* ════════════════════════════════════════
+   ALIMENTS PERSO — plats maison / produits non référencés
+   Stockés localement (+ synchro cloud via SYNC_KEYS), recherchés en
+   priorité au même titre que CIQUAL. Format identique aux entrées
+   normalisées OFF/CIQUAL pour rester compatible avec selectProduct().
+════════════════════════════════════════ */
+const FOOD_CUSTOM_KEY = 'kcalos_food_custom';
+
+function getCustomFoods() {
+  try { return JSON.parse(localStorage.getItem(FOOD_CUSTOM_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+function setCustomFoods(d) { localStorage.setItem(FOOD_CUSTOM_KEY, JSON.stringify(d)); }
+
+function _searchCustomFoods(query) {
+  const strip = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+  const q = strip(query);
+  if (!q) return [];
+  return getCustomFoods()
+    .filter(x => strip(x.n).includes(q))
+    .map(x => ({
+      product_name: x.n, brands: 'Perso',
+      nutriments: {
+        'energy-kcal_100g': x.k, 'proteins_100g': x.p,
+        'carbohydrates_100g': x.g, 'sugars_100g': x.su || 0,
+        'fat_100g': x.l, 'fiber-energy_100g': x.f || 0,
+        'sodium_100g': (x.s || 0) / 1000,
+      },
+      serving_size:'', serving_quantity:null, code:'', image:'',
+      _src:'custom', _frScore:15, // priorité légèrement > CIQUAL : c'est exactement ce que l'utilisateur a demandé
+    }));
+}
+
+function openCustomFoodPanel(prefillName) {
+  ['cf-name','cf-kcal','cf-prot','cf-gluc','cf-lip','cf-sucres','cf-fibres','cf-sodium'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const nameEl = document.getElementById('cf-name');
+  if (nameEl) nameEl.value = prefillName || '';
+  const panel = document.getElementById('custom-food-panel');
+  if (panel) { panel.classList.add('show'); panel.scrollTop = 0; }
+  setTimeout(() => nameEl?.focus(), 250);
+}
+function closeCustomFoodPanel() {
+  document.getElementById('custom-food-panel')?.classList.remove('show');
+}
+
+function saveCustomFood() {
+  const name = document.getElementById('cf-name')?.value.trim();
+  const kcal = parseFloat(document.getElementById('cf-kcal')?.value);
+  if (!name) { toast('❌ Donne un nom à l\'aliment', 'var(--red)'); return; }
+  if (isNaN(kcal) || kcal < 0) { toast('❌ Renseigne les calories / 100g', 'var(--red)'); return; }
+
+  const num = id => { const v = parseFloat(document.getElementById(id)?.value); return isNaN(v) ? 0 : v; };
+  const entry = {
+    n: name, k: Math.round(kcal), p: num('cf-prot'), g: num('cf-gluc'), l: num('cf-lip'),
+    su: num('cf-sucres'), f: num('cf-fibres'), s: num('cf-sodium'), ts: Date.now(),
+  };
+
+  let foods = getCustomFoods();
+  const existing = foods.findIndex(x => x.n.toLowerCase() === name.toLowerCase());
+  if (existing >= 0) foods[existing] = entry; else foods.unshift(entry);
+  setCustomFoods(foods);
+
+  toast('✅ Aliment créé : ' + name, 'var(--teal)');
+  closeCustomFoodPanel();
+
+  // Relancer la recherche en cours si une correspond, sinon ouvrir direct la quantité
+  const searchInput = document.getElementById('food-search-input');
+  if (searchInput && searchInput.value.trim()) {
+    searchFood(searchInput.value);
+  } else {
+    const [normalized] = _searchCustomFoods(name);
+    if (normalized) {
+      const prodObj = {
+        name: normalized.product_name, brand: '', kcal: entry.k, hasNutrition: true,
+        prot: entry.p, gluc: entry.g, sucres: entry.su, lip: entry.l, satfat: 0,
+        fibres: entry.f, sodium: entry.s, potassium: 0, portions: [], image: '', _src: 'custom',
+      };
+      selectProduct(prodObj);
+    }
+  }
+}
+
+function deleteCustomFood(name) {
+  setCustomFoods(getCustomFoods().filter(x => x.n !== name));
+  toast('Aliment perso supprimé', 'var(--muted)');
+  const searchInput = document.getElementById('food-search-input');
+  if (searchInput && searchInput.value.trim()) searchFood(searchInput.value);
+}
+
+/* ════════════════════════════════════════
    CACHE MÉMOIRE — évite les appels redondants
 ════════════════════════════════════════ */
 const _searchCache = new Map();
@@ -11082,11 +11290,8 @@ function onBrandFilterInput(inp) {
     return;
   }
   const strip = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
-  const filtered = results.filter(p => {
-    const br = strip(p.brands || '');
-    const nm = strip(p.product_name || '');
-    return br.includes(strip(val)) || nm.includes(strip(val));
-  });
+  const valStripped = strip(val);
+  const filtered = results.filter(p => strip(p.brands || '').includes(valStripped));
   renderSearchResults(filtered);
 }
 
@@ -11156,6 +11361,7 @@ function _normalizeOFFProduct(p, src) {
     serving_quantity : p.serving_quantity || null,
     code             : p.code || p._id || '',
     nutriscore_grade : (p.nutriscore_grade || '').toLowerCase() || null,
+    image            : p.image_front_small_url || p.image_small_url || '',
     _src             : src,
     _frScore         : _frenchScore(p),
   };
@@ -11303,7 +11509,7 @@ async function searchFood(query) {
     // ══ CODE-BARRES → API v2 directe ══
     if (isBarcode) {
       const bc = queryOrig.replace(/\s/g,'');
-      const FIELDS = 'product_name,product_name_fr,brands,nutriments,serving_size,serving_quantity,countries_tags,code,nutriscore_grade';
+      const FIELDS = 'product_name,product_name_fr,brands,nutriments,serving_size,serving_quantity,countries_tags,code,nutriscore_grade,image_front_small_url,image_small_url';
       const r = await fetch(
         `https://world.openfoodfacts.org/api/v2/product/${bc}.json?fields=${FIELDS}`,
         { headers: { 'User-Agent': 'KcalosApp/1.0' } }
@@ -11321,6 +11527,11 @@ async function searchFood(query) {
       queryFinal = querySyn !== queryNorm ? querySyn : queryNorm;
       const cacheKey   = queryFinal.toLowerCase();
 
+      // Aliments perso — toujours recalculés (jamais mis en cache, l'utilisateur peut
+      // en créer/supprimer entre deux recherches), fusionnés juste avant l'affichage,
+      // qu'on vienne du cache ou d'un appel réseau frais
+      const customResults = _searchCustomFoods(queryFinal);
+
       // 1. Cache mémoire → réponse instantanée si déjà cherché (cette session)
       const cached = _cacheGet(cacheKey);
       // 2. Cache partagé Firestore → réponse quasi instantanée si déjà cherché
@@ -11332,7 +11543,7 @@ async function searchFood(query) {
       } else {
 
       const qc = encodeURIComponent(queryFinal.replace(/\s+/g,' ').trim());
-      const FIELDS = 'product_name,product_name_fr,brands,nutriments,serving_size,serving_quantity,countries_tags,code,nutriscore_grade';
+      const FIELDS = 'product_name,product_name_fr,brands,nutriments,serving_size,serving_quantity,countries_tags,code,nutriscore_grade,image_front_small_url,image_small_url';
       const queryLower     = queryFinal.toLowerCase();
       const looksLikeBrand = _FR_BRANDS.has(queryLower) || queryFinal.split(' ').length <= 2;
 
@@ -11380,6 +11591,13 @@ async function searchFood(query) {
       _cacheSet(cacheKey, allProducts);
       _fsCacheSet(cacheKey, queryFinal, allProducts); // asynchrone, non bloquant
       } // fin else cache
+    }
+
+    // Fusionner les aliments perso en tête de liste (hors recherche code-barres,
+    // et hors cache : ils doivent apparaître même si "allProducts" vient du cache)
+    if (!isBarcode && typeof customResults !== 'undefined' && customResults.length) {
+      const customNames = new Set(customResults.map(c => c.product_name.toLowerCase()));
+      allProducts = [...customResults, ...allProducts.filter(p => !customNames.has((p.product_name||'').toLowerCase()))];
     }
 
     if (sid !== _searchId) return;
@@ -11449,8 +11667,13 @@ function _showNoResultWithSuggestions(query, el) {
   if (!el) return;
   const favs = getFavs();
   const rec  = getRecents();
+  const qEsc = query.replace(/</g,'&lt;');
+  const qJs  = query.replace(/'/g,"\\'");
   let html = `<div style="text-align:center;padding:0.9rem 1rem 0.6rem;font-size:0.78rem;color:var(--muted2)">
-    Rien trouvé pour <b style="color:var(--text)">${query.replace(/</g,'&lt;')}</b> — vérifie l'orthographe ou scanne le code-barres.
+    Rien trouvé pour <b style="color:var(--text)">${qEsc}</b> — vérifie l'orthographe ou scanne le code-barres.
+  </div>
+  <div style="padding:0 1rem 0.8rem;text-align:center">
+    <button onclick="openCustomFoodPanel('${qJs}')" style="background:var(--s2);border:1.5px solid var(--border2);border-radius:20px;padding:0.5rem 1rem;font-size:0.78rem;color:var(--text);cursor:pointer;font-family:Syne,sans-serif;font-weight:500">+ Créer « ${qEsc} » comme aliment perso</button>
   </div>`;
   if (favs.length || rec.length) {
     html += `<div style="font-size:0.65rem;font-weight:600;color:var(--muted2);padding:0.5rem 1.1rem 0.2rem;text-transform:uppercase;letter-spacing:0.05em">Mes aliments récents</div>`;
@@ -11458,6 +11681,19 @@ function _showNoResultWithSuggestions(query, el) {
     html += combined.map(f => _foodItemHtml(f, false)).join('');
   }
   el.innerHTML = html;
+}
+
+/* ── Vignette produit : photo OFF si dispo, sinon placeholder par source ── */
+function _prodThumbHtml(image, name, src) {
+  const alt = (name || 'Aliment').replace(/"/g, '&quot;');
+  if (image) {
+    return `<img class="sri-thumb" src="${image}" alt="${alt}" loading="lazy" onerror="this.outerHTML='${_prodThumbPlaceholder(src).replace(/'/g, "\\'")}'">`;
+  }
+  return _prodThumbPlaceholder(src);
+}
+function _prodThumbPlaceholder(src) {
+  const emoji = src === 'ciqual' ? '🌿' : src === 'custom' ? '✏️' : '🍴';
+  return `<div class="sri-thumb-placeholder" aria-hidden="true">${emoji}</div>`;
 }
 
 /* ── Rendu des résultats de recherche ── */
@@ -11478,6 +11714,7 @@ function renderSearchResults(products) {
 
   // Badge source
   const SRC_LABEL = p => {
+    if (p._src === 'custom') return { txt:'Perso', col:'var(--teal)', title:'Aliment personnel — créé par toi' };
     if (p._src === 'ciqual') return { txt:'CIQUAL', col:'var(--lime)', title:'Base ANSES/CIQUAL — référence France' };
     if ((p._frScore||0) >= 3 || p._src === 'off-fr') return { txt:'🇫🇷', col:'#4db8e8', title:'Open Food Facts · France' };
     return { txt:'OFF', col:'#7a8499', title:'Open Food Facts · mondial' };
@@ -11490,7 +11727,10 @@ function renderSearchResults(products) {
     const kcal = Math.round(n['energy-kcal_100g'] || n['energy-kcal'] || (n['energy_100g']||0)/4.184 || 0);
     const hasNutrition = kcal > 0;
     const servQty = parseFloat(p.serving_quantity) || null;
-    const portions = servQty ? [{l:`1 portion (${servQty}g)`, g: servQty}] : [];
+    const portions = [
+      ..._homePortionsFor(nm),
+      ...(servQty ? [{l:`1 portion (${servQty}g)`, g: servQty}] : []),
+    ];
     const src   = SRC_LABEL(p);
 
     const prodObj = { name:nm, brand:br, kcal, hasNutrition,
@@ -11502,7 +11742,7 @@ function renderSearchResults(products) {
       fibres:   Math.round((n['fiber-energy_100g']||0)*10)/10,
       sodium:   Math.round((n['sodium_100g']||0)*1000*10)/10,
       potassium:Math.round((n['potassium_100g']||0)*1000*10)/10,
-      portions, _src: p._src||'',
+      portions, image: p.image || '', _src: p._src||'',
     };
     const pid = _regProd(prodObj);
 
@@ -11524,8 +11764,14 @@ function renderSearchResults(products) {
 
     const srcBadge = `<span style="font-size:0.55rem;padding:1px 5px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);color:${src.col};background:rgba(255,255,255,0.05);flex-shrink:0;white-space:nowrap" title="${src.title}">${src.txt}</span>`;
     const isFavFlg = getFavs().some(f => f.name === nm);
+    const thumbHtml = _prodThumbHtml(prodObj.image, nm, p._src);
+    const delBtn = p._src === 'custom'
+      ? `<button onclick="event.stopPropagation();deleteCustomFood('${nm.replace(/'/g,"\\'")}')" aria-label="Supprimer cet aliment personnalisé" title="Supprimer cet aliment personnalisé"
+          style="flex-shrink:0;background:none;border:none;cursor:pointer;padding:4px 6px;color:var(--muted2);font-size:0.9rem;line-height:1;-webkit-tap-highlight-color:transparent">🗑</button>`
+      : '';
 
     return `<div class="search-result-item" onclick="selectProduct(_getProd('${pid}'))" style="display:flex;align-items:center">
+      ${thumbHtml}
       <div class="sri-left" style="flex:1;min-width:0">
         <div class="sri-name">${nm.replace(/</g,'&lt;')}</div>
         <div style="display:flex;align-items:center;gap:5px;margin-top:2px;flex-wrap:wrap">
@@ -11537,7 +11783,8 @@ function renderSearchResults(products) {
       ${hasNutrition
         ? `<div class="sri-kcal">${kcal} kcal<span style="font-size:0.6rem;color:var(--muted2)">/100g</span></div>`
         : `<div class="sri-no-data">Sans données</div>`}
-      <button onclick="event.stopPropagation();toggleFavFromSearch(_getProd('${pid}'),this)" title="${isFavFlg?'Retirer':'Ajouter'} aux favoris"
+      ${delBtn}
+      <button onclick="event.stopPropagation();toggleFavFromSearch(_getProd('${pid}'),this)" aria-label="${isFavFlg?'Retirer des':'Ajouter aux'} favoris" title="${isFavFlg?'Retirer':'Ajouter'} aux favoris"
         style="flex-shrink:0;background:none;border:none;cursor:pointer;padding:4px 6px;color:${isFavFlg?'var(--orange)':'var(--muted2)'};font-size:1rem;line-height:1;-webkit-tap-highlight-color:transparent">${isFavFlg?'★':'☆'}</button>
     </div>`;
   }).join('');
@@ -11555,6 +11802,7 @@ function selectProduct(productData) {
   const nameEl  = document.getElementById('qty-name');
   const brandEl = document.getElementById('qty-brand');
   const kcalEl  = document.getElementById('qty-product-kcal');
+  const thumbEl = document.getElementById('qty-thumb');
   const slider  = document.getElementById('qty-slider');
   const gramsEl = document.getElementById('qty-grams');
   const dispEl  = document.getElementById('qty-slider-display');
@@ -11562,14 +11810,28 @@ function selectProduct(productData) {
   if (nameEl)  nameEl.textContent  = productData.name;
   if (brandEl) brandEl.textContent = productData.brand || '';
   if (kcalEl)  kcalEl.textContent  = productData.hasNutrition ? `${productData.kcal} kcal / 100g` : 'Données non disponibles';
+  if (thumbEl) {
+    if (productData.image) {
+      thumbEl.src = productData.image;
+      thumbEl.alt = productData.name || '';
+      thumbEl.style.display = '';
+      thumbEl.onerror = () => { thumbEl.style.display = 'none'; };
+    } else {
+      thumbEl.style.display = 'none';
+    }
+  }
 
-  // Réinitialiser mode grammes
+  // Quantité par défaut : la dernière utilisée pour cet aliment si on la connaît,
+  // sinon 100g (comportement d'origine)
+  const lastQty = getLastQty(productData.name, productData.brand);
+  const defaultGrams = lastQty?.grams || 100;
+
   AP._qtyMode = 'grams';
   AP._portionIdx = 0;
   AP._portionCount = 1;
-  if (slider)  slider.value  = 100;
-  if (gramsEl) gramsEl.value = 100;
-  if (dispEl)  dispEl.textContent = '100';
+  if (slider)  slider.value  = Math.min(defaultGrams, parseFloat(slider.max) || 1000);
+  if (gramsEl) gramsEl.value = defaultGrams;
+  if (dispEl)  dispEl.textContent = String(defaultGrams);
 
   // Activer le bon mode par défaut
   const hasPor = productData.portions && productData.portions.length > 0;
@@ -11807,6 +12069,7 @@ function confirmAddFood() {
 
   saveMealItem(AP.date, AP.currentMeal, item);
   addToRecents(item);
+  setLastQty(f.name, f.brand, grams);
 
   // Fermer qty-panel + search, rester dans le détail repas
   closeQtyPanel();
@@ -12899,6 +13162,31 @@ function renderDashboardInsights(){
 const FOOD_FAV_KEY    = 'kcalos_food_favs';
 const FOOD_RECENT_KEY = 'kcalos_food_recents';
 
+/* ── Dernière quantité utilisée par aliment (name+brand → grams) ──
+   Permet de re-proposer directement la quantité habituelle plutôt que
+   de repartir de 100g à chaque fois (ex: 250g de riz à chaque repas). */
+const FOOD_LAST_QTY_KEY = 'kcalos_food_last_qty';
+function _lastQtyId(name, brand){
+  return (name||'').toLowerCase().trim() + '|' + (brand||'').toLowerCase().trim();
+}
+function getLastQtyMap(){
+  try { return JSON.parse(localStorage.getItem(FOOD_LAST_QTY_KEY) || '{}'); }
+  catch(e){ return {}; }
+}
+function getLastQty(name, brand){
+  const m = getLastQtyMap();
+  return m[_lastQtyId(name, brand)] || null;
+}
+function setLastQty(name, brand, grams){
+  const m = getLastQtyMap();
+  const keys = Object.keys(m);
+  if (keys.length > 300) { // purge des plus anciennes si ça grossit trop
+    keys.sort((a,b) => (m[a].ts||0) - (m[b].ts||0)).slice(0, 50).forEach(k => delete m[k]);
+  }
+  m[_lastQtyId(name, brand)] = { grams: Math.round(grams), ts: Date.now() };
+  localStorage.setItem(FOOD_LAST_QTY_KEY, JSON.stringify(m));
+}
+
 function getFavs()    { return JSON.parse(localStorage.getItem(FOOD_FAV_KEY)||'[]'); }
 function setFavs(d)   { localStorage.setItem(FOOD_FAV_KEY, JSON.stringify(d)); }
 function getRecents() { return JSON.parse(localStorage.getItem(FOOD_RECENT_KEY)||'[]'); }
@@ -12911,12 +13199,12 @@ function addToRecents(item){
   const f = AP.selectedFood;
   const entry = f
     ? { name:f.name, brand:f.brand||'', kcal:f.kcal, prot:f.prot||0, gluc:f.gluc||0, lip:f.lip||0,
-        portions:f.portions||[], hasNutrition:f.hasNutrition, lastGrams:item.grams, ts:Date.now() }
+        portions:f.portions||[], image:f.image||'', hasNutrition:f.hasNutrition, lastGrams:item.grams, ts:Date.now() }
     : { name:item.name, brand:item.brand||'', kcal:Math.round(item.kcal/(item.grams/100)),
         prot:Math.round((item.prot||0)/(item.grams/100)*10)/10,
         gluc:Math.round((item.gluc||0)/(item.grams/100)*10)/10,
         lip:Math.round((item.lip||0)/(item.grams/100)*10)/10,
-        portions:[], hasNutrition:item.kcal>0, lastGrams:item.grams, ts:Date.now() };
+        portions:[], image:'', hasNutrition:item.kcal>0, lastGrams:item.grams, ts:Date.now() };
   rec.unshift(entry);
   if(rec.length > 30) rec = rec.slice(0,30);
   setRecents(rec);
@@ -12931,12 +13219,14 @@ function _updateFavBtn(isFaved) {
     btn.style.color         = 'var(--orange)';
     btn.querySelector('svg').setAttribute('fill', 'currentColor');
     btn.title = 'Retirer des favoris';
+    btn.setAttribute('aria-label', 'Retirer des favoris');
   } else {
     btn.style.background    = 'var(--s2)';
     btn.style.borderColor   = 'var(--border2)';
     btn.style.color         = 'var(--muted)';
     btn.querySelector('svg').setAttribute('fill', 'none');
     btn.title = 'Ajouter aux favoris';
+    btn.setAttribute('aria-label', 'Ajouter aux favoris');
   }
 }
 
@@ -12948,12 +13238,12 @@ function toggleFavFromSearch(productData, btn) {
   const existing = favs.findIndex(x => x.name === f.name);
   if (existing >= 0) {
     favs.splice(existing, 1);
-    if(btn){ btn.textContent='☆'; btn.style.color='var(--muted2)'; btn.title='Ajouter aux favoris'; }
+    if(btn){ btn.textContent='☆'; btn.style.color='var(--muted2)'; btn.title='Ajouter aux favoris'; btn.setAttribute('aria-label','Ajouter aux favoris'); }
     toast('Retiré des favoris', 'var(--muted)');
   } else {
     favs.unshift({ name:f.name, brand:f.brand||'', kcal:f.kcal, prot:f.prot||0, gluc:f.gluc||0, lip:f.lip||0,
-      portions:f.portions||[], hasNutrition:f.hasNutrition });
-    if(btn){ btn.textContent='★'; btn.style.color='var(--orange)'; btn.title='Retirer des favoris'; }
+      portions:f.portions||[], image:f.image||'', hasNutrition:f.hasNutrition });
+    if(btn){ btn.textContent='★'; btn.style.color='var(--orange)'; btn.title='Retirer des favoris'; btn.setAttribute('aria-label','Retirer des favoris'); }
     toast('★ Ajouté aux favoris', 'var(--orange)');
   }
   setFavs(favs);
@@ -12968,7 +13258,8 @@ function toggleFavorite(){
     _updateFavBtn(false);
     toast('Retiré des favoris', 'var(--muted)');
   } else {
-    favs.unshift({ name:f.name, brand:f.brand||'', kcal:f.kcal, prot:f.prot||0, gluc:f.gluc||0, lip:f.lip||0 });
+    favs.unshift({ name:f.name, brand:f.brand||'', kcal:f.kcal, prot:f.prot||0, gluc:f.gluc||0, lip:f.lip||0,
+      portions:f.portions||[], image:f.image||'' });
     _updateFavBtn(true);
     toast('★ Ajouté aux favoris', 'var(--orange)');
   }
@@ -12995,12 +13286,13 @@ function switchSearchTab(tab){
 }
 
 function _foodItemHtml(item, isFavItem){
-  const esc = JSON.stringify({ name:item.name, brand:item.brand||'', kcal:item.kcal, prot:item.prot||0, gluc:item.gluc||0, lip:item.lip||0, hasNutrition:item.kcal>0 })
+  const esc = JSON.stringify({ name:item.name, brand:item.brand||'', kcal:item.kcal, prot:item.prot||0, gluc:item.gluc||0, lip:item.lip||0, portions:item.portions||[], image:item.image||'', hasNutrition:item.kcal>0 })
     .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   const favHtml = isFavItem
-    ? `<button class="fav-star" onclick="event.stopPropagation();removeFav('${item.name.replace(/'/g,'\\\'')}')" title="Retirer"><span class="ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M8 2l1.8 3.7 4 .6-2.9 2.8.7 4L8 11.2 4.4 13.1l.7-4L2.2 6.3l4-.6z"/></svg></span></button>`
+    ? `<button class="fav-star" onclick="event.stopPropagation();removeFav('${item.name.replace(/'/g,'\\\'')}')" aria-label="Retirer des favoris" title="Retirer"><span class="ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M8 2l1.8 3.7 4 .6-2.9 2.8.7 4L8 11.2 4.4 13.1l.7-4L2.2 6.3l4-.6z"/></svg></span></button>`
     : '';
   return `<div class="fav-item" onclick="selectProduct(${esc})">
+    ${_prodThumbHtml(item.image||'', item.name, item._src||'')}
     <div style="flex:1;min-width:0">
       <div style="font-size:0.88rem;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.name}</div>
       ${item.brand ? `<div style="font-size:0.68rem;color:var(--muted2)">${item.brand}</div>` : ''}
@@ -19064,7 +19356,8 @@ else setTimeout(slInit,200);
     'kcalos_wo_custom_types','kcalos_meal_templates',
     'kcalos_food_favs','kcalos_food_recents','kcalos_food_search_hist',
     'kcalos_widgets_config','kcalos_widgets_order','kcalos_widgets_sizes',
-    'kcalos_eau_goal','kcalos_theme','kcalos_ai_hist'
+    'kcalos_eau_goal','kcalos_theme','kcalos_ai_hist',
+    'kcalos_food_custom','kcalos_food_last_qty'
   ];
   function isSyncKey(k){ return SYNC_KEYS.includes(k) || k.startsWith('kcalos_eau_log_'); }
 
