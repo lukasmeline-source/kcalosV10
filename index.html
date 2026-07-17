@@ -122,7 +122,7 @@ body{background:var(--bg);color:var(--text);font-family:Syne,sans-serif;font-wei
   width:12px;height:12px;border-radius:50%;
   background:var(--muted2);transition:all var(--trans);
 }
-.light-mode .db-card{background:var(--s0);border:1px solid var(--border2);box-shadow:0 1px 6px rgba(0,0,0,0.07)}
+.light-mode .db-card{background:var(--s0);box-shadow:0 1px 6px rgba(0,0,0,0.06)}
 .light-mode .theme-switch::after{
   left:18px;background:var(--lime);
 }
@@ -252,6 +252,14 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 .comp-card .cc-unit{font-size:0.65rem;color:var(--muted);font-weight:300}
 .comp-card .cc-pct{font-size:0.65rem;color:var(--muted2);margin-top:2px}
 .comp-card .cc-desc{font-size:0.68rem;color:var(--muted);margin-top:5px;line-height:1.45;border-top:1px solid rgba(255,255,255,0.05);padding-top:5px}
+
+/* ── #page-dashboard : comp-card aplaties, sans bordure (style Apple Health) ── */
+#page-dashboard .comp-card{border:none;border-radius:14px}
+#page-dashboard .comp-card::after{display:none}
+#page-dashboard .comp-card.cc-bmr{background:var(--lime-bg)}
+#page-dashboard .comp-card.cc-eat{background:var(--blue-bg)}
+#page-dashboard .comp-card.cc-neat{background:var(--orange-bg)}
+#page-dashboard .comp-card.cc-tef{background:var(--pink-bg)}
 
 /* ── TDEE TOTAL ── */
 .tdee-total{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;padding:1.4rem 1.6rem;background:var(--s1);border:1px solid var(--border2);border-radius:var(--r);margin-top:1.1rem}
@@ -618,38 +626,18 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 /* ── DASHBOARD PAGE ── */
 .db-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0.85rem;margin-bottom:1rem}
 .db-card{
-  background:var(--s1);border:1px solid var(--border);border-radius:var(--r);
+  background:var(--s1);border-radius:18px;
   padding:1.1rem 1.15rem;position:relative;overflow:hidden;
 }
-.db-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2.5px}
-.db-card.db-apport::before{background:var(--blue)}
-.db-card.db-depense::before{background:var(--lime)}
-.db-card.db-balance::before{background:var(--orange)}
-.db-card.db-poids::before{background:var(--pink)}
-.db-card.db-steps::before{background:var(--teal)}
-.db-card.db-proj::before{background:linear-gradient(90deg,var(--lime),var(--teal))}
-.db-card .db-lbl{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted2);margin-bottom:6px}
-.db-card .db-val{font-family:Playfair Display,serif;font-size:1.9rem;color:var(--text);line-height:1;letter-spacing:-0.5px}
-.db-card .db-unit{font-size:0.72rem;color:var(--muted);font-weight:300;margin-left:3px}
+.db-chip{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:0.55rem;flex-shrink:0}
+.db-card.db-balance .db-chip{background:var(--orange-bg);color:var(--orange)}
+.db-card.db-poids .db-chip{background:var(--pink-bg);color:var(--pink)}
+.db-card.db-steps .db-chip{background:var(--teal-bg);color:var(--teal)}
+.db-card.db-proj .db-chip{background:var(--lime-bg);color:var(--lime)}
+.db-card .db-lbl{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.6rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted2);margin-bottom:6px}
+.db-card .db-val{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-weight:700;font-size:1.7rem;color:var(--text);line-height:1;letter-spacing:-0.02em}
+.db-card .db-unit{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.72rem;color:var(--muted);font-weight:500;margin-left:3px}
 .db-card .db-sub{font-size:0.67rem;color:var(--muted);margin-top:5px}
-.db-card.db-apport .db-val{color:var(--blue)}
-.db-card.db-apport .db-unit,.db-card.db-apport .db-sub{color:var(--blue-d)}
-.db-card.db-apport .db-lbl{color:var(--blue)!important;stroke:var(--blue)}
-.db-card.db-depense .db-val{color:var(--lime)}
-.db-card.db-depense .db-unit,.db-card.db-depense .db-sub{color:var(--lime-d)}
-.db-card.db-depense .db-lbl{color:var(--lime)!important;stroke:var(--lime)}
-.db-card.db-balance .db-val{color:var(--orange)}
-.db-card.db-balance .db-unit,.db-card.db-balance .db-sub{color:var(--orange-d)}
-.db-card.db-balance .db-lbl{color:var(--orange)!important;stroke:var(--orange)}
-.db-card.db-poids .db-val{color:var(--pink)}
-.db-card.db-poids .db-unit,.db-card.db-poids .db-sub{color:var(--pink-d)}
-.db-card.db-poids .db-lbl{color:var(--pink)!important;stroke:var(--pink)}
-.db-card.db-steps .db-val{color:var(--teal)}
-.db-card.db-steps .db-unit,.db-card.db-steps .db-sub{color:var(--teal-d)}
-.db-card.db-steps .db-lbl{color:var(--teal)!important;stroke:var(--teal)}
-.db-card.db-proj .db-val{color:var(--lime)}
-.db-card.db-proj .db-unit,.db-card.db-proj .db-sub{color:var(--lime-d)}
-.db-card.db-proj .db-lbl{color:var(--lime)!important;stroke:var(--lime)}
 .db-balance-pos{color:var(--orange)!important}
 .db-balance-neg{color:var(--blue)!important}
 .db-card-full{grid-column:1/-1}
@@ -663,6 +651,26 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 .db-week-bar.today{background:var(--lime);opacity:0.9}
 .db-week-bar.over{background:var(--orange)}
 .db-week-bar-lbl{font-size:0.52rem;color:var(--muted2);text-transform:uppercase}
+
+/* ── Hero card : anneau de balance calorique (style Apple Health) ── */
+.db-hero{margin-bottom:0.85rem;padding:clamp(1.1rem,1rem + 0.6vw,1.6rem) clamp(1.15rem,1rem + 0.7vw,1.8rem)}
+.db-hero-top{display:flex;align-items:center;gap:clamp(1rem,0.8rem + 1vw,2rem)}
+.db-hero-ring-wrap{position:relative;width:clamp(92px,7vw + 60px,150px);height:clamp(92px,7vw + 60px,150px);flex-shrink:0}
+.db-hero-ring-wrap svg{width:100%;height:100%;display:block;transform:rotate(-90deg)}
+.db-hero-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.db-hero-ring-center .db-val{font-size:clamp(1.25rem,1rem + 1vw,2rem);font-weight:700;line-height:1}
+.db-hero-ring-unit{font-size:clamp(0.55rem,0.5rem + 0.2vw,0.75rem);color:var(--muted);margin-top:2px}
+.db-hero-right{flex:1;display:flex;flex-direction:column;gap:clamp(0.6rem,0.5rem + 0.4vw,1.1rem);min-width:0}
+.db-hero-right>.db-lbl{margin-bottom:0;font-size:clamp(0.6rem,0.55rem + 0.15vw,0.72rem)}
+.db-hero-row{display:flex;align-items:center;gap:clamp(8px,6px + 0.6vw,14px)}
+.db-chip-sm{width:clamp(26px,22px + 1.4vw,38px);height:clamp(26px,22px + 1.4vw,38px);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.db-chip-sm svg{width:clamp(13px,11px + 0.7vw,19px);height:clamp(13px,11px + 0.7vw,19px)}
+.db-val-sm{font-size:clamp(0.92rem,0.8rem + 0.5vw,1.35rem);font-weight:600;color:var(--text);line-height:1}
+.db-hero-row .db-unit{font-size:clamp(0.58rem,0.54rem + 0.15vw,0.72rem);color:var(--muted);font-weight:500;margin-left:2px}
+.db-hero-row-lbl{font-size:clamp(0.56rem,0.52rem + 0.15vw,0.68rem);color:var(--muted);margin-top:2px}
+
+/* ── Mini-carte Récap dans la grille KPI ── */
+.db-card.db-recap-mini .db-chip{background:var(--orange-bg);color:var(--orange)}
 
 /* ══════════════════════════════════════
    WIDGET SYSTEM v2 — iOS-style drag grid
@@ -2321,11 +2329,11 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 .sl-ph-bar{height:7px;border-radius:4px;overflow:hidden;display:flex;gap:1px;margin:5px 0 3px}
 /* ── Macros restantes ── */
 /* ── Perf salle ── */
-.perf-tab{font-size:0.62rem;padding:3px 9px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-family:Syne,sans-serif;transition:all var(--trans);-webkit-tap-highlight-color:transparent}
+.perf-tab{font-size:0.62rem;padding:3px 9px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;transition:all var(--trans);-webkit-tap-highlight-color:transparent}
 .perf-tab.on{background:var(--lime-bg);color:var(--lime);border-color:var(--lime-d)}
-.perf-cell{background:var(--s2);border-radius:var(--r-sm);padding:0.5rem;border:1px solid var(--border);text-align:center}
-.perf-num{font-family:Playfair Display,serif;font-size:1.1rem;color:var(--text);line-height:1;margin-bottom:1px}
-.perf-lbl{font-size:0.55rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em;font-family:Syne,sans-serif}
+.perf-cell{background:var(--s2);border-radius:14px;padding:0.55rem;text-align:center}
+.perf-num{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-weight:700;font-size:1.1rem;color:var(--text);line-height:1;margin-bottom:2px}
+.perf-lbl{font-size:0.55rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
 
 /* ── Macro toggle switch ── */
 .macro-sw{width:36px;height:20px;background:var(--s3);border:1px solid var(--border2);border-radius:10px;position:relative;cursor:pointer;transition:background var(--trans),border-color var(--trans);flex-shrink:0}
@@ -2709,37 +2717,62 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   <div class="widget-block" id="widget-kpis" data-widget="kpis" data-size="full" data-visible="true" style="margin-bottom:0">
   <button class="widget-resize-btn" onclick="widgetResize('kpis')" title="Changer la taille">⇔</button>
   
-  <!-- KPIs row 1: Apport / Dépense / Balance / Poids -->
+  <!-- Hero: Balance calorique (anneau) + Apport / Dépense fusionnés -->
+  <div class="db-card db-balance db-hero" onclick="switchPage('page-progression');switchProgTab('calories')" style="cursor:pointer" title="Voir le graphique balance">
+    <div class="db-hero-top">
+      <div class="db-hero-ring-wrap">
+        <svg width="92" height="92" viewBox="0 0 92 92">
+          <circle cx="46" cy="46" r="38" fill="none" stroke="var(--s3)" stroke-width="8"/>
+          <circle id="db-hero-ring-fg" cx="46" cy="46" r="38" fill="none" stroke="var(--blue)" stroke-width="8" stroke-linecap="round" stroke-dasharray="238.76" stroke-dashoffset="238.76"/>
+        </svg>
+        <div class="db-hero-ring-center">
+          <span class="db-val" id="db-balance-val">—</span>
+          <span class="db-hero-ring-unit">kcal</span>
+        </div>
+      </div>
+      <div class="db-hero-right">
+        <div class="db-lbl">Balance calorique</div>
+        <div class="db-hero-row" onclick="event.stopPropagation();switchPage('page-apports');switchApTab('piste')" style="cursor:pointer" title="Aller aux apports">
+          <div class="db-chip-sm" style="background:var(--blue-bg);color:var(--blue)"><span class="ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.5"/><line x1="17" y1="5" x2="17" y2="3"/><path d="M16 7l2-3"/></svg></span></div>
+          <div><span class="db-val-sm" id="db-apport-val">—</span><span class="db-unit">kcal</span><div class="db-hero-row-lbl">Apport</div></div>
+        </div>
+        <div class="db-hero-row" onclick="event.stopPropagation();dbDepenseDetailClick()" style="cursor:pointer" title="Voir le détail de la dépense">
+          <div class="db-chip-sm" style="background:var(--lime-bg);color:var(--lime)"><span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 14c-3.3 0-5.2-2-5.2-4.3 0-2 1.4-3 1.4-5.2C5.3 6 5.5 7 6.3 7.7c-.1-2.2 1-4.5 3-6 0 2 1 3.8 1.5 5 .5-.8.4-2 .4-3.2 1.8 1.7 2.5 3.8 2.5 5.2C13.7 11 12 14 8 14z"/></svg></span></div>
+          <div><span class="db-val-sm" id="db-depense-val">—</span><span class="db-unit">kcal</span><div class="db-hero-row-lbl">Dépense</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="db-sub" id="db-balance-sub" style="display:none">Apport − Dépense</div>
+    <div class="db-sub" id="db-apport-sub" style="display:none">Aucun repas enregistré</div>
+    <div class="db-sub" id="db-depense-sub" style="display:none">BMR + NEAT + TEF + EAT</div>
+  </div>
+
+  <!-- Grille 2x2 : Poids / Pas / Projection / Récap -->
   <div class="db-grid">
-    <div class="db-card db-apport" onclick="switchPage('page-apports');switchApTab('piste')" style="cursor:pointer" title="Aller aux apports">
-      <div class="db-lbl"><span class="ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.5"/><line x1="17" y1="5" x2="17" y2="3"/><path d="M16 7l2-3"/></svg></span> Apport aujourd'hui</div>
-      <div><span class="db-val" id="db-apport-val">—</span><span class="db-unit">kcal</span></div>
-      <div class="db-sub" id="db-apport-sub">Aucun repas enregistré</div>
-    </div>
-    <div class="db-card db-depense">
-      <div class="db-lbl"><span class="ico" style="margin-right:5px"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 14c-3.3 0-5.2-2-5.2-4.3 0-2 1.4-3 1.4-5.2C5.3 6 5.5 7 6.3 7.7c-.1-2.2 1-4.5 3-6 0 2 1 3.8 1.5 5 .5-.8.4-2 .4-3.2 1.8 1.7 2.5 3.8 2.5 5.2C13.7 11 12 14 8 14z"/></svg></span> Dépense du jour</div>
-      <div><span class="db-val" id="db-depense-val">—</span><span class="db-unit">kcal</span></div>
-      <div class="db-sub" id="db-depense-sub">BMR + NEAT + TEF + EAT</div>
-    </div>
-    <div class="db-card db-balance" onclick="switchPage('page-progression');switchProgTab('calories')" style="cursor:pointer" title="Voir le graphique balance">
-      <div class="db-lbl"><span class="ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="3" x2="12" y2="21"/><path d="M5 10l7-7 7 7"/><line x1="4" y1="17" x2="20" y2="17"/><line x1="4" y1="21" x2="20" y2="21"/></svg></span> Balance calorique</div>
-      <div><span class="db-val" id="db-balance-val">—</span><span class="db-unit">kcal</span></div>
-      <div class="db-sub" id="db-balance-sub">Apport − Dépense</div>
-    </div>
     <div class="db-card db-poids" onclick="openPoidsQuickEdit()" style="cursor:pointer;position:relative" title="Cliquer pour mettre à jour le poids">
-      <div class="db-lbl"><span class="ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="3" x2="12" y2="21"/><path d="M5 10l7-7 7 7"/><line x1="4" y1="17" x2="20" y2="17"/><line x1="4" y1="21" x2="20" y2="21"/></svg></span> Poids <span style="font-size:0.52rem;opacity:0.5;margin-left:3px">↑ màj</span></div>
+      <div class="db-chip"><span class="ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="3" x2="12" y2="21"/><path d="M5 10l7-7 7 7"/><line x1="4" y1="17" x2="20" y2="17"/><line x1="4" y1="21" x2="20" y2="21"/></svg></span></div>
+      <div class="db-lbl">Poids</div>
       <div><span class="db-val" id="db-poids-val">—</span><span class="db-unit">kg</span></div>
       <div class="db-sub" id="db-poids-sub">Dernière mesure</div>
     </div>
     <div class="db-card db-steps" onclick="switchPage('page-steps')" style="cursor:pointer" title="Voir les pas">
-      <div class="db-lbl"><span class="ico"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><ellipse cx="5.5" cy="5.5" rx="2.2" ry="3.2" transform="rotate(-8 5.5 5.5)"/><ellipse cx="10.5" cy="10.5" rx="2.2" ry="3.2" transform="rotate(8 10.5 10.5)"/></svg></span> Pas aujourd'hui</div>
+      <div class="db-chip"><span class="ico"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><ellipse cx="5.5" cy="5.5" rx="2.2" ry="3.2" transform="rotate(-8 5.5 5.5)"/><ellipse cx="10.5" cy="10.5" rx="2.2" ry="3.2" transform="rotate(8 10.5 10.5)"/></svg></span></div>
+      <div class="db-lbl">Pas aujourd'hui</div>
       <div><span class="db-val" id="db-steps-val">—</span></div>
+      <div style="height:4px;background:var(--s3);border-radius:4px;margin-top:6px;overflow:hidden"><div id="db-steps-bar" style="height:100%;width:0%;background:var(--teal);border-radius:4px;transition:width .4s"></div></div>
       <div class="db-sub" id="db-steps-sub">Objectif —</div>
     </div>
     <div class="db-card db-proj" onclick="openProjectionModal()" style="cursor:pointer" title="Voir le détail de la projection">
-      <div class="db-lbl"><span class="ico"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,12 5.5,7.5 9,9.5 14,3.5"/><circle cx="14" cy="3.5" r="1.3" fill="currentColor" stroke="none"/></svg></span> Projection semaine</div>
+      <div class="db-chip"><span class="ico"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,12 5.5,7.5 9,9.5 14,3.5"/><circle cx="14" cy="3.5" r="1.3" fill="currentColor" stroke="none"/></svg></span></div>
+      <div class="db-lbl">Projection semaine</div>
       <div><span class="db-val" id="db-proj-val">—</span><span class="db-unit">kg/sem</span></div>
       <div class="db-sub" id="db-proj-sub">À cette balance</div>
+    </div>
+    <div class="db-card db-recap-mini" onclick="dbRecapMiniClick(event)" style="cursor:pointer" title="Voir le récap complet">
+      <div class="db-chip"><span class="ico"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,8.5 6,12.5 14,3"/></svg></span></div>
+      <div class="db-lbl">Récap</div>
+      <div><span class="db-val" id="db-kpi-recap-val">—</span><span class="db-unit">/100</span></div>
+      <div class="db-sub" id="db-kpi-recap-sub">—</div>
     </div>
   </div>
   </div><!-- /widget-kpis -->
@@ -2754,8 +2787,8 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     <div class="db-lbl" style="margin-bottom:1rem"><span class="ico" style="margin-right:5px"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 14c-3.3 0-5.2-2-5.2-4.3 0-2 1.4-3 1.4-5.2C5.3 6 5.5 7 6.3 7.7c-.1-2.2 1-4.5 3-6 0 2 1 3.8 1.5 5 .5-.8.4-2 .4-3.2 1.8 1.7 2.5 3.8 2.5 5.2C13.7 11 12 14 8 14z"/></svg></span> Dépense du jour — données réelles</div>
     <!-- Total estimé -->
     <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.5rem">
-      <span style="font-size:0.65rem;color:var(--muted);font-family:Syne,sans-serif;text-transform:uppercase;letter-spacing:.05em">Total estimé</span>
-      <span id="db-tdee-total" style="font-size:1.05rem;font-weight:700;font-family:Syne,sans-serif;color:var(--text)">— kcal</span>
+      <span style="font-size:0.65rem;color:var(--muted);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;text-transform:uppercase;letter-spacing:.05em">Total estimé</span>
+      <span id="db-tdee-total" style="font-size:1.05rem;font-weight:700;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text)">— kcal</span>
     </div>
     <!-- Bar visuelle -->
     <div class="bar-track" id="db-dep-bar" style="margin-bottom:1rem">
@@ -2891,13 +2924,13 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <div class="db-lbl">
         <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" style="margin-right:5px;vertical-align:middle"><path d="M8 2c0 0-4 4-4 7.5a4 4 0 008 0C12 6 8 2 8 2z"/></svg>Glycémie estimée — aujourd'hui
       </div>
-      <span style="font-size:0.6rem;color:var(--muted2);font-family:Syne,sans-serif">Tendances →</span>
+      <span style="font-size:0.6rem;color:var(--muted2);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">Tendances →</span>
     </div>
     <!-- Courbe 24h : même moteur que la page Tendances (computeGlycemiaCurve + _buildGlycemiaChartConfig) -->
     <div style="position:relative;height:150px;margin-bottom:0.6rem"><canvas id="glyc-widget-canvas"></canvas></div>
     <!-- Stats du jour : pic, temps en zone normale -->
     <div style="display:flex;flex-wrap:wrap;gap:6px" id="glyc-widget-stats">
-      <span style="font-size:0.62rem;color:var(--muted2);font-family:Syne,sans-serif">—</span>
+      <span style="font-size:0.62rem;color:var(--muted2);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">—</span>
     </div>
   </div>
   </div><!-- /widget-glycemie -->
@@ -2909,7 +2942,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   <div class="db-card db-card-full" onclick="if(event.target===this||event.target.closest('.db-lbl')||event.target.closest('#db-eau-curve')||event.target.closest('#db-eau-msg'))openEauSheet()" style="cursor:pointer">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem">
       <div class="db-lbl"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" style="margin-right:5px;vertical-align:middle"><path d="M8 2c0 0-5 5-5 9a5 5 0 0010 0C13 7 8 2 8 2z"/></svg>Hydratation</div>
-      <div style="font-size:0.72rem;font-weight:600;color:var(--teal);font-family:Syne,sans-serif">
+      <div style="font-size:0.72rem;font-weight:600;color:var(--teal);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">
         <span id="db-eau-ml">0</span><span style="font-size:0.58rem;color:var(--teal-d)"> ml</span>
         <span style="font-size:0.56rem;color:var(--muted2)"> / <span id="db-eau-goal">2000</span></span>
       </div>
@@ -2925,7 +2958,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <button class="eau-qbtn" onclick="eauQuickAdd(800)">+800<span>ml</span></button>
       <button class="eau-qbtn" onclick="openEauSheet()" style="color:var(--muted);grid-column:span 1">+…<span>autre</span></button>
     </div>
-    <div id="db-eau-msg" style="font-size:0.62rem;color:var(--muted2);font-family:Syne,sans-serif">
+    <div id="db-eau-msg" style="font-size:0.62rem;color:var(--muted2);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">
       Reste <strong id="db-eau-reste" style="color:var(--teal)">2000</strong> ml à boire
     </div>
   </div>
@@ -2938,10 +2971,10 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   <div class="db-card db-card-full" onclick="if(typeof switchPage==='function')switchPage('page-sommeil')" style="cursor:pointer">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem">
       <div class="db-lbl"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" style="margin-right:5px;vertical-align:middle"><path d="M13.5 8A6 6 0 013 6a7 7 0 008 8 6 6 0 002.5-6z"/></svg>Sommeil — Dernière nuit</div>
-      <div style="font-size:0.6rem;color:var(--muted2);font-family:Syne,sans-serif">Détails →</div>
+      <div style="font-size:0.6rem;color:var(--muted2);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">Détails →</div>
     </div>
     <div id="db-sleep-content">
-      <div style="font-size:0.73rem;color:var(--muted2);font-family:Syne,sans-serif;padding:0.4rem 0;line-height:1.6">Aucune nuit enregistrée.<br>Lance le suivi depuis la page <strong style="color:var(--text)">Sommeil</strong>.</div>
+      <div style="font-size:0.73rem;color:var(--muted2);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;padding:0.4rem 0;line-height:1.6">Aucune nuit enregistrée.<br>Lance le suivi depuis la page <strong style="color:var(--text)">Sommeil</strong>.</div>
     </div>
   </div>
   </div><!-- /widget-sommeil -->
@@ -2958,7 +2991,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/><path d="M4 5l8 6M12 5L4 11"/></svg>
         </span>Balance Na/K du jour
       </div>
-      <div style="font-size:0.6rem;color:var(--muted2);font-family:Syne,sans-serif">Détails →</div>
+      <div style="font-size:0.6rem;color:var(--muted2);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">Détails →</div>
     </div>
     <div id="db-nak-mini-content">
       <div class="nak-bar-row">
@@ -2966,7 +2999,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
         <div class="nak-track"><div class="nak-fill" id="db-nak-na-fill" style="width:0%;background:var(--orange)"></div></div>
         <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
           <span class="nak-val" id="db-nak-na-val">—</span>
-          <span id="db-nak-na-mg" style="font-size:0.58rem;color:var(--muted2);font-family:Syne,sans-serif"></span>
+          <span id="db-nak-na-mg" style="font-size:0.58rem;color:var(--muted2);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif"></span>
         </div>
       </div>
       <div class="nak-bar-row">
@@ -2974,14 +3007,14 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
         <div class="nak-track"><div class="nak-fill" id="db-nak-k-fill" style="width:0%;background:var(--blue)"></div></div>
         <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
           <span class="nak-val" id="db-nak-k-val">—</span>
-          <span id="db-nak-k-mg" style="font-size:0.58rem;color:var(--muted2);font-family:Syne,sans-serif"></span>
+          <span id="db-nak-k-mg" style="font-size:0.58rem;color:var(--muted2);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif"></span>
         </div>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
         <div id="db-nak-ratio" style="font-size:0.63rem;color:var(--muted);line-height:1.4;flex:1"></div>
         <div id="db-nak-ratio-badge" style="flex-shrink:0;text-align:center;min-width:54px">
-          <div style="font-family:Playfair Display,serif;font-size:1.15rem;font-weight:400;line-height:1" id="db-nak-ratio-val">—</div>
-          <div style="font-size:0.52rem;color:var(--muted2);font-family:Syne,sans-serif;margin-top:1px">ratio K/Na</div>
+          <div style="font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:1.15rem;font-weight:600;line-height:1" id="db-nak-ratio-val">—</div>
+          <div style="font-size:0.52rem;color:var(--muted2);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;margin-top:1px">ratio K/Na</div>
         </div>
       </div>
     </div>
@@ -2994,16 +3027,16 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   <button class="widget-resize-btn" onclick="widgetResize('recap')" title="Changer la taille">⇔</button>
   <div class="db-card db-card-full" onclick="recapToggleDetail(event)" style="cursor:pointer">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem">
-      <div class="db-lbl">✅ Récap — Es-tu en train de tout maximiser ?</div>
+      <div class="db-lbl"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px;vertical-align:middle"><circle cx="8" cy="8" r="6.5"/><path d="M5.3 8.2l1.8 1.8 3.6-4"/></svg>Récap — Es-tu en train de tout maximiser ?</div>
       <span id="db-recap-arrow" style="font-size:0.7rem;color:var(--muted2);transition:transform .2s;display:inline-block">▼</span>
     </div>
     <div style="display:flex;align-items:center;gap:16px">
-      <div id="db-recap-score" style="font-family:'Playfair Display',serif;font-size:2rem;line-height:1;flex-shrink:0">—</div>
+      <div id="db-recap-score" style="font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-weight:700;font-size:2rem;line-height:1;flex-shrink:0">—</div>
       <div style="flex:1">
         <div style="height:7px;background:var(--s2);border-radius:100px;overflow:hidden;margin-bottom:5px">
           <div id="db-recap-bar" style="height:100%;width:0%;background:var(--teal);transition:width .4s"></div>
         </div>
-        <div id="db-recap-txt" style="font-size:0.65rem;color:var(--muted2);font-family:Syne,sans-serif;line-height:1.5">Calcul en cours...</div>
+        <div id="db-recap-txt" style="font-size:0.65rem;color:var(--muted2);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;line-height:1.5">Calcul en cours...</div>
       </div>
     </div>
     <div id="db-recap-detail" style="display:none;margin-top:0.9rem;padding-top:0.9rem;border-top:1px solid var(--border)">
@@ -3020,7 +3053,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     <button class="widget-delete-btn" onclick="widgetDelete('poids-trend')" title="Supprimer">×</button>
     <button class="widget-resize-btn" onclick="widgetResize('poids-trend')" title="Changer la taille">⇔</button>
     <div class="db-card db-card-full" onclick="if(typeof switchPage==='function')switchPage('page-progression')" style="cursor:pointer">
-      <div class="db-lbl">⚖️ Evolution du poids — 30 jours</div>
+      <div class="db-lbl"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px;vertical-align:middle"><line x1="8" y1="2" x2="8" y2="13"/><line x1="3" y1="13" x2="13" y2="13"/><line x1="2" y1="4" x2="14" y2="4"/><path d="M2 4l-1.8 4.3a1.9 1.9 0 003.6 0L2 4z"/><path d="M14 4l-1.8 4.3a1.9 1.9 0 003.6 0L14 4z"/></svg>Evolution du poids — 30 jours</div>
       <div style="position:relative;margin-top:0.5rem">
         <canvas id="widget-poids-canvas" height="80" style="width:100%;display:block"></canvas>
       </div>
@@ -3043,7 +3076,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       </div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:0.7rem" id="perf-kpis"></div>
       <canvas id="perf-canvas" height="65" style="width:100%;display:block;margin-bottom:0.5rem"></canvas>
-      <div id="perf-details" style="font-size:0.65rem;color:var(--muted2);font-family:Syne,sans-serif;line-height:1.6"></div>
+      <div id="perf-details" style="font-size:0.65rem;color:var(--muted2);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;line-height:1.6"></div>
     </div>
   </div>
 
@@ -3059,20 +3092,20 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
           Sommeil — 7 nuits
         </div>
         <div style="text-align:right;flex-shrink:0">
-          <div style="font-family:Playfair Display,serif;font-size:1.4rem;line-height:1;color:var(--muted2)" id="sleep-score-today">—</div>
-          <div style="font-size:0.52rem;color:var(--muted2);font-family:Syne,sans-serif">/100 cette nuit</div>
+          <div style="font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-weight:600;font-size:1.4rem;line-height:1;color:var(--muted2)" id="sleep-score-today">—</div>
+          <div style="font-size:0.52rem;color:var(--muted2);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">/100 cette nuit</div>
         </div>
       </div>
       <!-- Phase bars chart — rempli par JS -->
       <div id="sleep-phase-chart" style="display:flex;align-items:flex-end;justify-content:space-between;gap:3px;height:90px;margin-bottom:6px"></div>
       <!-- Légende phases -->
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px">
-        <span style="font-size:0.58rem;color:var(--muted2);font-family:Syne,sans-serif;display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:#7b5ea7;display:inline-block"></span>Deep</span>
-        <span style="font-size:0.58rem;color:var(--muted2);font-family:Syne,sans-serif;display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:#5b9bde;display:inline-block"></span>REM</span>
-        <span style="font-size:0.58rem;color:var(--muted2);font-family:Syne,sans-serif;display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:#4a8fd4;display:inline-block"></span>Core</span>
-        <span style="font-size:0.58rem;color:var(--muted2);font-family:Syne,sans-serif;display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:#e05b4b;display:inline-block"></span>Éveil</span>
+        <span style="font-size:0.58rem;color:var(--muted2);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:#7b5ea7;display:inline-block"></span>Deep</span>
+        <span style="font-size:0.58rem;color:var(--muted2);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:#5b9bde;display:inline-block"></span>REM</span>
+        <span style="font-size:0.58rem;color:var(--muted2);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:#4a8fd4;display:inline-block"></span>Core</span>
+        <span style="font-size:0.58rem;color:var(--muted2);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:#e05b4b;display:inline-block"></span>Éveil</span>
       </div>
-      <div id="widget-sleep-meta" style="font-size:0.63rem;color:var(--muted);font-family:Syne,sans-serif;line-height:1.5"></div>
+      <div id="widget-sleep-meta" style="font-size:0.63rem;color:var(--muted);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;line-height:1.5"></div>
     </div>
   </div><!-- /widget-sleep-score -->
 
@@ -15392,6 +15425,14 @@ function loadRecapWidget(){
     ? pct+'% de tes points cles sont actuellement maximises. Touche un point pour aller le corriger.'
     : 'Renseigne sommeil, apports et seances pour activer ce recap.';
 
+  // Mini-carte Récap dans la grille KPI du dashboard
+  var kpiVal = document.getElementById('db-kpi-recap-val');
+  var kpiSub = document.getElementById('db-kpi-recap-sub');
+  if(kpiVal) kpiVal.textContent = scored.length ? pct : '—';
+  if(kpiSub) kpiSub.textContent = scored.length
+    ? (pct>=80 ? 'Bien optimisé' : pct>=50 ? 'Peut être amélioré' : 'À optimiser')
+    : 'Données insuffisantes';
+
   if(listEl){
     listEl.innerHTML = checks.map(c=>`
       <div onclick="event.stopPropagation();if(typeof switchPage==='function')switchPage('${c.page}')" style="cursor:pointer;border-left:3px solid ${COLORS[c.status]};background:${BG[c.status]};padding:10px 12px;border-radius:6px;margin-bottom:8px">
@@ -15401,6 +15442,30 @@ function loadRecapWidget(){
     `).join('');
   }
 }
+
+window.dbDepenseDetailClick = function(){
+  var block = document.getElementById('widget-tdee');
+  if(!block) return;
+  block.scrollIntoView({behavior:'smooth', block:'center'});
+};
+
+window.dbRecapMiniClick = function(ev){
+  if(ev) ev.stopPropagation();
+  var block = document.getElementById('widget-recap');
+  if(!block){ if(typeof switchPage==='function') switchPage('page-dashboard'); return; }
+  if(block.getAttribute('data-visible')!=='true' && typeof toggleWidget==='function'){
+    toggleWidget('recap');
+  }
+  setTimeout(function(){
+    block.scrollIntoView({behavior:'smooth', block:'center'});
+    var detail = document.getElementById('db-recap-detail');
+    var arrow  = document.getElementById('db-recap-arrow');
+    if(detail && detail.style.display==='none'){
+      detail.style.display='block';
+      if(arrow) arrow.style.transform='rotate(180deg)';
+    }
+  }, 60);
+};
 
 window.recapToggleDetail = function(ev){
   if(ev) ev.stopPropagation();
@@ -15914,19 +15979,14 @@ function _woPrevSessionOfType(sess){
 function woSessionProgress(sess){
   const prev = _woPrevSessionOfType(sess);
   if(!prev) return {pct:null, volPct:null};
-  const currScores=[], prevScores=[];
+  const indivPcts=[];
   (sess.exercises||[]).forEach(exo=>{
     const cs = woEpley(exo.sets||[]);
     const prevExo = (prev.exercises||[]).find(e=>e.id===exo.id||e.name===exo.name);
     const ps = prevExo ? woEpley(prevExo.sets||[]) : 0;
-    if(cs>0 && ps>0){ currScores.push(cs); prevScores.push(ps); }
+    if(cs>0 && ps>0) indivPcts.push((cs-ps)/ps*100);
   });
-  let pct=null;
-  if(currScores.length){
-    const avgC=currScores.reduce((a,b)=>a+b,0)/currScores.length;
-    const avgP=prevScores.reduce((a,b)=>a+b,0)/prevScores.length;
-    if(avgP>0) pct=Math.round((avgC-avgP)/avgP*100);
-  }
+  const pct = indivPcts.length ? Math.round(indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length) : null;
   const vNow=woSessVol(sess), vPrev=woSessVol(prev);
   const volPct=(vPrev>0 && vNow>0)?Math.round((vNow-vPrev)/vPrev*100):null;
   return {pct, volPct};
@@ -16501,6 +16561,8 @@ function renderDashboard(){
     : 'Apport − Dépense');
   /* Color the balance card: orange/red for deficit, green for surplus */
   const balCard = document.querySelector('.db-card.db-balance');
+  const ringFg = document.getElementById('db-hero-ring-fg');
+  const RING_C = 238.76;
   if(balCard && balance!==null){
     const balVal = balCard.querySelector('.db-val');
     const col = balance > 100 ? 'var(--lime)' : balance < -500 ? 'var(--red,#ef4444)' : balance < -100 ? 'var(--orange)' : 'var(--text)';
@@ -16508,6 +16570,15 @@ function renderDashboard(){
     // Also update the set element
     const balEl = document.getElementById('db-balance-val');
     if(balEl) balEl.style.color = col;
+    // Anneau héros : remplissage = part de la dépense déjà "consommée" par l'apport du jour
+    if(ringFg){
+      let ratio = (dep?.tdee && todayA.kcal) ? Math.max(0, Math.min(1, todayA.kcal/dep.tdee)) : 0;
+      ringFg.style.strokeDashoffset = (RING_C * (1-ratio)).toFixed(1);
+      ringFg.style.stroke = col==='var(--text)' ? 'var(--blue)' : col;
+    }
+  } else if(ringFg){
+    ringFg.style.strokeDashoffset = RING_C;
+    ringFg.style.stroke = 'var(--blue)';
   }
 
   // Poids
@@ -16523,13 +16594,13 @@ function renderDashboard(){
   // Steps
   set('db-steps-val', stepsToday ? stepsToday.toLocaleString('fr-FR') : '—');
   set('db-steps-sub', `Obj. ${stepsGoal.toLocaleString('fr-FR')} pas${stepsToday?` · ${Math.round(stepsToday/stepsGoal*100)}%`:''}`);
+  css('db-steps-bar',{width: (stepsGoal ? Math.max(0,Math.min(100,Math.round(stepsToday/stepsGoal*100))) : 0)+'%'});
 
   // Projection
   if(projKgSem!==null){
     const sign=projKgSem>=0?'+':'';
     set('db-proj-val', sign+projKgSem.toFixed(2));
-    css('db-proj-val',{color:'var(--lime)'});
-    set('db-proj-sub', `${projKgSem>0.05?'⬆️':projKgSem<-0.05?'⬇️':'➡️'} sur ${last7bal.length}j`);
+    set('db-proj-sub', `${projKgSem>0.05?'⬆':projKgSem<-0.05?'⬇':'→'} sur ${last7bal.length}j`);
   } else {
     set('db-proj-val','—'); set('db-proj-sub','Données insuffisantes');
   }
@@ -18128,20 +18199,23 @@ function woRenderProg(period){ // period = 'week'|'month'
     const periods  = [...byPeriod.keys()].sort();
     if(!periods.length) return '';
 
-    // Score Epley moyen d\'une période
-    const periodScore = d => {
-      const scores = Object.values(d.exos).map(e=>e.score).filter(s=>s>0);
-      return scores.length ? scores.reduce((a,b)=>a+b,0)/scores.length : 0;
+    // % force entre deux périodes : uniquement sur les exercices communs aux deux (comme la vue séance-à-séance),
+    // en moyennant les % individuels de chaque exercice plutôt que la moyenne des scores bruts.
+    const periodPairPct = (dCur, dPrev) => {
+      if(!dCur || !dPrev) return null;
+      const indivPcts = [];
+      Object.entries(dCur.exos).forEach(([name, ce])=>{
+        const pe = dPrev.exos[name];
+        if(pe && pe.score>0 && ce.score>0) indivPcts.push((ce.score-pe.score)/pe.score*100);
+      });
+      return indivPcts.length ? Math.round(indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length) : null;
     };
 
     const lastK  = periods[periods.length-1];
     const prevK  = periods.length>1 ? periods[periods.length-2] : null;
     const lastD  = byPeriod.get(lastK);
     const prevD  = prevK ? byPeriod.get(prevK) : null;
-    const lastScore = periodScore(lastD);
-    const prevScore = prevD ? periodScore(prevD) : 0;
-    const globalPct = (prevScore>0 && lastScore>0)
-      ? Math.round((lastScore-prevScore)/prevScore*100) : null;
+    const globalPct = periodPairPct(lastD, prevD);
 
     // KPI badge
     function kpiBadge(pct, label){
@@ -18162,10 +18236,7 @@ function woRenderProg(period){ // period = 'week'|'month'
     const sparkBars = visiblePeriods.map((k,i,arr)=>{
       const d     = byPeriod.get(k);
       const dPrev = i>0 ? byPeriod.get(arr[i-1]) : null;
-      const ps    = dPrev ? periodScore(dPrev) : 0;
-      const cs    = periodScore(d);
-      let pct=null;
-      if(i>0 && ps>0 && cs>0) pct=Math.round((cs-ps)/ps*100);
+      const pct = i>0 ? periodPairPct(d, dPrev) : null;
       const isCur = isCurFn(k);
       const barH  = Math.max(4, Math.round(d.vol/maxVol*56));
       const label = labelFn(k);
@@ -18287,17 +18358,15 @@ function woRenderProgSession(){
       // Calcul Epley 1RM moyen entre les exercices communs aux deux séances
       let pct = null;
       if(prev && sess.exercises?.length && prev.exercises?.length){
-        const currScores = [], prevScores = [];
+        const indivPcts = [];
         sess.exercises.forEach(exo=>{
           const cs = woEpley(exo.sets||[]);
           const prevExo = prev.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
           const ps = prevExo ? woEpley(prevExo.sets||[]) : 0;
-          if(cs>0 && ps>0){ currScores.push(cs); prevScores.push(ps); }
+          if(cs>0 && ps>0) indivPcts.push((cs-ps)/ps*100);
         });
-        if(currScores.length){
-          const avgC = currScores.reduce((a,b)=>a+b,0)/currScores.length;
-          const avgP = prevScores.reduce((a,b)=>a+b,0)/prevScores.length;
-          if(avgP>0) pct = Math.round((avgC-avgP)/avgP*100);
+        if(indivPcts.length){
+          pct = Math.round(indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length);
         }
       }
 
@@ -18788,22 +18857,20 @@ function woRenderSession(){
     const w=parseFloat(x.weight)||0, r=parseFloat(x.reps)||0;
     return (!w||!r)?best:Math.max(best,w*(1+r/30));
   }, 0);
-  // Séance précédente cross-types (même logique que l'historique par exo)
-  const allSessForBanner = allSessionsAll.filter(s=>s.date<draft.date);
+  // Séance précédente du MÊME type uniquement (on ne compare pas Push à Legs)
+  const allSessForBanner = allSessionsAll.filter(s=>s.date<draft.date && s.type===draft.type);
   const prevSessGlobal = allSessForBanner.slice(-1)[0];
   let globalPct = null;
   if(prevSessGlobal && draft.exercises.length){
-    const currScores=[], prevScores=[];
+    const indivPcts=[];
     draft.exercises.forEach(exo=>{
       const cs = epleyGlobal(exo.sets||[]);
       const prevExo = prevSessGlobal.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
       const ps = prevExo ? epleyGlobal(prevExo.sets||[]) : 0;
-      if(cs>0 && ps>0){ currScores.push(cs); prevScores.push(ps); }
+      if(cs>0 && ps>0) indivPcts.push((cs-ps)/ps*100);
     });
-    if(currScores.length){
-      const avgC = currScores.reduce((a,b)=>a+b,0)/currScores.length;
-      const avgP = prevScores.reduce((a,b)=>a+b,0)/prevScores.length;
-      globalPct = Math.round((avgC-avgP)/avgP*100);
+    if(indivPcts.length){
+      globalPct = Math.round(indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length);
     }
   }
   const banner = document.getElementById('wo-prog-banner');
@@ -18868,10 +18935,12 @@ function woRenderSession(){
     const todayBg  = draft.phase ? WO_PHASE_COLORS[draft.phase]+'28' : t.colorBg;
     const draftDaysDiff = Math.round((new Date(today()+'T12:00')-new Date(draft.date+'T12:00'))/86400000);
     const draftColLabel = draftDaysDiff===0 ? 'auj.' : draftDaysDiff===1 ? 'hier' : draftDaysDiff<7 ? `j-${draftDaysDiff}` : fmtD(draft.date);
-    // PR temps réel : comparer le score actuel au record all-time
+    // PR temps réel : deux critères distincts, affichés séparément pour ne pas induire en erreur
     const liveScore = epleyH(currentSets.filter(s=>!s.skipped));
     const liveMaxW  = currentSets.filter(s=>!s.skipped).reduce((m,s)=>Math.max(m,parseFloat(s.weight)||0),0);
-    const isLivePR  = hasCurrent && hasHistory && (liveScore > allTimeMaxScore || liveMaxW > allTimeMaxW);
+    const isLivePRWeight = hasCurrent && hasHistory && liveMaxW > allTimeMaxW && liveMaxW > 0;
+    const isLivePRScore  = hasCurrent && hasHistory && liveScore > allTimeMaxScore && liveScore > 0;
+    const isLivePR  = isLivePRWeight || isLivePRScore;
     // % AUJ vs séance la plus récente (histAll[0])
     let todayEvolStr = '', todayEvolColor = 'var(--muted2)';
     if(hasCurrent && hasHistory && history.length > 0){
@@ -18885,8 +18954,11 @@ function woRenderSession(){
     const todayEvolBadge = todayEvolStr
       ? `<span style="font-size:0.48rem;color:${todayEvolColor};font-weight:700;margin-left:3px">${todayEvolStr}</span>`
       : '';
-    const livePRBadge = isLivePR
-      ? `<span style="display:inline-flex;align-items:center;gap:2px;font-size:0.48rem;font-weight:800;color:var(--lime);background:var(--lime-bg);border:1px solid var(--lime-d);border-radius:4px;padding:1px 4px;animation:woPRFlash 1s ease-in-out infinite alternate;margin-left:3px">⭐PR</span>`
+    const livePRBadge = (isLivePRWeight || isLivePRScore)
+      ? `<span style="display:inline-flex;align-items:center;gap:3px;margin-left:3px">`
+        +(isLivePRWeight?`<span style="display:inline-flex;align-items:center;font-size:0.48rem;font-weight:800;color:var(--lime);background:var(--lime-bg);border:1px solid var(--lime-d);border-radius:4px;padding:1px 4px;animation:woPRFlash 1s ease-in-out infinite alternate">⭐PR poids</span>`:'')
+        +(isLivePRScore?`<span style="display:inline-flex;align-items:center;font-size:0.48rem;font-weight:800;color:var(--lime);background:var(--lime-bg);border:1px solid var(--lime-d);border-radius:4px;padding:1px 4px;animation:woPRFlash 1s ease-in-out infinite alternate">⭐PR 1RM</span>`:'')
+        +`</span>`
       : '';
     const todayCol = `<div style="padding:6px 10px;background:${todayBg};min-width:110px;${hasHistory?'border-left:2px solid '+(isLivePR?'var(--lime)':inputBorderColor):''}">
       <div style="font-size:0.54rem;color:${isLivePR?'var(--lime)':inputBorderColor};margin-bottom:5px;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;display:flex;align-items:center">${draftColLabel}${todayEvolBadge}${livePRBadge}</div>
@@ -18908,32 +18980,12 @@ function woRenderSession(){
         style="margin-top:4px;font-size:0.72rem;color:${t.color};background:${t.colorBg||'transparent'};border:1px dashed ${t.colorD||'var(--border2)'};border-radius:6px;cursor:pointer;padding:5px 10px;width:100%;font-family:DM Sans,sans-serif;-webkit-tap-highlight-color:transparent">+ série</button>
     </div>`;
 
-    // ── Score de force normalisé (Epley) : w × (1 + r/30) par série → max ──
-    // Reflète la vraie progression même si volume brut baisse (ex: moins de reps à charge + élevée)
-    const epley = sets => sets.reduce((best, x)=>{
-      const w=parseFloat(x.weight)||0, r=parseFloat(x.reps)||0;
-      if(!w||!r) return best;
-      return Math.max(best, w*(1+r/30));
-    }, 0);
+    // ── PR poids : comparaison sur le poids max soulevé (distinct du PR 1RM basé sur le score Epley) ──
     const prevSess   = history.slice(-1)[0];
-    const prevScore  = prevSess ? epley(prevSess.sets) : 0;
-    const currScore  = epley(currentSets);
     const prevMaxW   = prevSess ? Math.max(...prevSess.sets.map(s=>parseFloat(s.weight)||0)) : 0;
     const currMaxW   = currentSets.length ? Math.max(...currentSets.map(s=>parseFloat(s.weight)||0)) : 0;
-    const prevVolExo = prevSess ? prevSess.sets.reduce((s,x)=>s+(parseFloat(x.weight)||0)*(parseFloat(x.reps)||0),0) : 0;
-    let exoPct = null, exoPctStr = '', exoPctColor = 'var(--muted2)', exoPctTooltip = '';
-    if(hasCurrent && prevScore > 0 && currScore > 0){
-      exoPct = Math.round((currScore - prevScore) / prevScore * 100);
-      exoPctStr = (exoPct >= 0 ? '+' : '') + exoPct + '%';
-      exoPctColor = exoPct > 0 ? 'var(--lime)' : exoPct < 0 ? 'var(--red)' : 'var(--muted)';
-      exoPctTooltip = `1RM estimé : ${Math.round(currScore)} kg (était ${Math.round(prevScore)} kg)`;
-    } else if(hasCurrent && !hasHistory){
-      exoPctStr = 'Nouveau'; exoPctColor = 'var(--teal)';
-    }
     const isPR = hasCurrent && hasHistory && currMaxW > prevMaxW && currMaxW > 0;
-    // Badge % supprimé (doublon avec le % affiché directement dans la colonne AUJ)
-    const exoPctBadge = '';
-    const prBadge = isPR ? '<span style="font-size:0.52rem;font-weight:700;color:var(--lime);background:var(--lime-bg);border:1px solid var(--lime-d);border-radius:6px;padding:1px 5px">⭐ PR</span>' : '';
+    const prBadge = isPR ? '<span style="font-size:0.52rem;font-weight:700;color:var(--lime);background:var(--lime-bg);border:1px solid var(--lime-d);border-radius:6px;padding:1px 5px">⭐ PR poids</span>' : '';
     const activeSetsCount = currentSets.filter(s=>!s.skipped).length;
     const subInfo = hasCurrent
       ? `<div style="font-size:0.61rem;color:${t.color};margin-top:1px">${activeSetsCount} série${activeSetsCount!==1?'s':''}${currentSets.length!==activeSetsCount?' (+'+(currentSets.length-activeSetsCount)+' skip)':''} · ${Math.round(volExo)} kg vol.</div>`
@@ -18972,7 +19024,6 @@ function woRenderSession(){
           ${subInfo}
         </div>
         <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-          ${exoPctBadge}
           <button onclick="woDraftPauseExo(${ei})" title="Mettre en veille (exclure de la séance sans supprimer)"
             style="background:var(--s2);border:1px solid var(--border);color:var(--muted2);cursor:pointer;padding:6px 9px;border-radius:var(--r-sm);min-height:34px;display:inline-flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" stroke="none"><rect x="3" y="3" width="4" height="10" rx="1"/><rect x="9" y="3" width="4" height="10" rx="1"/></svg></button>
           <button onclick="woDraftDeleteExoPermanent(${ei},'${exo.name.replace(/'/g,"\\'")}')" title="Supprimer définitivement"
@@ -21706,7 +21757,7 @@ function closeKcalGoalModal() {
 
     if(!statsEl) return;
     if(!curve.hasEvents){
-      statsEl.innerHTML = '<span style="font-size:0.62rem;color:var(--muted2);font-family:Syne,sans-serif">Courbe basale (sans repas glucidique) — ajoute des glucides à un repas pour voir leur impact.</span>';
+      statsEl.innerHTML = '<span style="font-size:0.62rem;color:var(--muted2);font-family:\'DM Sans\',-apple-system,BlinkMacSystemFont,sans-serif">Courbe basale (sans repas glucidique) — ajoute des glucides à un repas pour voir leur impact.</span>';
       return;
     }
     var peakColor = curve.maxGlyc>140 ? '#ef4444' : curve.maxGlyc<70 ? '#f59e0b' : '#4ade80';
@@ -21725,7 +21776,7 @@ function closeKcalGoalModal() {
     var reports = [];
     try{ reports = JSON.parse(localStorage.getItem('kcalos_sleep_reports')||'[]'); }catch(e){}
     if(!reports.length){
-      el.innerHTML = '<div style="font-size:0.73rem;color:var(--muted2);font-family:\'Syne\',sans-serif;line-height:1.6">Aucune nuit enregistrée.<br>Lance le suivi depuis la page <strong style="color:var(--text)">Sommeil</strong>.</div>';
+      el.innerHTML = '<div style="font-size:0.73rem;color:var(--muted2);font-family:\'DM Sans\',-apple-system,BlinkMacSystemFont,sans-serif;line-height:1.6">Aucune nuit enregistrée.<br>Lance le suivi depuis la page <strong style="color:var(--text)">Sommeil</strong>.</div>';
       return;
     }
     var r = reports[reports.length-1];
@@ -21753,24 +21804,24 @@ function closeKcalGoalModal() {
     el.innerHTML =
       '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:0.75rem">'
       +'<div style="text-align:center;flex-shrink:0">'
-      +'<div style="font-family:Playfair Display,serif;font-size:2.1rem;font-weight:400;color:'+scColor+';line-height:1">'+sc+'</div>'
-      +'<div style="font-size:0.58rem;color:var(--muted2);font-family:\'Syne\',sans-serif">/100 · '+grade+'</div>'
+      +'<div style="font-family:\'DM Sans\',-apple-system,BlinkMacSystemFont,sans-serif;font-size:2rem;font-weight:700;color:'+scColor+';line-height:1">'+sc+'</div>'
+      +'<div style="font-size:0.58rem;color:var(--muted2);font-family:\'DM Sans\',-apple-system,BlinkMacSystemFont,sans-serif">/100 · '+grade+'</div>'
       +'</div>'
       +'<div style="text-align:right">'
-      +'<div style="font-family:Playfair Display,serif;font-size:1.5rem;font-weight:400;color:var(--text);line-height:1">'+h+'h<span style="font-size:0.95rem">'+String(m).padStart(2,'0')+'min</span></div>'
-      +'<div style="font-size:0.6rem;color:var(--muted2);font-family:\'Syne\',sans-serif;margin-top:2px">'+t0+' – '+t1+' · '+(r.date||'')+'</div>'
+      +'<div style="font-family:\'DM Sans\',-apple-system,BlinkMacSystemFont,sans-serif;font-size:1.4rem;font-weight:700;color:var(--text);line-height:1">'+h+'h<span style="font-size:0.9rem;font-weight:600">'+String(m).padStart(2,'0')+'min</span></div>'
+      +'<div style="font-size:0.6rem;color:var(--muted2);font-family:\'DM Sans\',-apple-system,BlinkMacSystemFont,sans-serif;margin-top:2px">'+t0+' – '+t1+' · '+(r.date||'')+'</div>'
       +'</div>'
       +'</div>'
-      +'<div style="display:flex;justify-content:space-between;font-size:0.6rem;color:var(--muted2);font-family:\'Syne\',sans-serif;margin-bottom:5px">'
+      +'<div style="display:flex;justify-content:space-between;font-size:0.6rem;color:var(--muted2);font-family:\'DM Sans\',-apple-system,BlinkMacSystemFont,sans-serif;margin-bottom:5px">'
       +'<span>Décomposition de la nuit</span>'
       +(r.sleep_efficiency?'<span>Efficacité '+r.sleep_efficiency+'%</span>':'')
       +'</div>'
       +phasesBar
       +'<div style="display:flex;gap:11px;flex-wrap:wrap;margin-top:7px">'
-      +(deepM>0?'<span style="font-size:0.62rem;color:#a78bfa;font-family:\'Syne\',sans-serif;display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:#7b5ea7;display:inline-block"></span>Deep '+deepM+'min ('+pct(deepM)+'%)</span>':'')
-      +(remM >0?'<span style="font-size:0.62rem;color:#5b9bde;font-family:\'Syne\',sans-serif;display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:#5b9bde;display:inline-block"></span>REM '+remM+'min ('+pct(remM)+'%)</span>':'')
-      +(coreM>0?'<span style="font-size:0.62rem;color:#4a8fd4;font-family:\'Syne\',sans-serif;display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:#4a8fd4;display:inline-block"></span>Core '+coreM+'min ('+pct(coreM)+'%)</span>':'')
-      +(awkM >0?'<span style="font-size:0.62rem;color:#e05b4b;font-family:\'Syne\',sans-serif;display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:#e05b4b;display:inline-block"></span>Éveil '+awkM+'min ('+pct(awkM)+'%)</span>':'')
+      +(deepM>0?'<span style="font-size:0.62rem;color:#a78bfa;font-family:\'DM Sans\',-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:#7b5ea7;display:inline-block"></span>Deep '+deepM+'min ('+pct(deepM)+'%)</span>':'')
+      +(remM >0?'<span style="font-size:0.62rem;color:#5b9bde;font-family:\'DM Sans\',-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:#5b9bde;display:inline-block"></span>REM '+remM+'min ('+pct(remM)+'%)</span>':'')
+      +(coreM>0?'<span style="font-size:0.62rem;color:#4a8fd4;font-family:\'DM Sans\',-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:#4a8fd4;display:inline-block"></span>Core '+coreM+'min ('+pct(coreM)+'%)</span>':'')
+      +(awkM >0?'<span style="font-size:0.62rem;color:#e05b4b;font-family:\'DM Sans\',-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:#e05b4b;display:inline-block"></span>Éveil '+awkM+'min ('+pct(awkM)+'%)</span>':'')
       +'</div>';
   }
 
@@ -21958,7 +22009,7 @@ function closeKcalGoalModal() {
       var eatSess = fitness.filter(function(d){ return d.exercise_kcal && d.exercise_kcal>50; })
                            .sort(function(a,b){ return a.date.localeCompare(b.date); });
       if(!eatSess.length){
-        kpisEl.innerHTML = '<div style="grid-column:1/-1;font-size:0.72rem;color:var(--muted2);font-family:\'Syne\',sans-serif">Aucune séance enregistrée dans la page Salle.</div>';
+        kpisEl.innerHTML = '<div style="grid-column:1/-1;font-size:0.72rem;color:var(--muted2);font-family:\'DM Sans\',-apple-system,BlinkMacSystemFont,sans-serif">Aucune séance enregistrée dans la page Salle.</div>';
         if(canvas) canvas.style.display='none';
         if(detailEl) detailEl.textContent='';
         return;
@@ -22077,7 +22128,7 @@ function closeKcalGoalModal() {
     vals.forEach(function(v,i){ i===0?ctx.moveTo(px(i),py(v)):ctx.lineTo(px(i),py(v)); });
     ctx.stroke();
     ctx.beginPath(); ctx.arc(px(n-1),py(vals[n-1]),3.5,0,Math.PI*2); ctx.fillStyle=color; ctx.fill();
-    ctx.font="7px 'Syne',sans-serif"; ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.textAlign='center';
+    ctx.font="7px 'DM Sans',sans-serif"; ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.textAlign='center';
     [0,n-1].forEach(function(i){ ctx.fillText(String(vals[i]).replace('var(--','').split(')')[0]||vals[i], px(i), i===n-1?py(vals[i])-5:py(vals[i])+11); });
   }
 
@@ -22102,7 +22153,7 @@ function closeKcalGoalModal() {
     if(!chartEl) return;
 
     if(!reports.length){
-      chartEl.innerHTML = '<div style="font-size:0.72rem;color:var(--muted2);font-family:Syne,sans-serif;align-self:center;width:100%;text-align:center">Aucune nuit enregistrée.<br>Lance le suivi depuis la page Sommeil.</div>';
+      chartEl.innerHTML = '<div style="font-size:0.72rem;color:var(--muted2);font-family:\'DM Sans\',-apple-system,BlinkMacSystemFont,sans-serif;align-self:center;width:100%;text-align:center">Aucune nuit enregistrée.<br>Lance le suivi depuis la page Sommeil.</div>';
       if(bubbleEl){ bubbleEl.textContent='—'; bubbleEl.style.color='var(--muted2)'; }
       if(metaEl) metaEl.textContent='';
       return;
@@ -22156,7 +22207,7 @@ function closeKcalGoalModal() {
       /* Stacked bar */
       wrap.innerHTML =
         /* Score label on top */
-        '<div style="font-size:0.62rem;font-family:Syne,sans-serif;font-weight:'+(isToday?'700':'400')+';color:'+(isToday?col:'rgba(255,255,255,0.45)')+';margin-bottom:3px;text-align:center">'+sc+'</div>'
+        '<div style="font-size:0.62rem;font-family:\'DM Sans\',-apple-system,BlinkMacSystemFont,sans-serif;font-weight:'+(isToday?'700':'400')+';color:'+(isToday?col:'rgba(255,255,255,0.45)')+';margin-bottom:3px;text-align:center">'+sc+'</div>'
         /* Bar container */
         +'<div style="width:100%;border-radius:4px 4px 0 0;overflow:hidden;display:flex;flex-direction:column-reverse;height:'+barH+'px;'+(isToday?'box-shadow:0 0 8px '+col+'55;':'')+'">'
         +(aH>0?'<div style="height:'+aH+'px;background:#e05b4b;flex-shrink:0"></div>':'')
@@ -22165,7 +22216,7 @@ function closeKcalGoalModal() {
         +(dH>0?'<div style="height:'+dH+'px;background:#7b5ea7;flex-shrink:0"></div>':'')
         +'</div>'
         /* Day label */
-        +'<div style="font-size:0.58rem;color:'+(isToday?'var(--text)':'var(--muted2)')+';font-family:Syne,sans-serif;margin-top:4px;font-weight:'+(isToday?'600':'400')+'">'+dayLabel+'</div>';
+        +'<div style="font-size:0.58rem;color:'+(isToday?'var(--text)':'var(--muted2)')+';font-family:\'DM Sans\',-apple-system,BlinkMacSystemFont,sans-serif;margin-top:4px;font-weight:'+(isToday?'600':'400')+'">'+dayLabel+'</div>';
 
       chartEl.appendChild(wrap);
     });
@@ -22194,7 +22245,7 @@ function closeKcalGoalModal() {
     { id:'mrw-gluc', key:'gluc', label:'Glucides',  color:'#4db8e8' },
     { id:'mrw-lip',  key:'lip',  label:'Lipides',   color:'#f0a030' },
   ];
-  var R=31, SZ=76;
+  var R=34, SZ=80;
 
   /* Crée le squelette SVG + labels une seule fois */
   function _initRings(){
@@ -22213,7 +22264,7 @@ function closeKcalGoalModal() {
         +' style="transition:stroke-dashoffset 0.7s cubic-bezier(0.4,0,0.2,1),stroke 0.4s ease"/>'
         +'</svg>'
         +'<div class="ring-center" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">'
-        +'<div class="ring-val" style="font-family:Playfair Display,serif;font-size:1.15rem;font-weight:400;color:var(--text);line-height:1">—</div>'
+        +'<div class="ring-val" style="font-family:\'DM Sans\',-apple-system,BlinkMacSystemFont,sans-serif;font-size:1.15rem;font-weight:600;color:var(--text);line-height:1">—</div>'
         +'</div>'
         +'</div>'
         +'<div style="text-align:center;margin-top:6px">'
