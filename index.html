@@ -300,7 +300,8 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 .bal-pos{color:var(--orange)!important}.bal-neg{color:var(--blue)!important}
 
 /* ── CHART PAGE ── */
-.chart-wrap{padding:1rem;background:var(--s1);border:1px solid var(--border);border-radius:var(--r);min-height:260px;position:relative}
+.chart-wrap{padding:0.6rem;background:var(--s0);border:none;border-radius:var(--r);min-height:210px;position:relative;overflow:hidden;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.chart-wrap canvas{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:pan-y}
 .chart-wrap canvas{max-height:300px;width:100%!important}
 .range-tabs{display:flex;gap:5px;flex-wrap:wrap}
 .range-tab{padding:0.38rem 0.9rem;border-radius:20px;font-size:0.72rem;cursor:pointer;background:var(--s2);border:1px solid var(--border);color:var(--muted);transition:all var(--trans);font-family:Syne,sans-serif}
@@ -321,6 +322,55 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 .ctoggle:hover{filter:brightness(1.15)}
 .ctoggle.off{opacity:0.25;filter:grayscale(0.8)}
 .ct-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* ── Chiffre héros + période (pages progression) — look "Apple Health" ── */
+.hero-row{display:flex;align-items:flex-end;justify-content:space-between;gap:0.7rem;flex-wrap:wrap;margin-bottom:0.85rem}
+.hero-lbl{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.68rem;color:var(--muted);margin-bottom:5px;letter-spacing:0.02em}
+.hero-val-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.hero-val{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-weight:600;font-size:2rem;color:var(--text);line-height:1;letter-spacing:-0.02em}
+.hero-badge{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.78rem;font-weight:500;padding:3px 10px;border-radius:var(--r-pill);background:var(--s2);color:var(--text)}
+.hero-underline{width:34px;height:3px;border-radius:var(--r-pill);background:var(--muted2);margin-top:8px}
+
+/* ── Légende compacte sous le graphique ── */
+.clegend-row{display:flex;gap:14px;flex-wrap:wrap;padding:0 0.1rem;margin-bottom:0.8rem}
+.clegend{display:inline-flex;align-items:center;gap:6px;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.7rem;cursor:pointer;user-select:none;transition:opacity var(--trans),color var(--trans)}
+.clegend.off{color:var(--muted)!important;opacity:0.4}
+.cl-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* ── Cartes secondaires (pages progression) ── */
+.sub-card-row{display:grid;grid-template-columns:1fr 1fr;gap:0.55rem;margin-bottom:0.8rem}
+.sub-card{background:var(--s1);border-radius:var(--r-sm);padding:0.65rem 0.8rem}
+.sub-card-lbl{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.62rem;color:var(--muted);margin-bottom:3px}
+.sub-card-val{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-weight:600;font-size:0.95rem;color:var(--text);line-height:1}
+.sub-card-sub{font-size:0.66rem;color:var(--muted);margin-top:3px}
+
+/* ── Résumé / alertes repliables ── */
+.chart-details{background:var(--s1);border-radius:var(--r-sm);overflow:hidden;margin-bottom:0.8rem}
+.chart-details summary{list-style:none;cursor:pointer;padding:0.65rem 0.8rem;font-size:0.75rem;color:var(--text);display:flex;align-items:center;justify-content:space-between;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;-webkit-tap-highlight-color:transparent}
+.chart-details summary::-webkit-details-marker{display:none}
+.chart-details summary::after{content:'';width:6px;height:6px;border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);transform:rotate(45deg);transition:transform var(--trans);flex-shrink:0}
+.chart-details[open] summary::after{transform:rotate(-135deg)}
+.chart-details-body{padding:0 0.8rem 0.75rem}
+
+/* ── #page-progression : sous-onglets en pilule façon segmented control ── */
+#page-progression .sh-tabs{background:var(--s1);border-bottom:none;border-radius:var(--r-pill);padding:3px;margin-left:0;margin-right:0;gap:4px}
+#page-progression .sh-tab{border-radius:var(--r-pill);border-bottom:none;padding:0.5rem 0.4rem;font-size:0.72rem;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
+#page-progression .sh-tab.active{background:var(--s2)}
+#page-progression #prog-tab-corps.active{color:var(--orange)}
+#page-progression #prog-tab-calories.active{color:var(--pink)}
+#page-progression #prog-tab-activite.active{color:var(--teal)}
+
+/* ── #page-progression : pilules de période sans bordure, accordées à l'onglet actif ── */
+#page-progression .range-tab{border:none;background:var(--s2);color:var(--muted);padding:0.32rem 0.65rem;font-size:0.66rem;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
+#page-progression .range-tab:hover{background:var(--s2);color:var(--muted)}
+#prog-panel-corps .range-tab.active,#prog-panel-corps .range-tab.active:hover{background:var(--orange-bg);color:var(--orange)}
+#prog-panel-calories .range-tab.active,#prog-panel-calories .range-tab.active:hover{background:var(--pink-bg);color:var(--pink)}
+#prog-panel-activite .range-tab.active,#prog-panel-activite .range-tab.active:hover{background:var(--teal-bg);color:var(--teal)}
+
+/* ── #page-progression : switch Pas / Séances (onglet Activité) ── */
+.mode-switch{display:inline-flex;gap:3px;background:var(--s1);border-radius:var(--r-pill);padding:3px;margin-bottom:0.8rem}
+.mode-btn{padding:0.36rem 0.85rem;border-radius:var(--r-pill);font-size:0.7rem;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--muted);cursor:pointer;transition:all var(--trans);user-select:none;-webkit-tap-highlight-color:transparent}
+.mode-btn.active{background:var(--s2);color:var(--teal)}
 /* ── Toggle strip (gardé pour compatibilité, masqué sur progression) ── */
 .toggle-strip{display:flex;flex-wrap:wrap;align-items:center;gap:6px 0;margin-bottom:1rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 10px;row-gap:8px}
 .ts-group-wrap{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
@@ -5605,134 +5655,151 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 
   <!-- ── TAB 1 : CORPS ── -->
   <div class="sh-tab-panel active" id="prog-panel-corps">
-    <!-- KPI row compact -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.6rem;margin-bottom:0.85rem">
-      <div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:0.75rem 0.8rem;text-align:center;position:relative;overflow:hidden">
-        <div style="position:absolute;top:0;left:0;right:0;height:2.5px;background:var(--orange)"></div>
-        <div style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted2);margin-bottom:3px">Poids moy.</div>
-        <div style="font-family:Playfair Display,serif;font-size:1.35rem;color:var(--orange);line-height:1" id="sc-poids">—</div>
+    <!-- Chiffre héros + sélecteur de période -->
+    <div class="hero-row">
+      <div>
+        <div class="hero-lbl">Poids moyen</div>
+        <div class="hero-val-row">
+          <div class="hero-val" id="sc-poids">—</div>
+          <div class="hero-badge" id="sc-delta-poids">—</div>
+        </div>
       </div>
-      <div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:0.75rem 0.8rem;text-align:center;position:relative;overflow:hidden">
-        <div style="position:absolute;top:0;left:0;right:0;height:2.5px;background:#a080e8"></div>
-        <div style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted2);margin-bottom:3px">Δ Poids</div>
-        <div style="font-family:Playfair Display,serif;font-size:1.35rem;line-height:1" id="sc-delta-poids">—</div>
-      </div>
-      <div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:0.75rem 0.8rem;text-align:center;position:relative;overflow:hidden">
-        <div style="position:absolute;top:0;left:0;right:0;height:2.5px;background:var(--blue)"></div>
-        <div style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted2);margin-bottom:3px">Projection</div>
-        <div style="font-family:Playfair Display,serif;font-size:1.1rem;color:var(--blue);line-height:1" id="sc-proj">—</div>
-        <div style="font-size:0.55rem;color:var(--muted)" id="sc-proj-sub">kg/sem</div>
-      </div>
-    </div>
-
-    <!-- Sélecteur période + légendes -->
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.6rem">
-      <div class="range-tabs" style="margin-bottom:0">
+      <div class="range-tabs">
         <div class="range-tab active" onclick="setRange(7,this)">7 j</div>
         <div class="range-tab" onclick="setRange(30,this)">30 j</div>
         <div class="range-tab" onclick="setRange(90,this)">3 m</div>
         <div class="range-tab" onclick="setRange(365,this)">1 an</div>
-      </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap" id="ts-grp-corps">
-        <div class="ctoggle" style="border-color:var(--orange);color:var(--orange)" data-idx="0" data-grp="corps" onclick="toggleDS(0,this)"><div class="ct-dot" style="background:var(--orange)"></div>Poids</div>
-        <div class="ctoggle" style="border-color:#a080e8;color:#a080e8" data-idx="1" data-grp="corps" onclick="toggleDS(1,this)"><div class="ct-dot" style="background:#a080e8"></div>Masse sèche</div>
-        <div class="ctoggle" style="border-color:#e84040;color:#e84040" data-idx="2" data-grp="corps" onclick="toggleDS(2,this)"><div class="ct-dot" style="background:#e84040"></div>Masse grasse</div>
       </div>
     </div>
 
     <!-- Graphique corps -->
-    <div class="chart-wrap" style="height:260px;margin-bottom:0.85rem"><canvas id="mainChart"></canvas></div>
+    <div class="chart-wrap" style="height:210px;margin-bottom:0.6rem"><canvas id="mainChart"></canvas></div>
 
-    <!-- Carte résumé corps -->
-    <div id="prog-corps-summary" style="margin-bottom:0.85rem"></div>
+    <!-- Légende des courbes -->
+    <div class="clegend-row" id="ts-grp-corps">
+      <div class="clegend" style="color:var(--orange)" data-idx="0" data-grp="corps" onclick="toggleDS(0,this)"><div class="cl-dot" style="background:var(--orange)"></div>Poids</div>
+      <div class="clegend" style="color:#a080e8" data-idx="1" data-grp="corps" onclick="toggleDS(1,this)"><div class="cl-dot" style="background:#a080e8"></div>Masse sèche</div>
+      <div class="clegend" style="color:#e84040" data-idx="2" data-grp="corps" onclick="toggleDS(2,this)"><div class="cl-dot" style="background:#e84040"></div>Masse grasse</div>
+    </div>
 
-    <!-- Alertes -->
-    <div id="chart-alerts"></div>
+    <!-- Carte secondaire : projection -->
+    <div class="sub-card" style="margin-bottom:0.8rem">
+      <div class="sub-card-lbl">Projection</div>
+      <div class="sub-card-val" id="sc-proj">—</div>
+      <div class="sub-card-sub" id="sc-proj-sub">kg/sem</div>
+    </div>
+
+    <!-- Résumé + alertes (repliable) -->
+    <details class="chart-details">
+      <summary>Résumé et alertes</summary>
+      <div class="chart-details-body">
+        <div id="prog-corps-summary"></div>
+        <div id="chart-alerts"></div>
+      </div>
+    </details>
   </div>
 
   <!-- ── TAB 2 : CALORIES ── -->
   <div class="sh-tab-panel" id="prog-panel-calories">
-    <!-- KPI row -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.6rem;margin-bottom:0.85rem">
-      <div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:0.75rem 0.8rem;text-align:center;position:relative;overflow:hidden">
-        <div style="position:absolute;top:0;left:0;right:0;height:2.5px;background:var(--lime)"></div>
-        <div style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted2);margin-bottom:3px">Dépense moy.</div>
-        <div style="font-family:Playfair Display,serif;font-size:1.35rem;color:var(--lime);line-height:1" id="sc-dep-moy">—</div>
+    <!-- Chiffre héros + sélecteur de période -->
+    <div class="hero-row">
+      <div>
+        <div class="hero-lbl">Balance moyenne</div>
+        <div class="hero-val-row">
+          <div class="hero-val" id="sc-balance">—</div>
+        </div>
+        <div id="sc-balance-bar" class="hero-underline"></div>
       </div>
-      <div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:0.75rem 0.8rem;text-align:center;position:relative;overflow:hidden">
-        <div style="position:absolute;top:0;left:0;right:0;height:2.5px;background:var(--blue)"></div>
-        <div style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted2);margin-bottom:3px">Apport moy.</div>
-        <div style="font-family:Playfair Display,serif;font-size:1.35rem;color:var(--blue);line-height:1" id="sc-app-moy">—</div>
-      </div>
-      <div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:0.75rem 0.8rem;text-align:center;position:relative;overflow:hidden">
-        <div id="sc-balance-bar" style="position:absolute;top:0;left:0;right:0;height:2.5px;background:var(--pink)"></div>
-        <div style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted2);margin-bottom:3px">Balance moy.</div>
-        <div style="font-family:Playfair Display,serif;font-size:1.35rem;line-height:1" id="sc-balance">—</div>
-      </div>
-    </div>
-
-    <!-- Sélecteur + légendes -->
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.6rem">
-      <div class="range-tabs" style="margin-bottom:0">
+      <div class="range-tabs">
         <div class="range-tab active" onclick="setRange(7,this)">7 j</div>
         <div class="range-tab" onclick="setRange(30,this)">30 j</div>
         <div class="range-tab" onclick="setRange(90,this)">3 m</div>
         <div class="range-tab" onclick="setRange(365,this)">1 an</div>
-      </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap" id="ts-grp-calories">
-        <div class="ctoggle" style="border-color:var(--lime);color:var(--lime)" data-idx="3" data-grp="cal" onclick="toggleDS(3,this)"><div class="ct-dot" style="background:var(--lime)"></div>Dépense</div>
-        <div class="ctoggle" style="border-color:var(--blue);color:var(--blue)" data-idx="4" data-grp="cal" onclick="toggleDS(4,this)"><div class="ct-dot" style="background:var(--blue)"></div>Apport</div>
-        <div class="ctoggle" style="border-color:var(--pink);color:var(--pink)" data-idx="5" data-grp="cal" onclick="toggleDS(5,this)"><div class="ct-dot" style="background:var(--pink)"></div>Balance</div>
-        <div class="ctoggle" style="border-color:rgba(91,200,240,0.6);color:var(--muted)" data-idx="6" data-grp="cal" onclick="toggleDS(6,this)"><div class="ct-dot" style="background:rgba(91,200,240,0.5)"></div>Moy. 7j</div>
       </div>
     </div>
 
     <!-- Graphique calories (canvas partagé clone) -->
-    <div class="chart-wrap" style="height:260px;margin-bottom:0.85rem"><canvas id="mainChartCal"></canvas></div>
+    <div class="chart-wrap" style="height:210px;margin-bottom:0.6rem"><canvas id="mainChartCal"></canvas></div>
 
-    <!-- Résumé calorique -->
-    <div id="prog-cal-summary" style="margin-bottom:0.85rem"></div>
+    <!-- Légende des courbes -->
+    <div class="clegend-row" id="ts-grp-calories">
+      <div class="clegend" style="color:var(--lime)" data-idx="3" data-grp="cal" onclick="toggleDS(3,this)"><div class="cl-dot" style="background:var(--lime)"></div>Dépense</div>
+      <div class="clegend" style="color:var(--blue)" data-idx="4" data-grp="cal" onclick="toggleDS(4,this)"><div class="cl-dot" style="background:var(--blue)"></div>Apport</div>
+      <div class="clegend" style="color:var(--pink)" data-idx="5" data-grp="cal" onclick="toggleDS(5,this)"><div class="cl-dot" style="background:var(--pink)"></div>Balance</div>
+      <div class="clegend" style="color:var(--muted)" data-idx="6" data-grp="cal" onclick="toggleDS(6,this)"><div class="cl-dot" style="background:rgba(91,200,240,0.5)"></div>Moy. 7j</div>
+    </div>
+
+    <!-- Cartes secondaires -->
+    <div class="sub-card-row">
+      <div class="sub-card">
+        <div class="sub-card-lbl">Dépense moy.</div>
+        <div class="sub-card-val" style="color:var(--lime)" id="sc-dep-moy">—</div>
+      </div>
+      <div class="sub-card">
+        <div class="sub-card-lbl">Apport moy.</div>
+        <div class="sub-card-val" style="color:var(--blue)" id="sc-app-moy">—</div>
+      </div>
+    </div>
+
+    <!-- Résumé (repliable) -->
+    <details class="chart-details">
+      <summary>Résumé</summary>
+      <div class="chart-details-body">
+        <div id="prog-cal-summary"></div>
+      </div>
+    </details>
   </div>
 
   <!-- ── TAB 3 : ACTIVITÉ ── -->
   <div class="sh-tab-panel" id="prog-panel-activite">
-    <!-- KPI row activité -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.6rem;margin-bottom:0.85rem">
-      <div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:0.75rem 0.8rem;text-align:center;position:relative;overflow:hidden">
-        <div style="position:absolute;top:0;left:0;right:0;height:2.5px;background:var(--teal)"></div>
-        <div style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted2);margin-bottom:3px">Pas moy./j</div>
-        <div style="font-family:Playfair Display,serif;font-size:1.35rem;color:var(--teal);line-height:1" id="sc-pas-moy">—</div>
+    <!-- Chiffre héros + sélecteur de période -->
+    <div class="hero-row">
+      <div>
+        <div class="hero-lbl" id="act-hero-lbl">Pas moyen / jour</div>
+        <div class="hero-val-row">
+          <div class="hero-val" style="color:var(--teal)" id="act-hero-val">—</div>
+        </div>
       </div>
-      <div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:0.75rem 0.8rem;text-align:center;position:relative;overflow:hidden">
-        <div style="position:absolute;top:0;left:0;right:0;height:2.5px;background:var(--orange)"></div>
-        <div style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted2);margin-bottom:3px">Meilleur jour</div>
-        <div style="font-family:Playfair Display,serif;font-size:1.35rem;color:var(--orange);line-height:1" id="sc-pas-best">—</div>
-      </div>
-      <div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:0.75rem 0.8rem;text-align:center;position:relative;overflow:hidden">
-        <div style="position:absolute;top:0;left:0;right:0;height:2.5px;background:var(--lime)"></div>
-        <div style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted2);margin-bottom:3px">Jours objectif</div>
-        <div style="font-family:Playfair Display,serif;font-size:1.35rem;color:var(--lime);line-height:1" id="sc-pas-goal-pct">—</div>
-      </div>
-    </div>
-
-    <!-- Sélecteur + légendes -->
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.6rem">
-      <div class="range-tabs" style="margin-bottom:0">
+      <div class="range-tabs">
         <div class="range-tab active" onclick="setRange(7,this)">7 j</div>
         <div class="range-tab" onclick="setRange(30,this)">30 j</div>
         <div class="range-tab" onclick="setRange(90,this)">3 m</div>
         <div class="range-tab" onclick="setRange(365,this)">1 an</div>
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap" id="ts-grp-activite">
-        <div class="ctoggle" style="border-color:var(--teal);color:var(--teal)" data-idx="8" data-grp="act" onclick="toggleDS(8,this)"><div class="ct-dot" style="background:var(--teal)"></div>Pas</div>
-      </div>
+    </div>
+
+    <!-- Switch Pas / Séances -->
+    <div class="mode-switch" id="act-mode-switch">
+      <div class="mode-btn active" data-mode="steps" onclick="woActSetMode('steps')">Pas</div>
+      <div class="mode-btn" data-mode="sessions" onclick="woActSetMode('sessions')">Séances</div>
     </div>
 
     <!-- Graphique activité -->
-    <div class="chart-wrap" style="height:260px;margin-bottom:0.85rem"><canvas id="mainChartAct"></canvas></div>
+    <div class="chart-wrap" style="height:210px;margin-bottom:0.6rem"><canvas id="mainChartAct"></canvas></div>
 
-    <!-- Résumé activité -->
-    <div id="prog-act-summary" style="margin-bottom:0.85rem"></div>
+    <!-- Légende (contenu généré en JS selon le mode) -->
+    <div class="clegend-row" id="ts-grp-activite"></div>
+
+    <!-- Cartes secondaires -->
+    <div class="sub-card-row">
+      <div class="sub-card">
+        <div class="sub-card-lbl" id="act-card1-lbl">Meilleur jour</div>
+        <div class="sub-card-val" style="color:var(--orange)" id="act-card1-val">—</div>
+      </div>
+      <div class="sub-card">
+        <div class="sub-card-lbl" id="act-card2-lbl">Jours objectif</div>
+        <div class="sub-card-val" style="color:var(--lime)" id="act-card2-val">—</div>
+      </div>
+    </div>
+
+    <!-- Résumé (repliable) -->
+    <details class="chart-details">
+      <summary>Résumé</summary>
+      <div class="chart-details-body">
+        <div id="prog-act-summary"></div>
+      </div>
+    </details>
+
   </div>
 
 </div>
@@ -15481,7 +15548,7 @@ function switchProgTab(tab) {
   // Recharger le bon graphique
   if(tab === 'corps')    { loadChartCorps();    }
   if(tab === 'calories') { loadChartCalories(); }
-  if(tab === 'activite') { loadChartActivite(); updateStepStats(); }
+  if(tab === 'activite') { renderActivityPanel(); }
 }
 
 function updateStepStats() {
@@ -15489,9 +15556,15 @@ function updateStepStats() {
   const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - S.range);
   const filt = fitness.filter(d => new Date(d.date) >= cutoff && d.steps).sort((a,b)=>a.date.localeCompare(b.date));
   const goal = parseInt(localStorage.getItem('kcalos_step_goal')||'10000');
+  const lbl1=document.getElementById('act-card1-lbl'), lbl2=document.getElementById('act-card2-lbl');
+  if(lbl1) lbl1.textContent='Meilleur jour';
+  if(lbl2) lbl2.textContent='Jours objectif';
+  const heroLbl=document.getElementById('act-hero-lbl'); if(heroLbl) heroLbl.textContent='Pas moyen / jour';
   if(!filt.length){
     const set=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
-    set('sc-pas-moy','—'); set('sc-pas-best','—'); set('sc-pas-goal-pct','—');
+    set('act-hero-val','—'); set('act-card1-val','—'); set('act-card2-val','—');
+    const legendEl=document.getElementById('ts-grp-activite');
+    if(legendEl) legendEl.innerHTML='<div class="clegend" style="color:var(--teal);cursor:default"><div class="cl-dot" style="background:var(--teal)"></div>Pas</div>';
     const sumEl = document.getElementById('prog-act-summary'); if(sumEl) sumEl.innerHTML='';
     return;
   }
@@ -15501,9 +15574,11 @@ function updateStepStats() {
   const over  = steps.filter(s=>s>=goal).length;
   const pct   = Math.round(over/steps.length*100);
   const set=(id,v,c)=>{ const e=document.getElementById(id); if(e){ e.textContent=v; if(c) e.style.color=c; } };
-  set('sc-pas-moy', avg.toLocaleString('fr-FR'));
-  set('sc-pas-best', best.toLocaleString('fr-FR'));
-  set('sc-pas-goal-pct', pct+'%', pct>=80?'var(--lime)':pct>=50?'var(--orange)':'var(--red)');
+  set('act-hero-val', avg.toLocaleString('fr-FR'), 'var(--teal)');
+  set('act-card1-val', best.toLocaleString('fr-FR'), 'var(--orange)');
+  set('act-card2-val', pct+'%', pct>=80?'var(--lime)':pct>=50?'var(--orange)':'var(--red)');
+  const legendEl=document.getElementById('ts-grp-activite');
+  if(legendEl) legendEl.innerHTML='<div class="clegend" style="color:var(--teal);cursor:default"><div class="cl-dot" style="background:var(--teal)"></div>Pas</div>';
 
   // Résumé narratif activité
   const trend7 = steps.slice(-7);
@@ -15579,7 +15654,9 @@ function loadChartCorps(){
   set('sc-poids', avgPoids?avgPoids.toFixed(1)+' kg':'—');
   if(deltaP!==null){
     const c=deltaP>0.1?'var(--orange)':deltaP<-0.1?'var(--blue)':'var(--muted)';
+    const bg=deltaP>0.1?'var(--orange-bg)':deltaP<-0.1?'var(--blue-bg)':'var(--s2)';
     set('sc-delta-poids', (deltaP>0?'+':'')+deltaP+' kg', c);
+    const badgeEl=document.getElementById('sc-delta-poids'); if(badgeEl) badgeEl.style.background=bg;
   } else { set('sc-delta-poids','—'); }
   if(avgBal!==null){
     const kgSem=avgBal*7/7700;
@@ -15625,7 +15702,7 @@ function loadChartCorps(){
   const ds=(label,data,color,y='y2',dashed=false,tension=0.35)=>({
     label,data,yAxisID:y,borderColor:color,backgroundColor:color+'18',
     borderWidth:dashed?1.5:2,borderDash:dashed?[5,4]:[],
-    pointRadius:filt.length>60?0:2,pointHoverRadius:6,tension,fill:false,spanGaps:true,hidden:false,
+    pointRadius:0,pointHoverRadius:5,pointHitRadius:12,tension,fill:false,spanGaps:true,hidden:false,
   });
   chartInst=new Chart(canvas.getContext('2d'),{
     type:'line',
@@ -15726,7 +15803,7 @@ function loadChartCalories(){
   const ds=(label,data,color,dashed=false,fill=false,tension=0.35)=>({
     label,data,yAxisID:'y',borderColor:color,backgroundColor:color+'18',
     borderWidth:dashed?1.5:2,borderDash:dashed?[5,4]:[],
-    pointRadius:filt.length>60?0:2,pointHoverRadius:6,tension,fill,spanGaps:true,hidden:false,
+    pointRadius:0,pointHoverRadius:5,pointHitRadius:12,tension,fill,spanGaps:true,hidden:false,
   });
   chartInstCal=new Chart(canvas.getContext('2d'),{
     type:'line',
@@ -15793,10 +15870,190 @@ function loadChartActivite(){
           }}
         }
       },
+      layout:{padding:{top:8,right:4,bottom:4,left:4}},
       scales:{
-        x:{ticks:{color:tickC,font:{family:'Syne',size:10},maxRotation:45,autoSkip:true,maxTicksLimit:window.innerWidth<500?5:8},grid:{color:gridC},border:{color:'transparent'}},
-        y:{ticks:{color:tickC,font:{family:'Syne',size:10},callback:v=>v.toLocaleString('fr-FR'),maxTicksLimit:5},grid:{color:gridC},border:{color:'transparent'}}
+        x:{display:false},
+        y:{display:false}
       }
+    }
+  });
+}
+
+/* ── Résout une couleur var(--xxx) en valeur réelle : Chart.js/canvas ne comprend pas les custom properties CSS ── */
+function _cssVar(v){
+  if(typeof v!=='string' || !v.startsWith('var(')) return v||'#8992a6';
+  const name=v.slice(4,-1).trim();
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#8992a6';
+}
+
+/* ── Affiche le bon panneau (Pas ou Séances) selon S.actMode ── */
+function renderActivityPanel(){
+  if((S.actMode||'steps')==='sessions'){ loadChartActiviteSessions(); }
+  else { loadChartActivite(); updateStepStats(); }
+}
+
+/* ── Switch Pas / Séances ── */
+function woActSetMode(mode){
+  S.actMode = mode;
+  document.querySelectorAll('#act-mode-switch .mode-btn').forEach(b=>b.classList.toggle('active', b.dataset.mode===mode));
+  renderActivityPanel();
+}
+
+/* ── Graphique Séances (musculation) : une barre par séance, hauteur = durée, couleur = type ── */
+/* ── Progression (force Epley + volume) vs la séance précédente du même type ──
+   Réutilise exactement la même logique que la page Séance (woEpley/woSessVol). */
+const _woTypeHistoryCache = {};
+function _woPrevSessionOfType(sess){
+  if(!_woTypeHistoryCache[sess.type]){
+    _woTypeHistoryCache[sess.type] = woV2GetSessions(sess.type).slice().sort((a,b)=>a.date.localeCompare(b.date));
+  }
+  const arr = _woTypeHistoryCache[sess.type];
+  const idx = arr.findIndex(x=>x.id===sess.id);
+  return idx>0 ? arr[idx-1] : null;
+}
+function woSessionProgress(sess){
+  const prev = _woPrevSessionOfType(sess);
+  if(!prev) return {pct:null, volPct:null};
+  const currScores=[], prevScores=[];
+  (sess.exercises||[]).forEach(exo=>{
+    const cs = woEpley(exo.sets||[]);
+    const prevExo = (prev.exercises||[]).find(e=>e.id===exo.id||e.name===exo.name);
+    const ps = prevExo ? woEpley(prevExo.sets||[]) : 0;
+    if(cs>0 && ps>0){ currScores.push(cs); prevScores.push(ps); }
+  });
+  let pct=null;
+  if(currScores.length){
+    const avgC=currScores.reduce((a,b)=>a+b,0)/currScores.length;
+    const avgP=prevScores.reduce((a,b)=>a+b,0)/prevScores.length;
+    if(avgP>0) pct=Math.round((avgC-avgP)/avgP*100);
+  }
+  const vNow=woSessVol(sess), vPrev=woSessVol(prev);
+  const volPct=(vPrev>0 && vNow>0)?Math.round((vNow-vPrev)/vPrev*100):null;
+  return {pct, volPct};
+}
+
+function loadChartActiviteSessions(){
+  Object.keys(_woTypeHistoryCache).forEach(k=>delete _woTypeHistoryCache[k]);
+  const cutoff=new Date(); cutoff.setDate(cutoff.getDate()-S.range);
+  const allTypes = woGetAllTypes();
+  const sessions = Object.values(woV2GetAll()).flat()
+    .filter(s=>s.date && new Date(s.date)>=cutoff)
+    .sort((a,b)=>a.date.localeCompare(b.date));
+
+  // Chiffre héros
+  const heroLbl=document.getElementById('act-hero-lbl'); if(heroLbl) heroLbl.textContent=`Séances (${S.range} j)`;
+  const heroVal=document.getElementById('act-hero-val');
+  if(heroVal){ heroVal.textContent = sessions.length+(sessions.length>1?' séances':' séance'); heroVal.style.color='var(--teal)'; }
+
+  // Cartes secondaires : durée moyenne + fréquence hebdo
+  const l1=document.getElementById('act-card1-lbl'), v1=document.getElementById('act-card1-val');
+  const l2=document.getElementById('act-card2-lbl'), v2=document.getElementById('act-card2-val');
+  if(l1) l1.textContent='Durée moyenne';
+  if(l2) l2.textContent='Fréquence';
+  const avgDur = sessions.length ? Math.round(sessions.reduce((a,s)=>a+(parseFloat(s.duration)||0),0)/sessions.length) : 0;
+  if(v1) v1.textContent = sessions.length ? avgDur+' min' : '—';
+  const sessDates = sessions.map(s=>new Date(s.date)).sort((a,b)=>a-b);
+  const spanDays = sessDates.length ? Math.round((sessDates[sessDates.length-1]-sessDates[0])/86400000)+1 : 0;
+  const activeWeeks = spanDays ? Math.max(spanDays/7, 1) : 0;
+  if(v2) v2.textContent = activeWeeks ? (sessions.length/activeWeeks).toFixed(1)+'/sem' : '—';
+
+  // Légende : types de séance présents sur la période
+  const legendEl=document.getElementById('ts-grp-activite');
+  if(legendEl){
+    const typesPresent=[...new Set(sessions.map(s=>s.type))];
+    legendEl.innerHTML = typesPresent.length ? typesPresent.map(t=>{
+      const meta=allTypes[t]||{label:t,color:'var(--muted)'};
+      return `<div class="clegend" style="color:${meta.color};cursor:default"><div class="cl-dot" style="background:${meta.color}"></div>${meta.label}</div>`;
+    }).join('') : '<div class="clegend" style="color:var(--muted);cursor:default">Aucune séance sur cette période</div>';
+  }
+
+  // Résumé
+  const sumEl=document.getElementById('prog-act-summary');
+  if(sumEl){
+    sumEl.innerHTML = sessions.length
+      ? `<div class="insight-card info" style="margin-bottom:0.5rem"><div class="ic-icon">🏋️</div><div><div class="ic-sub">${sessions.length} séance${sessions.length>1?'s':''} enregistrée${sessions.length>1?'s':''} sur les ${S.range} derniers jours, durée moyenne <strong>${avgDur} min</strong>.</div></div></div>`
+      : `<div class="insight-card info" style="margin-bottom:0.5rem"><div class="ic-icon">🏋️</div><div><div class="ic-sub">Aucune séance enregistrée sur cette période.</div></div></div>`;
+  }
+
+  // Graphique
+  const canvas=document.getElementById('mainChartAct');
+  if(!canvas) return;
+  if(chartInstAct){ chartInstAct.destroy(); chartInstAct=null; }
+  if(!sessions.length) return;
+
+  const isoDay = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  const byDate = new Map();
+  sessions.forEach(s=>{ if(!byDate.has(s.date)) byDate.set(s.date, []); byDate.get(s.date).push(s); });
+
+  let labels, durations, colors, cellSessions;
+  if(S.range<=30){
+    // Une entrée par jour calendaire (même sans séance) pour visualiser les enchaînements et les jours off
+    labels=[]; durations=[]; colors=[]; cellSessions=[];
+    const start=new Date(cutoff); start.setHours(0,0,0,0);
+    const end=new Date(); end.setHours(0,0,0,0);
+    for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+      const daySessions = byDate.get(isoDay(d)) || [];
+      labels.push(fmtDL(isoDay(d)));
+      if(daySessions.length){
+        durations.push(daySessions.reduce((a,s)=>a+(parseFloat(s.duration)||0),0));
+        colors.push(_cssVar(allTypes[daySessions[0].type]?.color));
+      } else {
+        durations.push(null);
+        colors.push('transparent');
+      }
+      cellSessions.push(daySessions);
+    }
+  } else {
+    // Périodes longues : rendu compact, une barre par séance (les trous prendraient trop de place)
+    labels = sessions.map(s=>fmtDL(s.date));
+    durations = sessions.map(s=>parseFloat(s.duration)||0);
+    colors = sessions.map(s=>_cssVar(allTypes[s.type]?.color));
+    cellSessions = sessions.map(s=>[s]);
+  }
+
+  chartInstAct=new Chart(canvas.getContext('2d'),{
+    type:'bar',
+    data:{labels,datasets:[{
+      label:'Séance', data:durations,
+      backgroundColor:colors, borderRadius:3, maxBarThickness:28,
+    }]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:document.body.classList.contains('light-mode')?'#fff':'#1a2030',
+          borderColor:'rgba(128,128,128,0.2)',borderWidth:1,
+          titleColor:document.body.classList.contains('light-mode')?'#111':'#f0ede6',
+          bodyColor:'#6b7a90',padding:10,
+          callbacks:{
+            title:items=>{
+              const list=cellSessions[items[0].dataIndex]||[];
+              const typeLbl=list.map(s=>allTypes[s.type]?.label||s.type).join(' + ');
+              return (typeLbl?typeLbl+' — ':'')+items[0].label;
+            },
+            label:c=>{
+              const list=cellSessions[c.dataIndex]||[];
+              if(!list.length) return '  Repos';
+              return `  Durée : ${Math.round(c.raw||0)} min`;
+            },
+            afterBody:items=>{
+              const list=cellSessions[items[0].dataIndex]||[];
+              const lines=[];
+              list.forEach(s=>{
+                const {pct,volPct}=woSessionProgress(s);
+                if(pct!==null)    lines.push(`  Force : ${pct>0?'+':''}${pct}% vs précédente`);
+                if(volPct!==null) lines.push(`  Volume : ${volPct>0?'+':''}${volPct}% vs précédente`);
+              });
+              if(list.length && !lines.length) lines.push('  Première séance de ce type');
+              return lines;
+            }
+          }
+        }
+      },
+      layout:{padding:{top:8,right:4,bottom:4,left:4}},
+      scales:{ x:{display:false}, y:{display:false} }
     }
   });
 }
@@ -15816,16 +16073,19 @@ function _chartOpts(tickC,gridC,unit,mainY){
         titleFont:{family:'Syne',size:11},bodyFont:{family:'Syne',size:11},
         callbacks:{label:c=>{
           if(c.raw===null||c.raw===undefined||c.dataset.label?.startsWith('_')) return null;
-          const u=c.dataset.label.includes('kg')||c.dataset.label.includes('Poids')||c.dataset.label.includes('Masse')||c.dataset.label.includes('Tendance')?' kg':' kcal';
+          const isKg=c.dataset.label.includes('kg')||c.dataset.label.includes('Poids')||c.dataset.label.includes('Masse')||c.dataset.label.includes('Tendance');
+          const u=isKg?' kg':' kcal';
           const sign=(c.dataset.label.includes('Balance')&&c.raw>0)?'+':'';
-          return `  ${c.dataset.label} : ${sign}${Math.round(c.raw).toLocaleString('fr-FR')}${u}`;
+          const val=isKg?c.raw.toLocaleString('fr-FR',{minimumFractionDigits:1,maximumFractionDigits:1}):Math.round(c.raw).toLocaleString('fr-FR');
+          return `  ${c.dataset.label} : ${sign}${val}${u}`;
         }}
       }
     },
+    layout:{padding:{top:8,right:4,bottom:4,left:4}},
     scales:{
-      x:{ticks:{color:tickC,font:{family:'Syne',size:window.innerWidth<500?8:10},maxRotation:45,autoSkip:true,maxTicksLimit:window.innerWidth<500?5:8},grid:{color:gridC},border:{color:'transparent'}},
-      y:{position:'left',ticks:{color:tickC,font:{family:'Syne',size:window.innerWidth<500?8:10},callback:v=>Math.round(v).toLocaleString('fr-FR')+(unit==='kcal'?' kcal':' kg'),maxTicksLimit:5},grid:{color:gridC},border:{color:'transparent'}},
-      y2:{position:'right',display:true,ticks:{color:'rgba(240,168,74,0.6)',font:{family:'Syne',size:window.innerWidth<500?8:10},callback:v=>v+' kg',maxTicksLimit:5},grid:{drawOnChartArea:false},border:{color:'rgba(240,168,74,0.2)'}},
+      x:{display:false},
+      y:{display:false},
+      y2:{display:false},
     }
   };
 }
