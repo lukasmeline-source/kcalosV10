@@ -15981,10 +15981,10 @@ function woSessionProgress(sess){
   if(!prev) return {pct:null, volPct:null};
   const indivPcts=[];
   (sess.exercises||[]).forEach(exo=>{
-    const cs = woEpley(exo.sets||[]);
     const prevExo = (prev.exercises||[]).find(e=>e.id===exo.id||e.name===exo.name);
-    const ps = prevExo ? woEpley(prevExo.sets||[]) : 0;
-    if(cs>0 && ps>0) indivPcts.push((cs-ps)/ps*100);
+    if(!prevExo) return;
+    const mp = woMatchedProgress(exo.sets||[], prevExo.sets||[]);
+    if(mp.pct !== null) indivPcts.push(mp.pct);
   });
   const pct = indivPcts.length ? Math.round(indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length) : null;
   const vNow=woSessVol(sess), vPrev=woSessVol(prev);
@@ -17400,13 +17400,55 @@ function woSyncExerciseKcalForDate(date){
   DB.upsertFitness({ date, exercise_kcal: Math.round(total) });
 }
 
-function woDraftGet(){ return JSON.parse(localStorage.getItem('kcalos_wo_draft')||'null'); }
+/* ── Brouillons de séance : un slot PAR (type, date) pour ne jamais écraser
+   une séance en cours quand on va corriger une séance passée depuis l'historique ── */
+function woDraftsAll(){
+  // Migration ponctuelle depuis l'ancien système à brouillon unique (une seule fois, sans perte)
+  const legacy = localStorage.getItem('kcalos_wo_draft');
+  if(legacy){
+    try{
+      const d = JSON.parse(legacy);
+      if(d && d.type && d.date){
+        const map = JSON.parse(localStorage.getItem('kcalos_wo_drafts')||'{}');
+        if(!map[woDraftKey(d.type,d.date)]) map[woDraftKey(d.type,d.date)] = d;
+        localStorage.setItem('kcalos_wo_drafts', JSON.stringify(map));
+      }
+    }catch(e){}
+    localStorage.removeItem('kcalos_wo_draft');
+  }
+  try{ return JSON.parse(localStorage.getItem('kcalos_wo_drafts')||'{}'); }catch(e){ return {}; }
+}
+function woDraftsSaveAll(map){ localStorage.setItem('kcalos_wo_drafts', JSON.stringify(map)); }
+function woDraftKey(type,date){ return type+'_'+date; }
+
+function woDraftGet(type, date){
+  type = type || WO2.type; date = date || WO2.pickerDate;
+  if(!type || !date) return null;
+  const map = woDraftsAll();
+  return map[woDraftKey(type,date)] || null;
+}
 function woDraftSet(d, opts){
   /* Si pas d'option pristine → l'utilisateur a fait une vraie modif → on retire le flag */
   if(!opts?.pristine && d) delete d._pristine;
-  localStorage.setItem('kcalos_wo_draft', JSON.stringify(d));
+  if(!d || !d.type || !d.date) return;
+  const map = woDraftsAll();
+  map[woDraftKey(d.type, d.date)] = d;
+  woDraftsSaveAll(map);
 }
-function woDraftClear(){ localStorage.removeItem('kcalos_wo_draft'); }
+function woDraftClear(type, date){
+  type = type || WO2.type; date = date || WO2.pickerDate;
+  if(!type || !date) return;
+  const map = woDraftsAll();
+  delete map[woDraftKey(type,date)];
+  woDraftsSaveAll(map);
+}
+/* Trouve un brouillon non terminé pour une date donnée, tous types confondus
+   (utilisé au démarrage de l'app pour proposer de reprendre la séance du jour) */
+function woDraftFindForDate(date){
+  const map = woDraftsAll();
+  const key = Object.keys(map).find(k => map[k]?.date === date);
+  return key ? map[key] : null;
+}
 
 /* ── Custom types storage ── */
 const WO_COLOR_MAP = {
@@ -17942,8 +17984,8 @@ function woInit(){
   WO2.pickerDate = today();
   woShowScreen('picker');
   woRenderPicker();
-  const draft = woDraftGet();
-  if(draft && draft.date === today()){
+  const draft = woDraftFindForDate(today());
+  if(draft){
     WO2.type = draft.type;
     woShowScreen('session');
     woRenderSession();
@@ -17995,7 +18037,7 @@ function woRenderPicker(){
   // ── Draft banner (séance en cours) ──
   const sugEl = document.getElementById('wo-picker-suggestion');
   if(sugEl){
-    const draft = woDraftGet();
+    const draft = woDraftFindForDate(today());
     const draftActive = draft && draft.date===today() && !draft._pristine;
     if(!isToday){
       sugEl.innerHTML = `<div style="background:rgba(240,168,74,0.1);border:1px solid var(--orange-d);border-radius:var(--r-sm);padding:0.65rem 1rem;font-size:0.75rem;color:var(--orange);display:flex;align-items:center;gap:8px">
@@ -18020,7 +18062,7 @@ function woRenderPicker(){
     const lastSess = sessions.slice(-1)[0];
     // Séance pour la date sélectionnée
     const dateSess = sessions.find(s=>s.date===pDate);
-    const draft = woDraftGet();
+    const draft = woDraftGet(tid, today());
     const isDraft = draft && draft.date===today() && draft.type===tid && isToday && !draft._pristine;
 
     let lastInfo = 'Jamais';
@@ -18146,12 +18188,30 @@ function woMonthLabel(key){
    PROGRESSION — Timeline SVG (sans barres)
 ════════════════════════════════════════ */
 
-/* ── Helper : score Epley d\'un set ── */
+/* ── Helper : score Epley d\'un exo = SOMME des scores Epley de chaque série valide ── */
 function woEpley(sets){
-  return sets.reduce((best,x)=>{
+  return sets.reduce((total,x)=>{
     const w=parseFloat(x.weight)||0, r=parseFloat(x.reps)||0;
-    return(!w||!r)?best:Math.max(best,w*(1+r/30));
+    return (!w||!r) ? total : total + w*(1+r/30);
   },0);
+}
+
+/* ── Helper : progression appariée série par série (série 1 vs série 1, série 2 vs série 2…)
+   Les séries sans équivalent (nombre de séries différent d'une fois sur l'autre) sont ignorées.
+   Retourne {curSum, prevSum, pct} sur les seules séries appariées. ── */
+function woMatchedProgress(curSets, prevSets){
+  const cs = (curSets||[]).filter(s=>!s.skipped);
+  const ps = (prevSets||[]).filter(s=>!s.skipped);
+  const n = Math.min(cs.length, ps.length);
+  let curSum=0, prevSum=0;
+  for(let i=0;i<n;i++){
+    const cw=parseFloat(cs[i].weight)||0, cr=parseFloat(cs[i].reps)||0;
+    const pw=parseFloat(ps[i].weight)||0, pr=parseFloat(ps[i].reps)||0;
+    if(cw&&cr) curSum += cw*(1+cr/30);
+    if(pw&&pr) prevSum += pw*(1+pr/30);
+  }
+  const pct = prevSum>0 ? Math.round((curSum-prevSum)/prevSum*100) : null;
+  return {curSum, prevSum, pct};
 }
 
 /* ── Agréger sessions par période (week|month) ── */
@@ -18163,14 +18223,14 @@ function woAggregate(sessions, periodFn){
     const cur = map.get(k);
     cur.count++;
     (sess.exercises||[]).forEach(e=>{
-      const sets = e.sets||[];
+      const sets = (e.sets||[]).filter(s=>!s.skipped); // défensif : anciennes séances pouvant contenir des séries "skip"
       const vol = sets.reduce((s,x)=>s+(parseFloat(x.weight)||0)*(parseFloat(x.reps)||0),0);
       const score = woEpley(sets);
       const maxW = sets.reduce((m,x)=>Math.max(m,parseFloat(x.weight)||0),0);
       cur.vol += vol;
       if(!cur.exos[e.name]) cur.exos[e.name]={vol:0,score:0,maxW:0,sets:[]};
       cur.exos[e.name].vol   += vol;
-      cur.exos[e.name].score  = Math.max(cur.exos[e.name].score, score);
+      cur.exos[e.name].score  += score;
       cur.exos[e.name].maxW   = Math.max(cur.exos[e.name].maxW, maxW);
       cur.exos[e.name].sets   = cur.exos[e.name].sets.concat(sets);
     });
@@ -18199,14 +18259,16 @@ function woRenderProg(period){ // period = 'week'|'month'
     const periods  = [...byPeriod.keys()].sort();
     if(!periods.length) return '';
 
-    // % force entre deux périodes : uniquement sur les exercices communs aux deux (comme la vue séance-à-séance),
-    // en moyennant les % individuels de chaque exercice plutôt que la moyenne des scores bruts.
+    // % force entre deux périodes : appariement série par série (série 1 vs série 1, etc.),
+    // sur les seuls exercices communs aux deux périodes — les séries surnuméraires sont ignorées.
     const periodPairPct = (dCur, dPrev) => {
       if(!dCur || !dPrev) return null;
       const indivPcts = [];
       Object.entries(dCur.exos).forEach(([name, ce])=>{
         const pe = dPrev.exos[name];
-        if(pe && pe.score>0 && ce.score>0) indivPcts.push((ce.score-pe.score)/pe.score*100);
+        if(!pe) return;
+        const mp = woMatchedProgress(ce.sets, pe.sets);
+        if(mp.pct !== null) indivPcts.push(mp.pct);
       });
       return indivPcts.length ? Math.round(indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length) : null;
     };
@@ -18268,7 +18330,10 @@ function woRenderProg(period){ // period = 'week'|'month'
       .map(([name,ld])=>{
         const pd = prevExos[name];
         let pct=null;
-        if(pd && pd.score>0 && ld.score>0) pct=Math.round((ld.score-pd.score)/pd.score*100);
+        if(pd){
+          const mp = woMatchedProgress(ld.sets, pd.sets);
+          pct = mp.pct;
+        }
         const volPct = pd&&pd.vol>0&&ld.vol>0?Math.round((ld.vol-pd.vol)/pd.vol*100):null;
         const isPR = pd && ld.maxW>pd.maxW;
 
@@ -18289,7 +18354,7 @@ function woRenderProg(period){ // period = 'week'|'month'
         return `<div style="display:flex;align-items:center;gap:6px;padding:7px 0;border-bottom:1px solid var(--border)">
           <div style="flex:1;min-width:0">
             <div style="font-size:0.75rem;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}${prTag}</div>
-            <div style="font-size:0.58rem;color:var(--muted2);margin-top:1px">1RM ≈ ${Math.round(ld.score)} kg${pd?` · était ${Math.round(pd.score)} kg`:''}${volStr?' · '+volStr:''}</div>
+            <div style="font-size:0.58rem;color:var(--muted2);margin-top:1px">Score ${Math.round(ld.score)}${pd?` · était ${Math.round(pd.score)}`:''}${volStr?' · '+volStr:''}</div>
           </div>
           ${forceBadge}
         </div>`;
@@ -18355,15 +18420,15 @@ function woRenderProgSession(){
       const idxAsc = sortedAsc.findIndex(s=>s.date===sess.date);
       const prev = idxAsc > 0 ? sortedAsc[idxAsc-1] : null;
 
-      // Calcul Epley 1RM moyen entre les exercices communs aux deux séances
+      // Progression : moyenne des % par exo, chaque exo appariant série par série (série 1 vs série 1…)
       let pct = null;
       if(prev && sess.exercises?.length && prev.exercises?.length){
         const indivPcts = [];
         sess.exercises.forEach(exo=>{
-          const cs = woEpley(exo.sets||[]);
           const prevExo = prev.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
-          const ps = prevExo ? woEpley(prevExo.sets||[]) : 0;
-          if(cs>0 && ps>0) indivPcts.push((cs-ps)/ps*100);
+          if(!prevExo) return;
+          const mp = woMatchedProgress(exo.sets||[], prevExo.sets||[]);
+          if(mp.pct !== null) indivPcts.push(mp.pct);
         });
         if(indivPcts.length){
           pct = Math.round(indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length);
@@ -18407,21 +18472,17 @@ function woRenderProgSession(){
     let trendBadge = '';
     if(sortedAsc.length >= 2){
       const first = sortedAsc[0], last = sortedAsc[sortedAsc.length-1];
-      const fScores=[], lScores=[];
+      const indivPcts=[];
       last.exercises?.forEach(exo=>{
-        const ls = woEpley(exo.sets||[]);
         const fExo = first.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
-        const fs = fExo ? woEpley(fExo.sets||[]) : 0;
-        if(ls>0&&fs>0){ lScores.push(ls); fScores.push(fs); }
+        if(!fExo) return;
+        const mp = woMatchedProgress(exo.sets||[], fExo.sets||[]);
+        if(mp.pct !== null) indivPcts.push(mp.pct);
       });
-      if(lScores.length){
-        const avgL = lScores.reduce((a,b)=>a+b,0)/lScores.length;
-        const avgF = fScores.reduce((a,b)=>a+b,0)/fScores.length;
-        if(avgF>0){
-          const tp = Math.round((avgL-avgF)/avgF*100);
-          const tc = tp>0?'#4ade80':tp<0?'var(--red)':'var(--muted)';
-          trendBadge = `<span style="font-size:0.62rem;font-weight:700;color:${tc};background:${tc}18;border:1px solid ${tc}44;border-radius:var(--r-pill);padding:2px 8px">${tp>0?'▲ +':'▼ '}${tp}% depuis début</span>`;
-        }
+      if(indivPcts.length){
+        const tp = Math.round(indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length);
+        const tc = tp>0?'#4ade80':tp<0?'var(--red)':'var(--muted)';
+        trendBadge = `<span style="font-size:0.62rem;font-weight:700;color:${tc};background:${tc}18;border:1px solid ${tc}44;border-radius:var(--r-pill);padding:2px 8px">${tp>0?'▲ +':'▼ '}${tp}% depuis début</span>`;
       }
     }
 
@@ -18462,17 +18523,15 @@ function woRenderProgSessionExpanded(tid){
     const prev = idxAsc > 0 ? sortedAsc[idxAsc-1] : null;
     let pct = null;
     if(prev && sess.exercises?.length && prev.exercises?.length){
-      const currScores=[], prevScores=[];
+      const indivPcts=[];
       sess.exercises.forEach(exo=>{
-        const cs=woEpley(exo.sets||[]);
         const prevExo=prev.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
-        const ps=prevExo?woEpley(prevExo.sets||[]):0;
-        if(cs>0&&ps>0){currScores.push(cs);prevScores.push(ps);}
+        if(!prevExo) return;
+        const mp=woMatchedProgress(exo.sets||[], prevExo.sets||[]);
+        if(mp.pct!==null) indivPcts.push(mp.pct);
       });
-      if(currScores.length){
-        const avgC=currScores.reduce((a,b)=>a+b,0)/currScores.length;
-        const avgP=prevScores.reduce((a,b)=>a+b,0)/prevScores.length;
-        if(avgP>0) pct=Math.round((avgC-avgP)/avgP*100);
+      if(indivPcts.length){
+        pct=Math.round(indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length);
       }
     }
     const vol=woSessVol(sess);
@@ -18852,11 +18911,6 @@ function woRenderSession(){
     return;
   }
 
-  // ── Score global : moyenne des scores Epley de chaque exo commun ──
-  const epleyGlobal = sets => sets.reduce((best,x)=>{
-    const w=parseFloat(x.weight)||0, r=parseFloat(x.reps)||0;
-    return (!w||!r)?best:Math.max(best,w*(1+r/30));
-  }, 0);
   // Séance précédente du MÊME type uniquement (on ne compare pas Push à Legs)
   const allSessForBanner = allSessionsAll.filter(s=>s.date<draft.date && s.type===draft.type);
   const prevSessGlobal = allSessForBanner.slice(-1)[0];
@@ -18864,10 +18918,10 @@ function woRenderSession(){
   if(prevSessGlobal && draft.exercises.length){
     const indivPcts=[];
     draft.exercises.forEach(exo=>{
-      const cs = epleyGlobal(exo.sets||[]);
       const prevExo = prevSessGlobal.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
-      const ps = prevExo ? epleyGlobal(prevExo.sets||[]) : 0;
-      if(cs>0 && ps>0) indivPcts.push((cs-ps)/ps*100);
+      if(!prevExo) return;
+      const mp = woMatchedProgress(exo.sets||[], prevExo.sets||[]);
+      if(mp.pct !== null) indivPcts.push(mp.pct);
     });
     if(indivPcts.length){
       globalPct = Math.round(indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length);
@@ -18902,9 +18956,10 @@ function woRenderSession(){
     // On affiche directement dans cet ordre : ancien à gauche, récent à droite (juste avant AUJ)
     // Limiter à 5 séances max pour ne pas surcharger l'affichage
     const histDisplay = history.slice(-5);
-    const epleyH = sets => sets.reduce((best,x)=>{ const w=parseFloat(x.weight)||0,r=parseFloat(x.reps)||0; return (!w||!r)?best:Math.max(best,w*(1+r/30)); }, 0);
-    // Score all-time pour détecter PR absolu en cours de saisie
-    const allTimeMaxScore = history.reduce((m,h)=>Math.max(m,epleyH(h.sets)),0);
+    // Vrai 1RM estimé : le max sur UNE série
+    const epley1RM = sets => sets.reduce((best,x)=>{ const w=parseFloat(x.weight)||0,r=parseFloat(x.reps)||0; return (!w||!r)?best:Math.max(best,w*(1+r/30)); }, 0);
+    // Records all-time pour détecter un PR en cours de saisie
+    const allTimeMax1RM   = history.reduce((m,h)=>Math.max(m,epley1RM(h.sets)),0);
     const allTimeMaxW     = history.reduce((m,h)=>Math.max(m,...h.sets.map(s=>parseFloat(s.weight)||0)),0);
     const histCols = histDisplay.map((h, hi)=>{
       const daysDiff = Math.round((new Date(today()+'T12:00')-new Date(h.date+'T12:00'))/86400000);
@@ -18912,16 +18967,14 @@ function woRenderSession(){
       const pCol = h.phase ? WO_PHASE_COLORS[h.phase] : null;
       const colBg   = pCol ? pCol+'28' : 'var(--s2)';
       const colDate = pCol ? pCol       : 'var(--muted2)';
-      // % évolution : cette séance vs la précédente (hi-1 = plus ancienne, à gauche)
+      // % évolution : cette séance vs la précédente (hi-1 = plus ancienne, à gauche) — appariement série par série
       const hOlder = histDisplay[hi-1];
       let evolStr = '', evolColor = 'var(--muted2)';
       if(hOlder){
-        const scoreH     = epleyH(h.sets);
-        const scoreOlder = epleyH(hOlder.sets);
-        if(scoreH>0 && scoreOlder>0){
-          const pct = Math.round((scoreH - scoreOlder) / scoreOlder * 100);
-          evolStr  = (pct>=0?'+':'')+pct+'%';
-          evolColor = pct>0?'var(--lime)':pct<0?'var(--red)':'var(--muted2)';
+        const mp = woMatchedProgress(h.sets, hOlder.sets);
+        if(mp.pct !== null){
+          evolStr  = (mp.pct>=0?'+':'')+mp.pct+'%';
+          evolColor = mp.pct>0?'var(--lime)':mp.pct<0?'var(--red)':'var(--muted2)';
         }
       }
       const evolBadge = evolStr ? `<span style="font-size:0.48rem;color:${evolColor};font-weight:700;margin-left:3px">${evolStr}</span>` : '';
@@ -18936,28 +18989,27 @@ function woRenderSession(){
     const draftDaysDiff = Math.round((new Date(today()+'T12:00')-new Date(draft.date+'T12:00'))/86400000);
     const draftColLabel = draftDaysDiff===0 ? 'auj.' : draftDaysDiff===1 ? 'hier' : draftDaysDiff<7 ? `j-${draftDaysDiff}` : fmtD(draft.date);
     // PR temps réel : deux critères distincts, affichés séparément pour ne pas induire en erreur
-    const liveScore = epleyH(currentSets.filter(s=>!s.skipped));
+    const live1RM   = epley1RM(currentSets.filter(s=>!s.skipped));
     const liveMaxW  = currentSets.filter(s=>!s.skipped).reduce((m,s)=>Math.max(m,parseFloat(s.weight)||0),0);
     const isLivePRWeight = hasCurrent && hasHistory && liveMaxW > allTimeMaxW && liveMaxW > 0;
-    const isLivePRScore  = hasCurrent && hasHistory && liveScore > allTimeMaxScore && liveScore > 0;
-    const isLivePR  = isLivePRWeight || isLivePRScore;
-    // % AUJ vs séance la plus récente (histAll[0])
+    const isLivePR1RM    = hasCurrent && hasHistory && live1RM > allTimeMax1RM && live1RM > 0;
+    const isLivePR  = isLivePRWeight || isLivePR1RM;
+    // % AUJ vs séance la plus récente (histAll[0]) — appariement série par série
     let todayEvolStr = '', todayEvolColor = 'var(--muted2)';
     if(hasCurrent && hasHistory && history.length > 0){
-      const scoreRef = epleyH(history.slice(-1)[0].sets); // séance la plus récente (dernier de history)
-      if(liveScore > 0 && scoreRef > 0){
-        const pct = Math.round((liveScore - scoreRef) / scoreRef * 100);
-        todayEvolStr  = (pct>=0?'+':'')+pct+'%';
-        todayEvolColor = pct>0?'var(--lime)':pct<0?'var(--red)':'var(--muted2)';
+      const mp = woMatchedProgress(currentSets, history.slice(-1)[0].sets);
+      if(mp.pct !== null){
+        todayEvolStr  = (mp.pct>=0?'+':'')+mp.pct+'%';
+        todayEvolColor = mp.pct>0?'var(--lime)':mp.pct<0?'var(--red)':'var(--muted2)';
       }
     }
     const todayEvolBadge = todayEvolStr
       ? `<span style="font-size:0.48rem;color:${todayEvolColor};font-weight:700;margin-left:3px">${todayEvolStr}</span>`
       : '';
-    const livePRBadge = (isLivePRWeight || isLivePRScore)
+    const livePRBadge = (isLivePRWeight || isLivePR1RM)
       ? `<span style="display:inline-flex;align-items:center;gap:3px;margin-left:3px">`
         +(isLivePRWeight?`<span style="display:inline-flex;align-items:center;font-size:0.48rem;font-weight:800;color:var(--lime);background:var(--lime-bg);border:1px solid var(--lime-d);border-radius:4px;padding:1px 4px;animation:woPRFlash 1s ease-in-out infinite alternate">⭐PR poids</span>`:'')
-        +(isLivePRScore?`<span style="display:inline-flex;align-items:center;font-size:0.48rem;font-weight:800;color:var(--lime);background:var(--lime-bg);border:1px solid var(--lime-d);border-radius:4px;padding:1px 4px;animation:woPRFlash 1s ease-in-out infinite alternate">⭐PR 1RM</span>`:'')
+        +(isLivePR1RM?`<span style="display:inline-flex;align-items:center;font-size:0.48rem;font-weight:800;color:var(--lime);background:var(--lime-bg);border:1px solid var(--lime-d);border-radius:4px;padding:1px 4px;animation:woPRFlash 1s ease-in-out infinite alternate">⭐PR 1RM</span>`:'')
         +`</span>`
       : '';
     const todayCol = `<div style="padding:6px 10px;background:${todayBg};min-width:110px;${hasHistory?'border-left:2px solid '+(isLivePR?'var(--lime)':inputBorderColor):''}">
@@ -18971,8 +19023,6 @@ function woRenderSession(){
           <input type="number" value="${s.weight||''}" placeholder="kg" min="0" max="999" step="0.5" inputmode="decimal"
             style="width:50px;height:36px;padding:4px 3px;font-size:0.9rem;font-weight:600;border-radius:6px;border:2px solid ${s.skipped?'var(--muted2)':inputBorderColor};background:var(--s3);color:var(--text);text-align:center;font-family:DM Sans,sans-serif;${s.skipped?'text-decoration:line-through':''}"
             onfocus="this.select()" oninput="woDraftUpdateSet(${ei},${si},'weight',this.value)" ${s.skipped?'disabled':''}>
-          <button onclick="woDraftToggleSkip(${ei},${si})" title="${s.skipped?'Remettre':'Passer'}"
-            style="background:none;border:none;color:${s.skipped?'var(--teal)':'var(--muted2)'};cursor:pointer;padding:4px 3px;min-width:28px;min-height:30px;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent">${s.skipped?'<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5A4.5 4.5 0 1 1 5 11"/><polyline points="2,5 4,7.5 6.5,6"/></svg>':'<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"/><line x1="4.5" y1="11.5" x2="11.5" y2="4.5"/></svg>'}</button>
           <button onclick="woDraftDelSet(${ei},${si})"
             style="background:none;border:none;color:var(--muted2);cursor:pointer;font-size:0.75rem;padding:4px 3px;min-width:24px;min-height:30px;-webkit-tap-highlight-color:transparent">✕</button>
         </div>`).join('')}
@@ -18980,12 +19030,6 @@ function woRenderSession(){
         style="margin-top:4px;font-size:0.72rem;color:${t.color};background:${t.colorBg||'transparent'};border:1px dashed ${t.colorD||'var(--border2)'};border-radius:6px;cursor:pointer;padding:5px 10px;width:100%;font-family:DM Sans,sans-serif;-webkit-tap-highlight-color:transparent">+ série</button>
     </div>`;
 
-    // ── PR poids : comparaison sur le poids max soulevé (distinct du PR 1RM basé sur le score Epley) ──
-    const prevSess   = history.slice(-1)[0];
-    const prevMaxW   = prevSess ? Math.max(...prevSess.sets.map(s=>parseFloat(s.weight)||0)) : 0;
-    const currMaxW   = currentSets.length ? Math.max(...currentSets.map(s=>parseFloat(s.weight)||0)) : 0;
-    const isPR = hasCurrent && hasHistory && currMaxW > prevMaxW && currMaxW > 0;
-    const prBadge = isPR ? '<span style="font-size:0.52rem;font-weight:700;color:var(--lime);background:var(--lime-bg);border:1px solid var(--lime-d);border-radius:6px;padding:1px 5px">⭐ PR poids</span>' : '';
     const activeSetsCount = currentSets.filter(s=>!s.skipped).length;
     const subInfo = hasCurrent
       ? `<div style="font-size:0.61rem;color:${t.color};margin-top:1px">${activeSetsCount} série${activeSetsCount!==1?'s':''}${currentSets.length!==activeSetsCount?' (+'+(currentSets.length-activeSetsCount)+' skip)':''} · ${Math.round(volExo)} kg vol.</div>`
@@ -19018,7 +19062,6 @@ function woRenderSession(){
               title="Cliquer pour renommer"
               onclick="woDraftRenameExo(${ei},'${exo.name.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')"
               onmouseover="this.style.borderColor='var(--muted2)'" onmouseout="this.style.borderColor='transparent'">${exo.name}</span>
-            ${prBadge}
             ${muscleSelect}
           </div>
           ${subInfo}
@@ -19115,15 +19158,6 @@ function woDraftPauseExo(ei){
   woRenderSession();
   woRenderUserExoList();
   toast(exo.name+' mis en veille','var(--muted)');
-}
-
-/* ── Skipper / dé-skipper une série ── */
-function woDraftToggleSkip(ei,si){
-  const d=woDraftGet(); if(!d||!d.exercises[ei]) return;
-  const s=d.exercises[ei].sets[si]; if(!s) return;
-  s.skipped=!s.skipped;
-  woDraftSet(d);
-  woRenderSession();
 }
 
 /* ── Historique des exercices de ce type (autocomplete) ── */
