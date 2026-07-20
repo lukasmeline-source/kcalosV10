@@ -2888,7 +2888,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   
   <!-- Balance 7j moy + TDEE -->
   <div class="db-grid" style="margin-bottom:0.85rem">
-    <div class="db-card" style="background:var(--teal-bg);border-color:rgba(64,217,176,0.2)">
+    <div class="db-card" style="background:var(--teal-bg);border-color:rgba(64,217,176,0.2);cursor:pointer" onclick="openBal7Sheet()" title="Voir le détail du calcul">
       <div class="db-lbl" style="color:var(--teal-d)"><span class="ico" style="margin-right:5px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><line x1="3" y1="13" x2="3" y2="7"/><line x1="7" y1="13" x2="7" y2="4.5"/><line x1="11" y1="13" x2="11" y2="8.5"/><line x1="1" y1="13" x2="15" y2="13"/></svg></span> Balance 7j moy.</div>
       <div><span class="db-val" id="db-bal7-val" style="color:var(--teal)">—</span><span class="db-unit" style="color:var(--teal-d)">kcal/j</span></div>
       <div class="db-sub" id="db-bal7-sub" style="color:var(--teal-d)">Sur les 7 derniers jours</div>
@@ -6926,6 +6926,27 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   </div>
 </div>
 
+<!-- BALANCE 7J — Détail du calcul + exclusion manuelle de jours -->
+<div id="bal7-sheet" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)" onclick="if(event.target===this)closeBal7Sheet()">
+  <div style="position:absolute;bottom:0;left:0;right:0;background:var(--s1);border-radius:20px 20px 0 0;padding:1.5rem 1.25rem calc(1.75rem + env(safe-area-inset-bottom,0px));max-width:480px;margin:0 auto;border-top:1px solid var(--border2);max-height:85vh;overflow-y:auto">
+    <div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1.25rem"></div>
+    <div style="font-family:Playfair Display,serif;font-size:1.1rem;margin-bottom:0.3rem">⚖️ Détail de la <em style="font-style:italic;color:var(--teal)">balance 7j</em></div>
+    <div style="font-size:0.68rem;color:var(--muted2);margin-bottom:1rem;line-height:1.5">Seuls les jours avec un apport <strong style="color:var(--text)">et</strong> une dépense réellement saisis comptent par défaut dans la moyenne. Un jour sans donnée est grisé automatiquement — touche-le pour le réintégrer quand même, ou pour retirer un jour valide (ex : saisie partielle).</div>
+
+    <!-- Résultat -->
+    <div style="background:var(--teal-bg);border:1px solid rgba(64,217,176,0.2);border-radius:var(--r-sm);padding:0.85rem;margin-bottom:1rem;text-align:center">
+      <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--teal-d);margin-bottom:4px">Balance moyenne</div>
+      <div id="bal7-sheet-avg" style="font-size:1.4rem;font-weight:700;color:var(--teal);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">—</div>
+      <div id="bal7-sheet-count" style="font-size:0.66rem;color:var(--teal-d);margin-top:2px">0 jour pris en compte</div>
+    </div>
+
+    <!-- Liste des 7 jours -->
+    <div id="bal7-sheet-days" style="display:flex;flex-direction:column;gap:6px;margin-bottom:0.5rem"></div>
+
+    <div style="font-size:0.6rem;color:var(--muted2);margin-top:0.75rem;line-height:1.5">"Ignoré (auto)" = détecté automatiquement comme non fiable (pas de repas saisi ce jour, ou dépense non calculable). Tu peux le réactiver à tout moment en touchant le bouton.</div>
+  </div>
+</div>
+
 <!-- POIDS — Quick edit modal -->
 <div id="poids-quick-modal" style="display:none;position:fixed;inset:0;z-index:800;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closePoidsQuickEdit()">
   <div style="background:rgba(0,0,0,0.55);position:absolute;inset:0;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)"></div>
@@ -9278,7 +9299,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v6';
+    const CACHE_NAME = 'kcalos-v7';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -9302,17 +9323,17 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   // Only intercept same-origin requests
   if (!e.request.url.startsWith(PAGE_ORIGIN)) return;
+  // Réseau d'abord : sert toujours la dernière version quand une connexion est
+  // disponible (et la met en cache), pour que les mises à jour du fichier soient
+  // visibles immédiatement au rechargement. Le cache ne sert que de secours hors-ligne.
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(response => {
-        if (response && response.status === 200 && response.type === 'basic') {
-          const clone = response.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
-        }
-        return response;
-      }).catch(() => cached);
-    })
+    fetch(e.request).then(response => {
+      if (response && response.status === 200 && response.type === 'basic') {
+        const clone = response.clone();
+        caches.open(CACHE).then(c => c.put(e.request, clone));
+      }
+      return response;
+    }).catch(() => caches.match(e.request))
   );
 });`;
 
@@ -16392,6 +16413,74 @@ function getDayApport(ds, food){
   return fo ? {kcal:fo.kcal||0,prot:fo.prot||0,gluc:fo.gluc||0,lip:fo.lip||0} : {kcal:0,prot:0,gluc:0,lip:0};
 }
 
+/* ── Exclusions / réactivations manuelles de la balance 7j ──
+   - "excluded" : un jour normalement valide (apport + dépense connus) que l'utilisateur retire de la moyenne
+   - "forced"   : un jour normalement invalide (auto-grisé, ex: pas d'apport saisi) que l'utilisateur réintègre quand même */
+function getBal7Exclusions(){
+  try{ return JSON.parse(localStorage.getItem('kcalos_bal7_excluded')||'[]'); }catch(e){ return []; }
+}
+function setBal7Excluded(date, excluded){
+  const list = getBal7Exclusions();
+  const idx = list.indexOf(date);
+  if(excluded && idx===-1) list.push(date);
+  if(!excluded && idx!==-1) list.splice(idx,1);
+  localStorage.setItem('kcalos_bal7_excluded', JSON.stringify(list));
+}
+function getBal7Forced(){
+  try{ return JSON.parse(localStorage.getItem('kcalos_bal7_forced')||'[]'); }catch(e){ return []; }
+}
+function setBal7Forced(date, forced){
+  const list = getBal7Forced();
+  const idx = list.indexOf(date);
+  if(forced && idx===-1) list.push(date);
+  if(!forced && idx!==-1) list.splice(idx,1);
+  localStorage.setItem('kcalos_bal7_forced', JSON.stringify(list));
+}
+
+/* Helper: détail jour par jour de la balance sur les 7 derniers jours.
+   Un jour est automatiquement fiable (autoValid) si un apport a été saisi ET qu'une
+   dépense (réelle ou estimée à partir du profil) est disponible. Les jours invalides
+   sont grisés par défaut mais restent réactivables manuellement ("forced"), et les
+   jours valides restent excluables manuellement ("excluded"). */
+function computeLast7BalanceDetail(fitness, food, profile){
+  const excluded = getBal7Exclusions();
+  const forced = getBal7Forced();
+  const days = [];
+  for(let i=6;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    const ds=d.toISOString().split('T')[0];
+    const fitD = fitness.find(x=>x.date===ds);
+    const dayA = getDayApport(ds, food);
+    // Dépense : utilise le TDEE stocké si disponible ; sinon l'estime via le profil
+    // (BMR + activité réelle du jour si connue), même en l'absence de fiche fitness.
+    let dayDep = fitD?.calories || 0;
+    if(!dayDep){
+      const comp = computeTDEE(fitD||null, dayA.kcal, profile, fitD?.steps||0);
+      dayDep = comp?.tdee || 0;
+    }
+    const hasFood = dayA.kcal > 0;
+    const hasDep  = dayDep > 0;
+    const autoValid = hasFood && hasDep;
+    const isExcluded = excluded.includes(ds);
+    const isForced = forced.includes(ds);
+    const included = autoValid ? !isExcluded : isForced;
+    days.push({
+      date: ds,
+      label: fmtD(ds),
+      apportKcal: dayA.kcal || 0,
+      depenseKcal: dayDep || 0,
+      balance: (dayA.kcal || 0) - (dayDep || 0),
+      hasFood, hasDep, autoValid,
+      excluded: isExcluded,
+      forced: isForced,
+      included
+    });
+  }
+  const includedBalances = days.filter(d=>d.included).map(d=>d.balance);
+  const avg = includedBalances.length ? includedBalances.reduce((a,b)=>a+b,0)/includedBalances.length : null;
+  return { days, includedBalances, avg };
+}
+
 /* Helper: compute TDEE components for a day */
 function computeTDEE(fitEntry, apportKcal, profile, manualSteps){
   const sorted = DB.getFitness().slice().sort((a,b)=>b.date.localeCompare(a.date));
@@ -16478,22 +16567,10 @@ function renderDashboard(){
   const lastPoidsEntry = fitness.slice().sort((a,b)=>b.date.localeCompare(a.date)).find(d=>d.poids);
   const poidsVal = todayFit?.poids || lastPoidsEntry?.poids || null;
 
-  // ── Projection 7j ──
-  const last7bal = [];
-  for(let i=6;i>=0;i--){
-    const d=new Date(); d.setDate(d.getDate()-i);
-    const ds=d.toISOString().split('T')[0];
-    const fitD = fitness.find(x=>x.date===ds);
-    const dayA = getDayApport(ds, food);
-    // Use stored TDEE if available; otherwise compute on the fly to avoid missing balance data
-    let dayDep = fitD?.calories || 0;
-    if(!dayDep && fitD) {
-      const comp = computeTDEE(fitD, dayA.kcal, profile, fitD.steps||0);
-      dayDep = comp?.tdee || 0;
-    }
-    if(dayA.kcal && dayDep) last7bal.push(dayA.kcal - dayDep);
-  }
-  const avgBal7 = last7bal.length ? last7bal.reduce((a,b)=>a+b,0)/last7bal.length : null;
+  // ── Projection 7j — ne compte que les jours avec apport + dépense réellement saisis ──
+  const bal7Detail = computeLast7BalanceDetail(fitness, food, profile);
+  const last7bal = bal7Detail.includedBalances;
+  const avgBal7 = bal7Detail.avg;
   const projKgSem = avgBal7 !== null ? avgBal7*7/7700 : null;
 
   // ── Real TDEE ──
@@ -16710,6 +16787,73 @@ function renderDashboardWeekChart(fitness, food){
       }
     }
   });
+}
+
+/* ── Sheet: détail du calcul de la balance 7j + exclusion manuelle de jours ── */
+function openBal7Sheet(){
+  const s = document.getElementById('bal7-sheet');
+  if(!s) return;
+  s.style.display = 'block';
+  renderBal7Sheet();
+}
+function closeBal7Sheet(){
+  const s = document.getElementById('bal7-sheet');
+  if(s) s.style.display = 'none';
+}
+function toggleBal7Day(date){
+  const fitness = DB.getFitness();
+  const food = DB.getFood();
+  const profile = JSON.parse(localStorage.getItem('kcalos_profile')||'{}');
+  const detail = computeLast7BalanceDetail(fitness, food, profile);
+  const day = detail.days.find(d=>d.date===date);
+  if(!day) return;
+  if(day.autoValid){
+    // Jour normalement valide : bascule exclusion manuelle
+    setBal7Excluded(date, !day.excluded);
+  } else {
+    // Jour auto-grisé (pas d'apport / dépense) : réactivation manuelle
+    setBal7Forced(date, !day.forced);
+  }
+  renderBal7Sheet();
+  renderDashboard(); // recalcule le widget principal avec la nouvelle inclusion/exclusion
+}
+function renderBal7Sheet(){
+  const daysEl = document.getElementById('bal7-sheet-days');
+  if(!daysEl) return;
+  const fitness = DB.getFitness();
+  const food = DB.getFood();
+  const profile = JSON.parse(localStorage.getItem('kcalos_profile')||'{}');
+  const detail = computeLast7BalanceDetail(fitness, food, profile);
+
+  set('bal7-sheet-avg', detail.avg!==null ? (detail.avg>=0?'+':'')+fmt(detail.avg)+' kcal/j' : '—');
+  set('bal7-sheet-count', detail.includedBalances.length+' jour'+(detail.includedBalances.length>1?'s':'')+' pris en compte sur 7');
+
+  daysEl.innerHTML = detail.days.map(d=>{
+    const balTxt = (d.balance>=0?'+':'')+fmt(d.balance)+' kcal';
+    const balColor = d.balance>200 ? 'var(--orange)' : d.balance<-200 ? 'var(--blue)' : 'var(--teal)';
+
+    let reasonTxt;
+    if(!d.autoValid){
+      reasonTxt = !d.hasFood
+        ? 'Aucun repas saisi ce jour'
+        : 'Dépense non calculable (profil incomplet)';
+    } else {
+      reasonTxt = `App. ${fmt(d.apportKcal)} − Dép. ${fmt(d.depenseKcal)} = <strong style="color:${d.excluded?'var(--muted2)':balColor}">${balTxt}</strong>`;
+    }
+
+    const btnLabel = d.included ? 'Inclus ✓' : (d.autoValid ? 'Ignoré ↺' : 'Ignoré (auto) ↺');
+    const btnStyle = d.included
+      ? 'background:var(--teal-bg);color:var(--teal);border:1px solid rgba(64,217,176,0.3)'
+      : 'background:none;color:var(--muted2);border:1px solid var(--border2)';
+
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.55rem 0.7rem;border-radius:var(--r-sm);background:var(--s2);${d.included?'':'opacity:0.6'}">
+      <div>
+        <div style="font-size:0.75rem;font-weight:600">${d.label}</div>
+        <div style="font-size:0.62rem;color:var(--muted2)">${reasonTxt}</div>
+      </div>
+      <button onclick="toggleBal7Day('${d.date}')" style="font-size:0.62rem;padding:3px 9px;border-radius:20px;cursor:pointer;font-family:Syne,sans-serif;white-space:nowrap;${btnStyle}">${btnLabel}</button>
+    </div>`;
+  }).join('');
 }
 
 function renderDashboardInsights(){
@@ -17129,20 +17273,9 @@ function renderProjectionModal(){
   const lastPoids = lastEntry?.poids ?? null;
 
   // ── Balance moyenne 7j (même logique que le dashboard) ──
-  const last7bal = [];
-  for(let i=6;i>=0;i--){
-    const d = new Date(); d.setDate(d.getDate()-i);
-    const ds = d.toISOString().split('T')[0];
-    const fitD = fitness.find(x=>x.date===ds);
-    const dayA = getDayApport(ds, food);
-    let dayDep = fitD?.calories || 0;
-    if(!dayDep && fitD){
-      const comp = computeTDEE(fitD, dayA.kcal, profile, fitD.steps||0);
-      dayDep = comp?.tdee || 0;
-    }
-    if(dayA.kcal && dayDep) last7bal.push(dayA.kcal - dayDep);
-  }
-  const avgBal7 = last7bal.length ? last7bal.reduce((a,b)=>a+b,0)/last7bal.length : null;
+  const bal7Detail = computeLast7BalanceDetail(fitness, food, profile);
+  const last7bal = bal7Detail.includedBalances;
+  const avgBal7 = bal7Detail.avg;
   const kgPerWeek = avgBal7!==null ? avgBal7*7/7700 : null;
   const kgPerDay = avgBal7!==null ? avgBal7/7700 : null;
 
