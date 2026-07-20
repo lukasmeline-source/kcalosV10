@@ -16825,8 +16825,10 @@ function renderBal7Sheet(){
   const profile = JSON.parse(localStorage.getItem('kcalos_profile')||'{}');
   const detail = computeLast7BalanceDetail(fitness, food, profile);
 
-  set('bal7-sheet-avg', detail.avg!==null ? (detail.avg>=0?'+':'')+fmt(detail.avg)+' kcal/j' : '—');
-  set('bal7-sheet-count', detail.includedBalances.length+' jour'+(detail.includedBalances.length>1?'s':'')+' pris en compte sur 7');
+  const avgEl = document.getElementById('bal7-sheet-avg');
+  if(avgEl) avgEl.textContent = detail.avg!==null ? (detail.avg>=0?'+':'')+fmt(detail.avg)+' kcal/j' : '—';
+  const countEl = document.getElementById('bal7-sheet-count');
+  if(countEl) countEl.textContent = detail.includedBalances.length+' jour'+(detail.includedBalances.length>1?'s':'')+' pris en compte sur 7';
 
   daysEl.innerHTML = detail.days.map(d=>{
     const balTxt = (d.balance>=0?'+':'')+fmt(d.balance)+' kcal';
