@@ -73,6 +73,17 @@
 ::-webkit-scrollbar-corner{background:transparent}
 html{scroll-behavior:smooth;color-scheme:dark;overflow-x:hidden;overscroll-behavior-x:none;width:100%}
 .light-mode{color-scheme:light}
+/* ── Désactive la sélection de texte par appui long sur mobile (gêne le drag des widgets,
+   les swipes, les longs-press sur les boutons, etc.) — sauf dans les champs éditables,
+   où la sélection/saisie normale reste nécessaire. ── */
+html,body,button,select,.db-card,.widget,[onclick]{
+  -webkit-user-select:none;user-select:none;
+  -webkit-touch-callout:none;
+}
+input,textarea,[contenteditable="true"]{
+  -webkit-user-select:text;user-select:text;
+  -webkit-touch-callout:default;
+}
 body{background:var(--bg);color:var(--text);font-family:Syne,sans-serif;font-weight:300;min-height:100vh;width:100%;overflow-x:hidden;overscroll-behavior-x:none;position:relative;transition:background var(--trans),color var(--trans);
   /* Safe area pour iPhone notch/Dynamic Island et coins arrondis */
   padding-top:env(safe-area-inset-top,0);
@@ -145,7 +156,7 @@ body{background:var(--bg);color:var(--text);font-family:Syne,sans-serif;font-wei
 @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
 
 /* ── PAGE HEADER ── */
-.ph{margin-bottom:2rem}
+.ph{display:none!important}
 .ph h2{font-family:Playfair Display,serif;font-size:2rem;font-weight:400;letter-spacing:-0.3px;line-height:1.15}
 .ph h2 em{font-style:italic;color:var(--lime)}
 .ph p{margin-top:0.4rem;font-size:0.78rem;color:var(--muted);letter-spacing:0.05em;text-transform:uppercase}
@@ -360,7 +371,14 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 .chart-details[open] summary::after{transform:rotate(-135deg)}
 .chart-details-body{padding:0 0.8rem 0.75rem}
 
-/* ── #page-progression : sous-onglets en pilule façon segmented control ── */
+/* ── #page-apports : style Apple Health (accent teal, cohérent avec les bulles repas) ── */
+#page-apports .sh-tabs{background:var(--s1);border-bottom:none;border-radius:var(--r-pill);padding:3px;margin-left:0;margin-right:0;gap:2px}
+#page-apports .sh-tab{border-radius:var(--r-pill);border-bottom:none;padding:0.55rem 0.3rem;font-size:0.72rem;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#page-apports .sh-tab.active{background:var(--s2);color:var(--teal);box-shadow:none}
+#page-apports .ap-date-nav{margin-bottom:0.9rem}
+#page-apports .ap-date-label{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
+
+
 #page-progression .sh-tabs{background:var(--s1);border-bottom:none;border-radius:var(--r-pill);padding:3px;margin-left:0;margin-right:0;gap:4px}
 #page-progression .sh-tab{border-radius:var(--r-pill);border-bottom:none;padding:0.5rem 0.4rem;font-size:0.72rem;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
 #page-progression .sh-tab.active{background:var(--s2)}
@@ -379,6 +397,36 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 .mode-switch{display:inline-flex;gap:3px;background:var(--s1);border-radius:var(--r-pill);padding:3px;margin-bottom:0.8rem}
 .mode-btn{padding:0.36rem 0.85rem;border-radius:var(--r-pill);font-size:0.7rem;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--muted);cursor:pointer;transition:all var(--trans);user-select:none;-webkit-tap-highlight-color:transparent}
 .mode-btn.active{background:var(--s2);color:var(--teal)}
+/* ── #page-steps : style Apple Health (accent teal, cohérent avec le widget dashboard) ── */
+#page-steps .range-tab{border:none;background:var(--s2);color:var(--muted);padding:0.32rem 0.65rem;font-size:0.66rem;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
+#page-steps .range-tab:hover{background:var(--s2);color:var(--muted)}
+#page-steps .range-tab.active,#page-steps .range-tab.active:hover{background:var(--teal-bg);color:var(--teal)}
+#page-steps .sub-card-row{grid-template-columns:repeat(3,1fr)}
+@media(max-width:480px){
+  #page-steps .sub-card-row{grid-template-columns:1fr 1fr}
+  #page-steps .sub-card-row .sub-card:last-child{grid-column:1/-1}
+}
+/* Carte "Pas aujourd'hui" — alignée sur le même style (teal, DM Sans, sans bordure épaisse) */
+#page-steps .stepcounter-card{border:none;border-radius:var(--r)}
+#page-steps #steps-card-title{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-weight:500}
+#page-steps .stepcounter-num{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-weight:700;color:var(--teal);letter-spacing:-0.02em}
+#page-steps .sc-progress-fill{background:linear-gradient(90deg,var(--teal),var(--blue))}
+#page-steps #sc-goal-label,#page-steps #sc-source-label{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
+#page-steps .stepcounter-actions button{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif!important}
+/* ── #page-workout : style Apple Health (accent lime, cohérent avec le reste de la page) ── */
+#page-workout .sh-tabs{background:var(--s1);border-bottom:none;border-radius:var(--r-pill);padding:3px;margin-left:0;margin-right:0;gap:4px}
+#page-workout .sh-tab{border-radius:var(--r-pill);border-bottom:none;padding:0.5rem 0.4rem;font-size:0.72rem;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
+#page-workout .sh-tab.active{background:var(--s2);color:var(--lime)}
+#page-workout .range-tab{border:none;background:var(--s2);color:var(--muted);padding:0.32rem 0.65rem;font-size:0.66rem;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
+#page-workout .range-tab:hover{background:var(--s2);color:var(--muted)}
+#page-workout .range-tab.active,#page-workout .range-tab.active:hover{background:var(--lime-bg);color:var(--lime)}
+#page-workout .card-title{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
+#page-workout .card-title::before{display:none}
+/* Applique DM Sans à tout le contenu généré en JS (historique, progression, volume) sans toucher
+   aux titres qui fixent déjà leur propre police (Playfair) via un style inline, qui reste prioritaire */
+#page-workout{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
+#page-workout .wo-history-date,#page-workout .wo-history-detail{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
+
 /* ── Toggle strip (gardé pour compatibilité, masqué sur progression) ── */
 .toggle-strip{display:flex;flex-wrap:wrap;align-items:center;gap:6px 0;margin-bottom:1rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 10px;row-gap:8px}
 .ts-group-wrap{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
@@ -653,21 +701,39 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 .db-week-bar-lbl{font-size:0.52rem;color:var(--muted2);text-transform:uppercase}
 
 /* ── Hero card : anneau de balance calorique (style Apple Health) ── */
-.db-hero{margin-bottom:0.85rem;padding:clamp(1.1rem,1rem + 0.6vw,1.6rem) clamp(1.15rem,1rem + 0.7vw,1.8rem)}
+.db-hero{margin-bottom:0.85rem;padding:clamp(1.4rem,1rem + 0.6vw,1.6rem) clamp(1.3rem,1rem + 0.7vw,1.8rem)}
 .db-hero-top{display:flex;align-items:center;gap:clamp(1rem,0.8rem + 1vw,2rem)}
-.db-hero-ring-wrap{position:relative;width:clamp(92px,7vw + 60px,150px);height:clamp(92px,7vw + 60px,150px);flex-shrink:0}
+.db-hero-ring-wrap{position:relative;width:clamp(130px,7vw + 80px,150px);height:clamp(130px,7vw + 80px,150px);flex-shrink:0}
 .db-hero-ring-wrap svg{width:100%;height:100%;display:block;transform:rotate(-90deg)}
-.db-hero-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.db-hero-ring-center .db-val{font-size:clamp(1.25rem,1rem + 1vw,2rem);font-weight:700;line-height:1}
+.db-hero-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 10px;box-sizing:border-box}
+.db-hero-ring-center .db-val{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.db-hero-ring-center .db-val{font-size:clamp(1.55rem,1rem + 0.8vw,1.9rem);font-weight:700;line-height:1}
 .db-hero-ring-unit{font-size:clamp(0.55rem,0.5rem + 0.2vw,0.75rem);color:var(--muted);margin-top:2px}
 .db-hero-right{flex:1;display:flex;flex-direction:column;gap:clamp(0.6rem,0.5rem + 0.4vw,1.1rem);min-width:0}
 .db-hero-right>.db-lbl{margin-bottom:0;font-size:clamp(0.6rem,0.55rem + 0.15vw,0.72rem)}
 .db-hero-row{display:flex;align-items:center;gap:clamp(8px,6px + 0.6vw,14px)}
-.db-chip-sm{width:clamp(26px,22px + 1.4vw,38px);height:clamp(26px,22px + 1.4vw,38px);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.db-chip-sm svg{width:clamp(13px,11px + 0.7vw,19px);height:clamp(13px,11px + 0.7vw,19px)}
-.db-val-sm{font-size:clamp(0.92rem,0.8rem + 0.5vw,1.35rem);font-weight:600;color:var(--text);line-height:1}
+.db-chip-sm{width:clamp(36px,22px + 1.4vw,38px);height:clamp(36px,22px + 1.4vw,38px);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.db-chip-sm svg{width:clamp(17px,11px + 0.7vw,19px);height:clamp(17px,11px + 0.7vw,19px)}
+.db-val-sm{font-size:clamp(1.3rem,0.8rem + 0.5vw,1.35rem);font-weight:600;color:var(--text);line-height:1}
 .db-hero-row .db-unit{font-size:clamp(0.58rem,0.54rem + 0.15vw,0.72rem);color:var(--muted);font-weight:500;margin-left:2px}
 .db-hero-row-lbl{font-size:clamp(0.56rem,0.52rem + 0.15vw,0.68rem);color:var(--muted);margin-top:2px}
+
+/* Mobile : le clamp() basé sur vw reste proche de son minimum sur les petits écrans,
+   ce qui laisse trop de vide dans la carte "Balance calorique". On force des tailles
+   plus généreuses pour qu'elle occupe mieux la largeur/hauteur disponible. */
+@media(max-width:480px){
+  .db-hero{padding:1.5rem 1.35rem}
+  .db-hero-top{gap:1.5rem}
+  .db-hero-ring-wrap{width:130px;height:130px}
+  .db-hero-ring-center .db-val{font-size:2.15rem}
+  .db-hero-ring-unit{font-size:0.8rem}
+  .db-hero-right{gap:1.15rem}
+  .db-chip-sm{width:38px;height:38px}
+  .db-chip-sm svg{width:19px;height:19px}
+  .db-val-sm{font-size:1.4rem}
+  .db-hero-row .db-unit{font-size:0.74rem}
+  .db-hero-row-lbl{font-size:0.68rem}
+}
 
 /* ── Mini-carte Récap dans la grille KPI ── */
 .db-card.db-recap-mini .db-chip{background:var(--orange-bg);color:var(--orange)}
@@ -710,6 +776,8 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 @media(max-width:380px){
   .db-widgets-area { grid-template-columns: 1fr; gap:0.7rem; }
   .widget-block[data-size="half"] { grid-column: 1/-1; }
+  #page-apports .sh-tab{font-size:0.66rem;padding:0.5rem 0.2rem}
+  #page-apports .ap-day-kcal{font-size:2.2rem}
 }
 
 /* Taille des widgets */
@@ -793,20 +861,32 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
   border-radius:var(--r);
 }
 
-/* Bannière "mode édition" en haut du dashboard */
+/* Bannière "mode édition" — reste visible en permanence à l'écran pendant le scroll
+   (position fixed, pas sticky : sticky arrêtait de suivre dès qu'on sortait de la
+   zone widgets, obligeant à remonter tout en haut pour cliquer "Terminer"). */
 .edit-mode-banner {
   display:none;
-  width:100%;box-sizing:border-box;grid-column:1/-1;
-  position:sticky;top:env(safe-area-inset-top,0);z-index:50;
+  box-sizing:border-box;
+  position:fixed;
+  top:calc(env(safe-area-inset-top,0) + 0.75rem);
+  left:1rem;right:1rem;
+  z-index:250;
   background:var(--lime);color:#080a0d;
   padding:0.55rem 1rem;border-radius:var(--r-sm);
   font-size:0.72rem;font-weight:600;letter-spacing:0.04em;
-  text-align:center;margin-bottom:0.85rem;
+  text-align:center;
   box-shadow:0 4px 16px rgba(184,224,48,0.3);
   animation:slideDown 0.25s ease;
 }
 @keyframes slideDown { from{transform:translateY(-10px);opacity:0} to{transform:none;opacity:1} }
 .edit-mode-banner.visible { display:block; }
+/* Laisse de la place en haut de la zone widgets pour que le 1er widget ne soit pas
+   caché sous la bannière fixe quand le mode édition est actif. */
+.db-widgets-area.edit-mode { padding-top:calc(env(safe-area-inset-top,0) + 3.4rem); }
+@media(min-width:821px){
+  /* Sur desktop la sidebar (220px) est visible : la bannière ne doit pas la chevaucher */
+  .edit-mode-banner { left:calc(220px + 1.25rem); right:1.25rem; max-width:640px; margin:0 auto; }
+}
 
 /* ── Panneau latéral "Ajouter un widget" ── */
 .widget-panel {
@@ -1314,13 +1394,14 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 
 /* ── Day summary banner (style SH) ── */
 .ap-day-banner{
-  background:var(--s1);border-radius:var(--r);
-  padding:1.1rem 1.25rem 1rem;margin-bottom:1.1rem;
+  background:var(--s1);border-radius:20px;
+  padding:1.15rem 1.3rem 1.05rem;margin-bottom:1.1rem;
   border:1px solid var(--border);
+  box-shadow:0 2px 20px rgba(0,0,0,0.35),0 0 0 0.5px rgba(255,255,255,0.04);
 }
-.ap-day-top{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:0.5rem;gap:8px;flex-wrap:wrap}
+.ap-day-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:0.5rem;gap:8px;flex-wrap:nowrap}
 .ap-day-kcal{font-size:2.6rem;font-weight:600;color:var(--text);line-height:1;letter-spacing:-1px}
-.ap-day-goal{font-size:0.78rem;color:var(--muted);margin-left:6px;align-self:flex-end;padding-bottom:4px}
+.ap-day-goal{font-size:0.78rem;color:var(--muted);margin-left:6px;white-space:nowrap}
 /* Progress bar SH : teal avec overflow orange */
 .ap-day-progress{
   height:8px;background:var(--s3);border-radius:4px;overflow:hidden;
@@ -1344,19 +1425,40 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
   display:block;font-size:1rem;font-weight:600;color:var(--text);line-height:1.2;
 }
 .ap-day-macro span{font-size:0.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em}
+.ap-day-value-wrap{cursor:pointer;min-width:0;flex:1 1 auto}
+.ap-day-view{display:flex;align-items:baseline;flex-wrap:nowrap}
+.ap-day-mode-switch{display:flex;width:fit-content;flex-shrink:0;align-self:flex-start;transform:scale(0.9);transform-origin:top right}
+.ap-day-mode-switch .mode-btn{font-size:0.72rem;padding:5px 10px}
 
-/* ── Meal circles grid (Samsung Health style) ── */
+/* ── Mini-cartes Score nutri / Streak (2 colonnes) ── */
+.ap-mini-row{display:flex;gap:8px;margin-bottom:0.75rem}
+.ap-mini-card{
+  flex:1;background:var(--s1);border:1.5px solid var(--border);border-radius:16px;
+  padding:0.55rem 0.65rem;display:flex;align-items:center;gap:7px;min-width:0;cursor:pointer;
+  transition:border-color var(--trans),transform 0.15s;
+}
+.ap-mini-card:active{transform:scale(0.98)}
+.ap-mini-lbl{font-size:0.54rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted2);line-height:1}
+.ap-mini-val{font-size:0.85rem;font-weight:800;line-height:1.25;margin-top:1px}
+.ap-mini-sub{font-size:0.54rem;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ap-mini-emoji-chip{
+  width:30px;height:30px;border-radius:50%;flex-shrink:0;
+  background:var(--orange-bg);font-size:1.05rem;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* ── Meal circles grid (Samsung Health style) — mobile first, fluide ── */
 .meal-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:1rem 0.5rem;
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.9rem 0.5rem;
   margin-bottom:1.25rem;padding:0 0.25rem;
 }
 .meal-circle-wrap{
   display:flex;flex-direction:column;align-items:center;gap:6px;
   cursor:pointer;-webkit-tap-highlight-color:transparent;
-  position:relative;
+  position:relative;width:100%;
 }
 .meal-circle{
-  width:108px;height:108px;border-radius:50%;
+  width:100%;aspect-ratio:1/1;max-width:108px;margin:0 auto;border-radius:50%;
   background:var(--s2);border:2.5px solid var(--border2);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   transition:all 0.2s ease;position:relative;
@@ -3135,68 +3237,74 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     </div>
     <input type="date" id="ap-date-picker" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px" onchange="apSetDate(this.value)">
 
-    <!-- DAY SUMMARY BANNER -->
-    <div class="ap-day-banner">
+    <!-- DAY SUMMARY BANNER — fusionne "mangé" et "restant" via un switch -->
+    <div class="ap-day-banner" id="ap-kcal-rest-card">
       <div class="ap-day-top">
-        <div>
-          <span class="ap-day-kcal" id="ap-day-kcal">0</span>
-          <span class="ap-day-goal" id="ap-day-goal">kcal</span>
+        <div class="ap-day-value-wrap" onclick="openKcalGoalModal()" title="Définir mon objectif calorique">
+          <div class="ap-day-view" data-view="eaten">
+            <span class="ap-day-kcal" id="ap-day-kcal">0</span>
+            <span class="ap-day-goal" id="ap-day-goal">kcal</span>
+          </div>
+          <div class="ap-day-view" data-view="rest" style="display:none">
+            <span class="ap-day-kcal" id="ap-kcal-rest">—</span>
+            <span class="ap-day-goal" id="ap-kcal-rest-sub">kcal</span>
+          </div>
+          <!-- garde le label existant, invisible : juste pour que le JS puisse continuer à l'alimenter -->
+          <span id="ap-kcal-rest-label" style="display:none"></span>
         </div>
-        <div id="ap-day-balance" class="ap-day-balance"></div>
+        <!-- Switch Mangé / Restant -->
+        <div class="mode-switch ap-day-mode-switch">
+          <div class="mode-btn active" data-mode="eaten" onclick="apSetKcalView('eaten',this)">Mangé</div>
+          <div class="mode-btn" data-mode="rest" onclick="apSetKcalView('rest',this)">Restant</div>
+        </div>
       </div>
       <div class="ap-day-progress">
         <div class="ap-day-progress-fill" id="ap-day-progress" style="width:0%"></div>
       </div>
-      <div class="ap-day-macros">
+
+      <div class="ap-day-macros" data-view="eaten">
         <div class="ap-day-macro"><strong id="ap-dm-g">0g</strong><span>Glucides</span></div>
         <div class="ap-day-macro"><strong id="ap-dm-l">0g</strong><span>Lipides</span></div>
         <div class="ap-day-macro"><strong id="ap-dm-p">0g</strong><span>Protéines</span></div>
       </div>
+      <div class="ap-day-macros ap-day-macros-rest" id="ap-kcal-rest-macros" data-view="rest" style="display:none">
+        <div class="ap-day-macro"><strong id="ap-kcal-rest-g">0g</strong><span>GLUCIDES</span></div>
+        <div class="ap-day-macro"><strong id="ap-kcal-rest-l">0g</strong><span>LIPIDES</span></div>
+        <div class="ap-day-macro"><strong id="ap-kcal-rest-p">0g</strong><span>PROTÉINES</span></div>
+      </div>
     </div>
 
-    <!-- NUTRI-SCORE + STREAK + KCAL RESTANTES -->
-    <div style="display:flex;gap:8px;margin-bottom:0.75rem">
-
-      <!-- Calories restantes -->
-      <div id="ap-kcal-rest-card" onclick="openKcalGoalModal()" style="flex:1;background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:0.55rem 0.7rem;display:flex;align-items:center;gap:6px;min-width:0;cursor:pointer;overflow:hidden" title="Définir mon objectif calorique">
-        <div style="font-size:1.1rem;line-height:1;flex-shrink:0">🍽️</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:0.48rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted2);line-height:1" id="ap-kcal-rest-label">Restantes</div>
-          <div style="font-size:0.88rem;font-weight:800;line-height:1.15;white-space:nowrap" id="ap-kcal-rest">—</div>
-          <div style="font-size:0.48rem;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="ap-kcal-rest-sub">kcal</div>
-          <!-- Macros — en dessous du kcal, toujours visibles -->
-          <div id="ap-kcal-rest-macros" style="display:none;flex-direction:row;align-items:baseline;gap:0;flex-wrap:nowrap;margin-top:2px;overflow:hidden"></div>
-        </div>
-      </div>
+    <!-- SCORE NUTRI + STREAK -->
+    <div class="ap-mini-row">
 
       <!-- Score nutritionnel -->
-      <div style="flex:1;background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:0.55rem 0.7rem;display:flex;align-items:center;gap:7px;min-width:0;cursor:pointer" onclick="openNutriScoreModal()" title="Voir le détail du score">
-        <div style="position:relative;width:32px;height:32px;flex-shrink:0">
-          <svg width="32" height="32" viewBox="0 0 36 36">
+      <div class="ap-mini-card" onclick="openNutriScoreModal()" title="Voir le détail du score">
+        <div style="position:relative;width:36px;height:36px;flex-shrink:0">
+          <svg width="36" height="36" viewBox="0 0 36 36">
             <circle cx="18" cy="18" r="15" fill="none" stroke="var(--border2)" stroke-width="3.5"/>
             <circle id="ap-nutri-ring" cx="18" cy="18" r="15" fill="none" stroke="#4ade80" stroke-width="3.5"
               stroke-dasharray="94.2" stroke-dashoffset="94.2" stroke-linecap="round"
               transform="rotate(-90 18 18)" style="transition:stroke-dashoffset .7s ease,stroke .4s"/>
           </svg>
-          <div id="ap-nutri-letter" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:800;color:var(--muted2)">—</div>
+          <div id="ap-nutri-letter" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:0.74rem;font-weight:800;color:var(--muted2)">—</div>
         </div>
         <div style="min-width:0;flex:1">
           <div style="display:flex;align-items:center;gap:4px">
-            <div style="font-size:0.52rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted2);line-height:1">Score nutri.</div>
+            <div class="ap-mini-lbl">Score nutri.</div>
             <div style="font-size:0.48rem;color:var(--muted2);background:var(--s2);border:1px solid var(--border2);border-radius:50%;width:12px;height:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700">?</div>
           </div>
-          <div id="ap-nutri-val" style="font-size:0.95rem;font-weight:800;line-height:1.2">—/100</div>
-          <div id="ap-nutri-tip" style="font-size:0.52rem;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+          <div id="ap-nutri-val" class="ap-mini-val">—/100</div>
+          <div id="ap-nutri-tip" class="ap-mini-sub"></div>
         </div>
       </div>
 
       <!-- Streak -->
-      <div id="ap-streak-card" style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:0.55rem 0.7rem;display:flex;align-items:center;gap:6px;flex-shrink:0">
-        <div style="font-size:1.3rem;line-height:1" id="ap-streak-icon">🔥</div>
-        <div>
-          <div style="font-size:0.52rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted2);line-height:1">Streak</div>
-          <div style="font-size:0.95rem;font-weight:800;line-height:1.2;color:var(--orange)" id="ap-streak-val">0</div>
-          <div style="font-size:0.52rem;color:var(--muted2)">j. consécutifs</div>
+      <div id="ap-streak-card" class="ap-mini-card">
+        <div class="ap-mini-emoji-chip"><span id="ap-streak-icon">🔥</span></div>
+        <div style="min-width:0">
+          <div class="ap-mini-lbl">Streak</div>
+          <div class="ap-mini-val" style="color:var(--orange)" id="ap-streak-val">0</div>
+          <div class="ap-mini-sub">j. consécutifs</div>
         </div>
       </div>
 
@@ -5852,7 +5960,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   <!-- ── LIVE STEP COUNTER ── -->
   <div class="stepcounter-card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem">
-      <div class="card-title" style="margin-bottom:0" id="steps-card-title">Pas aujourd'hui</div>
+      <div class="card-title" style="margin-bottom:0;display:none" id="steps-card-title">Pas aujourd'hui</div>
       <span id="sc-source-label" style="font-size:0.68rem;color:var(--muted);background:var(--s2);padding:3px 10px;border-radius:20px"></span>
     </div>
     <div class="stepcounter-main">
@@ -5878,65 +5986,97 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
           </button>
         </div>
 
-
-      </div>
-    </div>
-  </div>
-  <!-- STAT HEADER -->
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.25rem" id="steps-stats-grid">
-    <div class="card" style="text-align:center">
-      <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted2);margin-bottom:4px">Moyenne / jour</div>
-      <div style="font-family:Playfair Display,serif;font-size:1.9rem;color:var(--lime)" id="st-avg">—</div>
-      <div style="font-size:0.68rem;color:var(--muted)">pas / jour</div>
-    </div>
-    <div class="card" style="text-align:center">
-      <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted2);margin-bottom:4px">Meilleur jour</div>
-      <div style="font-family:Playfair Display,serif;font-size:1.9rem;color:var(--orange)" id="st-best">—</div>
-      <div style="font-size:0.68rem;color:var(--muted)" id="st-best-date">—</div>
-    </div>
-    <div class="card" style="text-align:center">
-      <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted2);margin-bottom:4px">Jours ≥ objectif</div>
-      <div style="font-family:Playfair Display,serif;font-size:1.9rem;color:var(--teal)" id="st-goal-pct">—</div>
-      <div style="font-size:0.68rem;color:var(--muted)" id="st-goal-label">sur la période</div>
-    </div>
-    <div class="card" style="text-align:center">
-      <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted2);margin-bottom:4px">Total importé</div>
-      <div style="font-family:Playfair Display,serif;font-size:1.9rem;color:var(--blue)" id="st-total-days">—</div>
-      <div style="font-size:0.68rem;color:var(--muted)">jours avec données</div>
-    </div>
-  </div>
-
-  <div class="grid2" style="margin-bottom:1.25rem">
-    <!-- CHART STEPS -->
-    <div class="card" style="grid-column:1/-1">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1rem">
-        <div class="card-title" style="margin-bottom:0">Historique des pas</div>
-        <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
-          <div class="range-tabs" id="steps-range-tabs">
-            <div class="range-tab active" onclick="setStepsRange(30,this)">30 j</div>
-            <div class="range-tab" onclick="setStepsRange(90,this)">3 mois</div>
-            <div class="range-tab" onclick="setStepsRange(180,this)">6 mois</div>
-            <div class="range-tab" onclick="setStepsRange(365,this)">1 an</div>
-            <div class="range-tab" onclick="setStepsRange(99999,this)">Tout</div>
+        <!-- IMPORT (Apple Santé / Samsung Health / CSV) -->
+        <button type="button" onclick="stImportTogglePanel()"
+          style="width:100%;padding:7px 14px;font-size:0.74rem;font-family:Syne,sans-serif;border:1px solid var(--border2);border-radius:7px;background:transparent;color:var(--muted);cursor:pointer;margin-top:8px">
+          <span class="ico" style="margin-right:4px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M2 5l6-3 6 3v8l-6 3-6-3z"/><line x1="8" y1="2" x2="8" y2="14"/><polyline points="2,5 8,8 14,5"/></svg></span> Importer mes pas
+        </button>
+        <div id="st-import-panel" style="display:none;background:var(--s2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:0.9rem;margin-top:4px">
+          <p style="font-size:0.68rem;color:var(--muted);margin-bottom:0.7rem;line-height:1.5">Depuis l'app <strong style="color:var(--text)">Santé</strong> de ton iPhone : profil (en haut à droite) → <strong style="color:var(--text)">Exporter toutes les données de santé</strong> → dépose le fichier <code style="color:var(--blue-d)">export.zip</code> ou <code style="color:var(--blue-d)">export.xml</code> ici. Fonctionne aussi avec un export Samsung Health ou un CSV. <strong style="color:var(--lime)">Seuls les pas seront importés ici</strong> (poids/calories/aliments éventuellement présents dans le fichier sont ignorés).</p>
+          <div class="import-zone" id="st-import-zone"
+               onclick="document.getElementById('st-file-input').click()"
+               ondragover="event.preventDefault();this.classList.add('drag')"
+               ondragleave="this.classList.remove('drag')"
+               ondrop="handleStepsDrop(event)"
+               style="padding:1rem">
+            <div class="iz-icon" style="font-size:1.6rem">📂</div>
+            <div class="iz-title" style="font-size:0.78rem">Glissez votre fichier ici</div>
+            <div class="iz-sub" style="font-size:0.66rem">ZIP Apple/Samsung Health · .csv · .xml</div>
+            <input type="file" id="st-file-input" accept=".csv,.xml,.zip" onchange="handleStepsFileSelect(event)">
           </div>
-          <div style="display:flex;align-items:center;gap:6px;font-size:0.72rem;color:var(--muted)">
-            Objectif :
-            <input type="number" id="step-goal-input" value="10000" min="1000" max="50000" step="500"
-                   style="width:90px;padding:4px 8px;font-size:0.78rem"
-                   oninput="loadStepsChart()">
-            <span style="color:var(--muted2)">pas</span>
+          <div class="spinner-wrap" id="st-import-spinner"><div class="spinner"></div>Analyse du fichier…</div>
+          <div class="import-feedback" id="st-import-feedback">
+            <div id="st-import-status-msg" style="font-size:0.76rem;margin-bottom:0.5rem"></div>
+            <div class="import-log" id="st-import-log" style="max-height:120px"></div>
           </div>
         </div>
+
+
       </div>
-      <div style="min-height:280px;position:relative"><canvas id="stepsChart"></canvas></div>
+    </div>
+  </div>
+  <!-- Chiffre héros + sélecteur de période -->
+  <div class="hero-row" style="margin-top:1.25rem">
+    <div>
+      <div class="hero-lbl">Moyenne / jour</div>
+      <div class="hero-val-row">
+        <div class="hero-val" style="color:var(--teal)" id="st-avg">—</div>
+      </div>
+    </div>
+    <div class="range-tabs" id="steps-range-tabs">
+      <div class="range-tab active" onclick="setStepsRange(30,this)">30 j</div>
+      <div class="range-tab" onclick="setStepsRange(90,this)">3 m</div>
+      <div class="range-tab" onclick="setStepsRange(180,this)">6 m</div>
+      <div class="range-tab" onclick="setStepsRange(365,this)">1 an</div>
+      <div class="range-tab" onclick="setStepsRange(99999,this)">Tout</div>
     </div>
   </div>
 
-  <!-- MONTHLY SUMMARY -->
-  <div class="card">
-    <div class="card-title">Résumé mensuel</div>
-    <div id="steps-monthly-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:0.75rem"></div>
+  <!-- Objectif -->
+  <div style="display:flex;justify-content:flex-end;align-items:center;gap:6px;font-size:0.7rem;color:var(--muted);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;margin-bottom:0.7rem">
+    Objectif :
+    <input type="number" id="step-goal-input" value="10000" min="1000" max="50000" step="500"
+           style="width:80px;padding:4px 8px;font-size:0.76rem;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif"
+           oninput="loadStepsChart()">
+    <span style="color:var(--muted2)">pas</span>
   </div>
+
+  <!-- Graphique pas -->
+  <div class="chart-wrap" style="height:240px;margin-bottom:0.6rem"><canvas id="stepsChart"></canvas></div>
+
+  <!-- Légende -->
+  <div class="clegend-row">
+    <div class="clegend" style="color:var(--teal)"><div class="cl-dot" style="background:var(--teal)"></div>Pas ≥ objectif</div>
+    <div class="clegend" style="color:var(--blue)"><div class="cl-dot" style="background:var(--blue)"></div>Pas &lt; objectif</div>
+    <div class="clegend" style="color:#ffc850"><div class="cl-dot" style="background:#ffc850"></div>Moy. 7j</div>
+  </div>
+
+  <!-- Cartes secondaires -->
+  <div class="sub-card-row">
+    <div class="sub-card">
+      <div class="sub-card-lbl">Meilleur jour</div>
+      <div class="sub-card-val" style="color:var(--orange)" id="st-best">—</div>
+      <div class="sub-card-sub" id="st-best-date">—</div>
+    </div>
+    <div class="sub-card">
+      <div class="sub-card-lbl">Jours ≥ objectif</div>
+      <div class="sub-card-val" style="color:var(--teal)" id="st-goal-pct">—</div>
+      <div class="sub-card-sub" id="st-goal-label">sur la période</div>
+    </div>
+    <div class="sub-card">
+      <div class="sub-card-lbl">Total importé</div>
+      <div class="sub-card-val" style="color:var(--blue)" id="st-total-days">—</div>
+      <div class="sub-card-sub">jours avec données</div>
+    </div>
+  </div>
+
+  <!-- Résumé mensuel (repliable) -->
+  <details class="chart-details">
+    <summary>Résumé mensuel</summary>
+    <div class="chart-details-body">
+      <div id="steps-monthly-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:0.75rem;padding-top:0.4rem"></div>
+    </div>
+  </details>
 </div>
 
 <!-- ═══ IMPORT ═══ -->
@@ -6433,15 +6573,15 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     <div id="wo-type-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0.85rem;margin-bottom:1.25rem"></div>
 
     <!-- Gérer les séances -->
-    <button onclick="woOpenManagePanel()" style="width:100%;padding:0.6rem 1rem;border:1px solid var(--border);border-radius:var(--r-pill);background:var(--s2);color:var(--muted);font-size:0.75rem;font-family:DM Sans,sans-serif;cursor:pointer;margin-bottom:1.25rem;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:500;transition:all var(--trans)" onmouseover="this.style.borderColor='var(--border2)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+    <button onclick="woOpenManagePanel()" style="width:100%;padding:0.6rem 1rem;border:none;border-radius:var(--r-pill);background:var(--s2);color:var(--muted);font-size:0.75rem;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;cursor:pointer;margin-bottom:1.25rem;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:500;transition:all var(--trans)" onmouseover="this.style.background='var(--s3)';this.style.color='var(--text)'" onmouseout="this.style.background='var(--s2)';this.style.color='var(--muted)'">
       <span class="ico"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><circle cx="8" cy="8" r="2.5"/><path d="M8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14M3.8 3.8l1.1 1.1M11.1 11.1l1.1 1.1M12.2 3.8l-1.1 1.1M4.9 11.1l-1.1 1.1"/></svg></span> Gérer les types de séances
     </button>
 
     <!-- Tabs Séances / Progression -->
-    <div style="display:flex;gap:6px;margin-bottom:1rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px">
-      <button id="wo-tab-seances" onclick="woSwitchPickerTab('seances')" style="flex:1;padding:0.5rem;border-radius:calc(var(--r-sm) - 2px);border:none;background:var(--s0);color:var(--text);font-family:DM Sans,sans-serif;font-size:0.78rem;font-weight:600;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.25);transition:all var(--trans)">Séances</button>
-      <button id="wo-tab-progression" onclick="woSwitchPickerTab('progression')" style="flex:1;padding:0.5rem;border-radius:calc(var(--r-sm) - 2px);border:none;background:transparent;color:var(--muted);font-family:DM Sans,sans-serif;font-size:0.78rem;font-weight:500;cursor:pointer;transition:all var(--trans)">Progression</button>
-      <button id="wo-tab-volume" onclick="woSwitchPickerTab('volume')" style="flex:1;padding:0.5rem;border-radius:calc(var(--r-sm) - 2px);border:none;background:transparent;color:var(--muted);font-family:DM Sans,sans-serif;font-size:0.78rem;font-weight:500;cursor:pointer;transition:all var(--trans)">Volume</button>
+    <div class="sh-tabs" style="margin-bottom:1rem">
+      <button class="sh-tab active" id="wo-tab-seances" onclick="woSwitchPickerTab('seances')">Séances</button>
+      <button class="sh-tab" id="wo-tab-progression" onclick="woSwitchPickerTab('progression')">Progression</button>
+      <button class="sh-tab" id="wo-tab-volume" onclick="woSwitchPickerTab('volume')">Volume</button>
     </div>
 
     <!-- Panel SÉANCES -->
@@ -6458,13 +6598,50 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 
     <!-- Panel PROGRESSION -->
     <div id="wo-panel-progression" style="display:none">
-      <!-- Sous-onglets séance / semaine / mois -->
-      <div style="display:flex;gap:5px;margin-bottom:1rem;flex-wrap:wrap">
-        <button id="wo-prog-tab-session" onclick="woSwitchProgTab('session')" style="padding:5px 12px;border-radius:var(--r-pill);border:1px solid var(--lime-d);background:var(--lime-bg);color:var(--lime);font-family:DM Sans,sans-serif;font-size:0.72rem;font-weight:600;cursor:pointer;transition:all var(--trans)">Séance à séance</button>
-        <button id="wo-prog-tab-week" onclick="woSwitchProgTab('week')" style="padding:5px 12px;border-radius:var(--r-pill);border:1px solid var(--border2);background:var(--s2);color:var(--muted);font-family:DM Sans,sans-serif;font-size:0.72rem;font-weight:500;cursor:pointer;transition:all var(--trans)">Semaine</button>
-        <button id="wo-prog-tab-month" onclick="woSwitchProgTab('month')" style="padding:5px 12px;border-radius:var(--r-pill);border:1px solid var(--border2);background:var(--s2);color:var(--muted);font-family:DM Sans,sans-serif;font-size:0.72rem;font-weight:500;cursor:pointer;transition:all var(--trans)">Mois</button>
+      <!-- Hero : progression moyenne + sélecteur de période -->
+      <div class="hero-row">
+        <div>
+          <div class="hero-lbl">Progression globale (force)</div>
+          <div class="hero-val-row">
+            <div class="hero-val" id="wo-prog-hero-val">—</div>
+          </div>
+          <div class="hero-underline"></div>
+        </div>
+        <div class="range-tabs">
+          <button class="range-tab active" id="wo-prog-tab-session" onclick="woSwitchProgTab('session')">Séance</button>
+          <button class="range-tab" id="wo-prog-tab-week" onclick="woSwitchProgTab('week')">Semaine</button>
+          <button class="range-tab" id="wo-prog-tab-month" onclick="woSwitchProgTab('month')">Mois</button>
+        </div>
       </div>
-      <div id="wo-prog-content"></div>
+
+      <!-- Un seul graphique, une courbe par type de séance (légende cliquable) -->
+      <div class="chart-wrap" style="height:210px;margin-bottom:0.6rem"><canvas id="wo-prog-chart"></canvas></div>
+      <div class="clegend-row" id="wo-prog-legend"></div>
+
+      <!-- Repères rapides -->
+      <div class="sub-card-row">
+        <div class="sub-card">
+          <div class="sub-card-lbl">Séances totales</div>
+          <div class="sub-card-val" id="wo-prog-card-sessions">—</div>
+        </div>
+        <div class="sub-card">
+          <div class="sub-card-lbl">Volume total soulevé</div>
+          <div class="sub-card-val" id="wo-prog-card-volume">—</div>
+          <div class="sub-card-sub">toutes séances confondues</div>
+        </div>
+      </div>
+
+      <!-- Détail repliable : historique séance par séance -->
+      <details class="chart-details">
+        <summary>Historique des séances</summary>
+        <div class="chart-details-body" id="wo-prog-history-body"></div>
+      </details>
+
+      <!-- Détail repliable : progression exercice par exercice -->
+      <details class="chart-details">
+        <summary>Détail par exercice</summary>
+        <div class="chart-details-body" id="wo-prog-exo-body"></div>
+      </details>
     </div>
 
     <!-- Panel VOLUME -->
@@ -6473,15 +6650,15 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:0.85rem">
         <div>
           <div style="font-size:0.72rem;font-weight:600;color:var(--text);margin-bottom:2px">Volume hebdo · par groupe musculaire</div>
-          <div style="font-size:0.6rem;color:var(--muted2)">4 dernières semaines · séries effectives</div>
         </div>
         <button onclick="document.getElementById('wo-vol-info').style.display=document.getElementById('wo-vol-info').style.display==='none'?'':'none'"
           style="background:var(--s2);border:1px solid var(--border2);color:var(--muted);border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:0.7rem;font-weight:700;flex-shrink:0;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent">ℹ</button>
       </div>
       <div id="wo-vol-info" style="display:none;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:0.75rem;margin-bottom:0.85rem;font-size:0.65rem;color:var(--muted);line-height:1.75">
         <b style="color:var(--text);display:block;margin-bottom:4px">Comment est calculé le volume ?</b>
-        Seules les <b style="color:var(--text)">séries effectuées</b> (hors skip) sont comptées, sur les <b style="color:var(--text)">28 derniers jours</b>.<br>
-        Le chiffre affiché = <b style="color:var(--text)">séries/semaine</b> (moy. séries par séance × fréquence hebdo).<br>
+        Seules les <b style="color:var(--text)">séries effectuées</b> sont comptées, sur les <b style="color:var(--text)">28 derniers jours</b>.<br>
+        Le chiffre affiché = <b style="color:var(--text)">séries/semaine</b>, en moyenne sur les seules semaines calendaires où l'exercice a été fait (les semaines sans séance ne diluent pas la moyenne).<br>
+        <b style="color:var(--text)">Semaine dernière (réelle)</b> = total de séries effectivement réalisées du lundi au dimanche précédents, sans moyenne.<br>
         Les repères min/max viennent des travaux de <b style="color:var(--text)">Israetel et al.</b> (MEV → MRV).
       </div>
       <div id="wo-volume-table"></div>
@@ -8886,6 +9063,94 @@ function showImportResult(ok,msg,log,j,p,k,f){
 
 function clearAllData(){ if(!confirm('Réinitialiser TOUTES les données ?')) return; ['kcalos_fitness','kcalos_food','kcalos_meals','kcalos_profile','kcalos_ai_hist','kcalos_kcal_goal','kcalos_macro_goal'].forEach(k=>localStorage.removeItem(k)); toast('Données effacées.','var(--red)'); }
 
+/* ── Import compact sur la page Steps (mêmes parseurs que la page Import,
+   IDs dédiés pour ne pas entrer en conflit avec les zones d'import existantes) ── */
+function stImportTogglePanel(){
+  const panel = document.getElementById('st-import-panel');
+  if(!panel) return;
+  panel.style.display = panel.style.display !== 'none' ? 'none' : 'block';
+}
+function handleStepsDrop(e){ e.preventDefault(); document.getElementById('st-import-zone').classList.remove('drag'); const f=e.dataTransfer.files[0]; if(f) processStepsFile(f); }
+function handleStepsFileSelect(e){ const f=e.target.files[0]; if(f) processStepsFile(f); e.target.value=''; }
+
+/* Version restreinte de l'import : ne prend QUE les pas, ignore poids/calories/aliments
+   même s'ils sont présents dans le fichier (ex: export.xml Apple Santé contient tout,
+   mais ce panneau ne doit toucher que les pas). */
+function applyImportStepsOnly(rows){
+  let j=0; const logLines=[];
+  rows.forEach(row=>{
+    if(!row.date || !row.steps) return;
+    j++;
+    DB.upsertFitness({date:row.date, steps:row.steps});
+    logLines.push(`✅ ${fmtDL(row.date)} · ${row.steps.toLocaleString('fr-FR')} pas`);
+  });
+  return {j, logLines};
+}
+
+function showStepsImportResult(ok,msg,log,j){
+  const fb=document.getElementById('st-import-feedback');
+  const status=document.getElementById('st-import-status-msg');
+  if(status) status.innerHTML=`<span style="color:${ok?'var(--lime)':'var(--red)'}">${ok?'✓':'✗'} ${msg}</span>`;
+  const logEl=document.getElementById('st-import-log');
+  if(logEl) logEl.innerHTML=log.slice(-40).map(l=>{
+    const c=l.startsWith('✅')?'log-ok':l.startsWith('⚠️')?'log-warn':l.startsWith('❌')?'log-err':'';
+    return `<div class="log-line ${c}">${l}</div>`;
+  }).join('');
+  if(fb) fb.classList.add('show');
+  if(ok){
+    recomputeAllTDEE?.();
+    setTimeout(()=>{ renderDashboard?.(); loadStepsPage?.(); }, 100);
+    toast(`${j} jour${j>1?'s':''} de pas importé${j>1?'s':''} ✓`);
+  }
+}
+
+function processStepsFile(file){
+  const sp=document.getElementById('st-import-spinner');
+  const fb=document.getElementById('st-import-feedback');
+  if(fb) fb.classList.remove('show');
+  if(sp) sp.classList.add('show');
+  const ext=file.name.split('.').pop().toLowerCase();
+
+  if(ext==='zip'){
+    if(typeof JSZip==='undefined'){
+      if(sp) sp.classList.remove('show');
+      showStepsImportResult(false,'JSZip non chargé. Vérifiez votre connexion internet.',[],0);
+      return;
+    }
+    file.arrayBuffer().then(buf=>JSZip.loadAsync(buf)).then(zip=>parseSamsungZIP(zip))
+      .then(({rows,foodRows,log})=>{
+        if(sp) sp.classList.remove('show');
+        if(!rows.length){ showStepsImportResult(false,'Aucun pas exploitable dans le ZIP.',log,0); return; }
+        const {j,logLines}=applyImportStepsOnly(rows);
+        if(!j){ showStepsImportResult(false,'Aucun pas exploitable dans le ZIP.',log,0); return; }
+        showStepsImportResult(true,`ZIP importé (pas uniquement) · ${file.name}`,[...log,...logLines],j);
+      }).catch(err=>{
+        if(sp) sp.classList.remove('show');
+        showStepsImportResult(false,'Erreur ZIP : '+err.message,[],0);
+      });
+    return;
+  }
+
+  const reader=new FileReader();
+  reader.onload=e=>{
+    setTimeout(()=>{
+      if(sp) sp.classList.remove('show');
+      const text=e.target.result;
+      let parsed;
+      try{
+        if(ext==='csv') parsed=parseCSV(text);
+        else if(ext==='xml') parsed=parseXML(text);
+        else{ showStepsImportResult(false,'Format non reconnu. Utilisez .zip, .csv ou .xml',[],0); return; }
+      } catch(err){ showStepsImportResult(false,'Erreur : '+err.message,[],0); return; }
+      if(!parsed.rows.length){ showStepsImportResult(false,'Aucune donnée exploitable.',parsed.log,0); return; }
+      const {j,logLines}=applyImportStepsOnly(parsed.rows);
+      if(!j){ showStepsImportResult(false,'Aucun pas exploitable dans ce fichier.',parsed.log,0); return; }
+      showStepsImportResult(true,`Import réussi (pas uniquement) · ${file.name}`,[...parsed.log,...logLines],j);
+    },300);
+  };
+  reader.readAsText(file,'UTF-8');
+}
+
 /* ════════════════════════════════════════
    AI COACH — Anthropic API
 ════════════════════════════════════════ */
@@ -9675,6 +9940,13 @@ function apSetDate(val) {
   apRefreshDateUI();
   renderMealCards();
   renderApDayBanner();
+}
+
+/* ── Switch Mangé / Restant dans la bannière du jour (affichage seulement, aucun recalcul) ── */
+function apSetKcalView(mode, btn) {
+  document.querySelectorAll('.ap-day-mode-switch .mode-btn').forEach(b => b.classList.toggle('active', b === btn));
+  document.querySelectorAll('.ap-day-view').forEach(v => v.style.display = v.dataset.view === mode ? '' : 'none');
+  document.querySelectorAll('.ap-day-macros').forEach(m => m.style.display = m.dataset.view === mode ? 'flex' : 'none');
 }
 
 /* ── Day summary banner ── */
@@ -16451,13 +16723,13 @@ function computeLast7BalanceDetail(fitness, food, profile){
     const ds=d.toISOString().split('T')[0];
     const fitD = fitness.find(x=>x.date===ds);
     const dayA = getDayApport(ds, food);
-    // Dépense : utilise le TDEE stocké si disponible ; sinon l'estime via le profil
-    // (BMR + activité réelle du jour si connue), même en l'absence de fiche fitness.
-    let dayDep = fitD?.calories || 0;
-    if(!dayDep){
-      const comp = computeTDEE(fitD||null, dayA.kcal, profile, fitD?.steps||0);
-      dayDep = comp?.tdee || 0;
-    }
+    // Dépense : recalculée à la volée pour garantir que le TEF (effet thermique des
+    // aliments) reflète bien l'apport réel de CE jour — une valeur "calories" déjà
+    // enregistrée peut dater d'avant la saisie des repas et donc avoir un TEF à 0.
+    // On ne se rabat sur la valeur stockée qu'en dernier recours (calcul impossible,
+    // ex: profil incomplet).
+    const comp = computeTDEE(fitD||null, dayA.kcal, profile, fitD?.steps||0);
+    let dayDep = comp?.tdee || fitD?.calories || 0;
     const hasFood = dayA.kcal > 0;
     const hasDep  = dayDep > 0;
     const autoValid = hasFood && hasDep;
@@ -17581,7 +17853,10 @@ function woDraftClear(type, date){
    (utilisé au démarrage de l'app pour proposer de reprendre la séance du jour) */
 function woDraftFindForDate(date){
   const map = woDraftsAll();
-  const key = Object.keys(map).find(k => map[k]?.date === date);
+  // On ignore les brouillons "_pristine" : ce sont des séances jamais réellement
+  // commencées (juste survolées depuis le picker), sinon on tombe sur un type
+  // de séance au hasard selon l'ordre d'insertion dans le localStorage.
+  const key = Object.keys(map).find(k => map[k]?.date === date && !map[k]?._pristine);
   return key ? map[key] : null;
 }
 
@@ -18217,8 +18492,8 @@ function woRenderPicker(){
       <div style="font-family:Playfair Display,serif;font-size:1.25rem;font-weight:600;color:${t.color};margin-bottom:0.2rem">${t.label}</div>
       <div style="font-size:0.62rem;color:var(--muted2);margin-bottom:0.4rem">${t.desc||''}</div>
       <div style="border-top:1px solid var(--border);padding-top:0.45rem;display:flex;gap:8px">
-        <div style="flex:1"><div style="font-size:0.58rem;color:var(--muted2)">Total</div><div style="font-size:0.82rem;font-weight:500;color:var(--text)">${count}</div></div>
-        <div style="flex:1"><div style="font-size:0.58rem;color:var(--muted2)">Dernière</div><div style="font-size:0.75rem;color:var(--muted)">${lastInfo}</div></div>
+        <div style="flex:1"><div class="sub-card-lbl">Total</div><div class="sub-card-val" style="font-size:0.82rem">${count}</div></div>
+        <div style="flex:1"><div class="sub-card-lbl">Dernière</div><div class="sub-card-val" style="font-size:0.75rem;font-weight:500;color:var(--muted)">${lastInfo}</div></div>
       </div>
     </div>`;
   }).join('');
@@ -18250,34 +18525,23 @@ function woSwitchPickerTab(tab){
     const b = document.getElementById(buttons[i]);
     const active = t === tab;
     if(p) p.style.display = active ? '' : 'none';
-    if(b){
-      b.style.background = active ? 'var(--s0)'      : 'transparent';
-      b.style.color      = active ? 'var(--text)'    : 'var(--muted)';
-      b.style.fontWeight = active ? '600'            : '500';
-      b.style.boxShadow  = active ? '0 1px 4px rgba(0,0,0,0.25)' : 'none';
-    }
+    if(b) b.classList.toggle('active', active);
   });
   if(tab === 'progression') woSwitchProgTab('session');
   if(tab === 'volume'){ woRenderVolumeTable(); woRenderUserExoList(); }
 }
 
 
-/* ── Sous-onglets semaine / mois ── */
-function woSwitchProgTab(tab){
+/* ── Sous-onglets période (séance / semaine / mois) ── */
+function woSwitchProgTab(period){
   const btnS = document.getElementById('wo-prog-tab-session');
   const btnW = document.getElementById('wo-prog-tab-week');
   const btnM = document.getElementById('wo-prog-tab-month');
   [[btnS,'session'],[btnW,'week'],[btnM,'month']].forEach(([btn,t])=>{
     if(!btn) return;
-    const active = t===tab;
-    btn.style.background  = active ? 'var(--lime-bg)' : 'var(--s2)';
-    btn.style.color       = active ? 'var(--lime)'    : 'var(--muted)';
-    btn.style.borderColor = active ? 'var(--lime-d)'  : 'var(--border2)';
-    btn.style.fontWeight  = active ? '600' : '500';
+    btn.classList.toggle('active', t===period);
   });
-  if(tab==='session') woRenderProgSession();
-  else if(tab==='week') woRenderProgWeek();
-  else woRenderProgMonth();
+  woRenderProgAll(period);
 }
 
 /* ── Helpers ── */
@@ -18374,327 +18638,426 @@ function woAggregate(sessions, periodFn){
 }
 
 /* ── Render progression — redesigned ── */
-function woRenderProg(period){ // period = 'week'|'month'
-  const el = document.getElementById('wo-prog-content');
-  if(!el) return;
-
-  const allTypes = woGetAllTypes();
-  const periodFn = period==='week' ? woWeekKey   : woMonthKey;
-  const labelFn  = period==='week' ? woWeekLabel : woMonthLabel;
-  const isCurFn  = period==='week'
-    ? k => k===woWeekKey(today())
-    : k => k===woMonthKey(today());
-
-  const periodLabel = period==='week' ? 'sem.' : 'mois';
-
-  const cards = Object.entries(allTypes).map(([tid, t])=>{
-    const sessions = woV2GetSessions(tid);
-    if(!sessions.length) return '';
-    const byPeriod = woAggregate(sessions, periodFn);
-    const periods  = [...byPeriod.keys()].sort();
-    if(!periods.length) return '';
-
-    // % force entre deux périodes : appariement série par série (série 1 vs série 1, etc.),
-    // sur les seuls exercices communs aux deux périodes — les séries surnuméraires sont ignorées.
-    const periodPairPct = (dCur, dPrev) => {
-      if(!dCur || !dPrev) return null;
-      const indivPcts = [];
-      Object.entries(dCur.exos).forEach(([name, ce])=>{
-        const pe = dPrev.exos[name];
-        if(!pe) return;
-        const mp = woMatchedProgress(ce.sets, pe.sets);
-        if(mp.pct !== null) indivPcts.push(mp.pct);
-      });
-      return indivPcts.length ? Math.round(indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length) : null;
-    };
-
-    const lastK  = periods[periods.length-1];
-    const prevK  = periods.length>1 ? periods[periods.length-2] : null;
-    const lastD  = byPeriod.get(lastK);
-    const prevD  = prevK ? byPeriod.get(prevK) : null;
-    const globalPct = periodPairPct(lastD, prevD);
-
-    // KPI badge
-    function kpiBadge(pct, label){
-      if(pct===null) return `<span style="font-size:0.62rem;color:var(--muted2);background:var(--s3);border:1px solid var(--border2);border-radius:var(--r-pill);padding:3px 9px">— ${label}</span>`;
-      const up = pct>0;
-      const eq = pct===0;
-      const col = up?'#4ade80':eq?'var(--muted)':'var(--red)';
-      const bg  = up?'rgba(74,222,128,0.1)':eq?'var(--s3)':'var(--red-bg)';
-      const bd  = up?'rgba(74,222,128,0.3)':eq?'var(--border2)':'rgba(232,56,56,0.3)';
-      const arrow = up?'▲':eq?'=':'▼';
-      return `<span style="font-size:0.72rem;font-weight:700;color:${col};background:${bg};border:1px solid ${bd};border-radius:var(--r-pill);padding:3px 10px;white-space:nowrap">${arrow} ${up?'+':''}${pct}% ${label}</span>`;
-    }
-
-    // Sparkline bars (last 8 periods max for mobile)
-    const visiblePeriods = periods.slice(-8);
-    const maxVol = Math.max(...visiblePeriods.map(k=>byPeriod.get(k).vol),1);
-
-    const sparkBars = visiblePeriods.map((k,i,arr)=>{
-      const d     = byPeriod.get(k);
-      const dPrev = i>0 ? byPeriod.get(arr[i-1]) : null;
-      const pct = i>0 ? periodPairPct(d, dPrev) : null;
-      const isCur = isCurFn(k);
-      const barH  = Math.max(4, Math.round(d.vol/maxVol*56));
-      const label = labelFn(k);
-      // Mini badge on bar
-      let miniArrow='';
-      if(pct!==null && pct!==0){
-        const ac = pct>0?'#4ade80':'var(--red)';
-        miniArrow=`<div style="font-size:0.42rem;font-weight:800;color:${ac};line-height:1;margin-bottom:1px">${pct>0?'▲':'▼'}${Math.abs(pct)}%</div>`;
+/* ── Graphique d'évolution en courbe classique (% cumulé), style aligné sur le graphique Poids ──
+   Une instance par canvas, détruite/recréée à chaque rendu pour éviter les fuites Chart.js. */
+window._woChartInstances = window._woChartInstances || {};
+window._woExoChartData = window._woExoChartData || {}; // canvasId -> {labels,data,color}, pour le rendu différé (accordéon) de l'onglet Exo
+function woRenderEvoChart(canvasId, labels, data, color){
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  if(window._woChartInstances[canvasId]){ window._woChartInstances[canvasId].destroy(); }
+  const isLight = document.body.classList.contains('light-mode');
+  const gridC = isLight?'rgba(0,0,0,0.06)':'rgba(255,255,255,0.04)';
+  const tickC = isLight?'#6b7280':'#404d60';
+  const resolvedColor = _cssVar(color); // Chart.js/canvas ne comprend pas var(--xxx)
+  window._woChartInstances[canvasId] = new Chart(canvas.getContext('2d'),{
+    type:'line',
+    data:{labels, datasets:[{
+      data, borderColor:resolvedColor, backgroundColor:resolvedColor+'18',
+      borderWidth:2, pointRadius:0, pointHoverRadius:4, pointHitRadius:10,
+      tension:0.35, fill:true, spanGaps:true
+    }]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:isLight?'#fff':'#1a2030',
+          borderColor:'rgba(128,128,128,0.2)', borderWidth:1,
+          titleColor:isLight?'#111':'#f0ede6', bodyColor:'#6b7a90', padding:8,
+          titleFont:{family:'DM Sans',size:10}, bodyFont:{family:'DM Sans',size:11},
+          callbacks:{label:c=> c.raw===null ? null : `  ${c.raw>0?'+':''}${c.raw}%`}
+        }
+      },
+      layout:{padding:{top:6,right:4,bottom:2,left:4}},
+      scales:{
+        x:{display:true, ticks:{color:tickC,font:{family:'DM Sans',size:9},maxRotation:0,autoSkip:true,maxTicksLimit:6}, grid:{display:false}},
+        y:{display:true, ticks:{color:tickC,font:{family:'DM Sans',size:9},callback:v=>v+'%'}, grid:{color:gridC}}
       }
-      return `<div style="display:flex;flex-direction:column;align-items:center;gap:0;flex:1;min-width:0;cursor:default;position:relative"
-        title="${Math.round(d.vol).toLocaleString('fr-FR')} kg · ${d.count}×">
-        ${miniArrow}
-        <div style="width:100%;display:flex;align-items:flex-end;justify-content:center;height:58px">
-          <div style="width:min(100%,22px);border-radius:4px 4px 0 0;`+
-            `background:${isCur?t.color:t.color+'66'};height:${barH}px;transition:height .35s;`+
-            `box-shadow:${isCur?'0 0 10px '+t.color+'55':'none'}"></div>
-        </div>
-        <div style="font-size:0.45rem;color:${isCur?'var(--text)':'var(--muted2)'};font-weight:${isCur?'700':'400'};text-align:center;line-height:1.3;margin-top:2px;white-space:nowrap;overflow:hidden;max-width:100%">${label}</div>
-        <div style="font-size:0.42rem;color:var(--muted2);line-height:1">${d.count}×</div>
-      </div>`;
-    }).join('');
-
-    // Exercise table — compact, mobile-friendly
-    const lastExos = lastD.exos;
-    const prevExos = prevD ? prevD.exos : {};
-    const exoRows  = Object.entries(lastExos)
-      .sort((a,b)=>b[1].score-a[1].score)
-      .slice(0,6)
-      .map(([name,ld])=>{
-        const pd = prevExos[name];
-        let pct=null;
-        if(pd){
-          const mp = woMatchedProgress(ld.sets, pd.sets);
-          pct = mp.pct;
-        }
-        const volPct = pd&&pd.vol>0&&ld.vol>0?Math.round((ld.vol-pd.vol)/pd.vol*100):null;
-        const isPR = pd && ld.maxW>pd.maxW;
-
-        // Force badge
-        let forceBadge;
-        if(pct!==null){
-          const up=pct>0,eq=pct===0;
-          const col=up?'#4ade80':eq?'var(--muted)':'var(--red)';
-          const bg=up?'rgba(74,222,128,0.1)':eq?'var(--s3)':'var(--red-bg)';
-          const bd=up?'rgba(74,222,128,0.3)':eq?'var(--border2)':'rgba(232,56,56,0.3)';
-          forceBadge=`<span style="font-size:0.62rem;font-weight:700;color:${col};background:${bg};border:1px solid ${bd};border-radius:6px;padding:1px 7px;white-space:nowrap">${up?'▲':'▼'} ${up?'+':''}${pct}%</span>`;
-        } else {
-          forceBadge=`<span style="font-size:0.62rem;color:var(--muted2)">Nouv.</span>`;
-        }
-        const prTag=isPR?`<span style="font-size:0.5rem;background:var(--lime-bg);color:var(--lime);border:1px solid var(--lime-d);border-radius:4px;padding:1px 4px;margin-left:3px">PR</span>`:'';
-        const volStr=volPct!==null?`<span style="color:${volPct>0?'#4ade80':volPct<0?'var(--red)':'var(--muted2)'}">${volPct>0?'+':''}${volPct}% vol</span>`:'';
-
-        return `<div style="display:flex;align-items:center;gap:6px;padding:7px 0;border-bottom:1px solid var(--border)">
-          <div style="flex:1;min-width:0">
-            <div style="font-size:0.75rem;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}${prTag}</div>
-            <div style="font-size:0.58rem;color:var(--muted2);margin-top:1px">Score ${Math.round(ld.score)}${pd?` · était ${Math.round(pd.score)}`:''}${volStr?' · '+volStr:''}</div>
-          </div>
-          ${forceBadge}
-        </div>`;
-      }).join('');
-
-    // Global vol change
-    const volChange = (prevD && prevD.vol>0 && lastD.vol>0)
-      ? Math.round((lastD.vol-prevD.vol)/prevD.vol*100) : null;
-
-    return `<div class="card" style="margin-bottom:0.85rem;padding:1rem">
-      <!-- Header -->
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.85rem">
-        <div style="width:10px;height:10px;border-radius:50%;background:${t.color};box-shadow:0 0 8px ${t.color}88;flex-shrink:0"></div>
-        <div style="font-family:Playfair Display,serif;font-size:1rem;font-weight:600;color:${t.color};flex:1">${t.label}</div>
-        <div style="font-size:0.6rem;color:var(--muted2)">${periods.length} ${periodLabel} · ${sessions.length} séance${sessions.length!==1?'s':''}</div>
-      </div>
-      <!-- KPI badges row -->
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:0.9rem">
-        ${kpiBadge(globalPct,'force')}
-        ${kpiBadge(volChange,'volume')}
-      </div>
-      <!-- Sparkline chart -->
-      <div style="display:flex;gap:2px;align-items:flex-end;overflow-x:auto;padding-bottom:2px;margin-bottom:${exoRows?'0.85rem':'0'};scrollbar-width:none">
-        ${sparkBars}
-      </div>
-      <!-- Exercise breakdown -->
-      ${exoRows?`<div style="border-top:1px solid var(--border);padding-top:0.5rem">`+
-        `<div style="font-size:0.58rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted2);margin-bottom:0.4rem">Exercices · cette ${periodLabel.replace('.','')}</div>`+
-        exoRows+`</div>`:''}
-    </div>`;
-  }).filter(Boolean).join('');
-
-  el.innerHTML = cards || `<div style="text-align:center;padding:3rem 1rem;color:var(--muted2)">
-    <div style="font-size:2rem;margin-bottom:0.75rem">💪</div>
-    <div style="font-size:0.82rem">Enregistre tes premières séances<br>pour voir la progression ici.</div>
-  </div>`;
+    }
+  });
 }
 
-function woRenderProgWeek(){ woRenderProg('week'); }
-function woRenderProgMonth(){ woRenderProg('month'); }
-
 /* ════════════════════════════════════════
-   PROGRESSION — Vue séance à séance
+   PROGRESSION — Vue unifiée
+   Un seul graphique multi-séries (1 courbe % par type de séance, légende
+   cliquable, comme le graphique Poids) + repères clés + détail complet
+   (historique séance par séance, puis exercice par exercice) rangé dans des
+   accordéons repliés par défaut, pour rester lisible sur mobile.
 ════════════════════════════════════════ */
-function woRenderProgSession(){
-  const el = document.getElementById('wo-prog-content');
-  if(!el) return;
-  const allTypes = woGetAllTypes();
 
-  const cards = Object.entries(allTypes).map(([tid, t])=>{
-    const sessions = woV2GetSessions(tid);
-    if(!sessions.length) return '';
-    // Trier chronologiquement pour calculer la progression, puis inverser pour l'affichage
-    const sortedAsc = [...sessions].sort((a,b)=>a.date.localeCompare(b.date));
-    // Inverser : plus récente en premier
+// % entre deux séances : appariement série par série, sur les exos communs
+function woSessPairPct(curSess, refSess){
+  if(!curSess || !refSess) return null;
+  const indivPcts = [];
+  curSess.exercises?.forEach(exo=>{
+    const refExo = refSess.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
+    if(!refExo) return;
+    const mp = woMatchedProgress(exo.sets||[], refExo.sets||[]);
+    if(mp.pct !== null) indivPcts.push(mp.pct);
+  });
+  return indivPcts.length ? Math.round(indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length) : null;
+}
+
+// % entre deux périodes agrégées (semaine|mois) : même principe, sur woAggregate()
+function woPeriodPairPct(dCur, dRef){
+  if(!dCur || !dRef) return null;
+  const indivPcts = [];
+  Object.entries(dCur.exos).forEach(([name, ce])=>{
+    const pe = dRef.exos[name];
+    if(!pe) return;
+    const mp = woMatchedProgress(ce.sets, pe.sets);
+    if(mp.pct !== null) indivPcts.push(mp.pct);
+  });
+  return indivPcts.length ? Math.round(indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length) : null;
+}
+
+// Construit les séries (une par type de séance) alignées sur un axe X commun
+function woBuildProgSeries(period){
+  const allTypes = woGetAllTypes();
+  const typesArr = Object.entries(allTypes).filter(([tid])=>woV2GetSessions(tid).length>0);
+
+  if(period==='session'){
+    const perType = typesArr.map(([tid,t])=>{
+      const sortedAsc = [...woV2GetSessions(tid)].sort((a,b)=>a.date.localeCompare(b.date));
+      const first = sortedAsc[0];
+      const data = sortedAsc.map((s,i)=> i===0 ? 0 : woSessPairPct(s, first));
+      return {tid, t, sortedAsc, data};
+    });
+    const maxLen = perType.reduce((m,p)=>Math.max(m,p.data.length), 0);
+    const labels = Array.from({length:maxLen},(_,i)=>`${i+1}`);
+    const datasets = perType.map(p=>({
+      tid:p.tid, label:p.t.label, color:p.t.color,
+      data: labels.map((_,i)=> i<p.data.length ? p.data[i] : null)
+    }));
+    return {typesArr, labels, datasets};
+  }
+
+  // week | month : union des périodes de tous les types, chacun avec sa propre référence
+  const periodFn = period==='week' ? woWeekKey : woMonthKey;
+  const labelFn  = period==='week' ? woWeekLabel : woMonthLabel;
+  const perType = typesArr.map(([tid,t])=>{
+    const byPeriod = woAggregate(woV2GetSessions(tid), periodFn);
+    const periods  = [...byPeriod.keys()].sort();
+    return {tid, t, byPeriod, periods, baseline: byPeriod.get(periods[0])};
+  });
+  const keySet = new Set();
+  perType.forEach(p=>p.periods.forEach(k=>keySet.add(k)));
+  const globalKeys = [...keySet].sort();
+  const labels = globalKeys.map(k=>labelFn(k));
+  const datasets = perType.map(p=>({
+    tid:p.tid, label:p.t.label, color:p.t.color,
+    data: globalKeys.map(k=>{
+      if(!p.byPeriod.has(k)) return null;
+      return k===p.periods[0] ? 0 : woPeriodPairPct(p.byPeriod.get(k), p.baseline);
+    })
+  }));
+  return {typesArr, labels, datasets};
+}
+
+// Rendu principal de l'onglet Progression : hero, graphique, repères, accordéons
+window._woDsHidden = window._woDsHidden || {}; // tid -> masqué ? (persiste entre les changements de période)
+function woRenderProgAll(period){
+  const allTypes = woGetAllTypes();
+  const anyData = Object.keys(allTypes).some(tid=>woV2GetSessions(tid).length>0);
+
+  const heroEl = document.getElementById('wo-prog-hero-val');
+  if(!anyData){
+    if(heroEl){ heroEl.textContent='—'; heroEl.style.color='var(--text)'; }
+    const legendEl = document.getElementById('wo-prog-legend'); if(legendEl) legendEl.innerHTML='';
+    if(window._woMainChart){ window._woMainChart.destroy(); window._woMainChart=null; }
+    const card1 = document.getElementById('wo-prog-card-sessions'); if(card1) card1.textContent='—';
+    const card2 = document.getElementById('wo-prog-card-volume'); if(card2) card2.textContent='—';
+    const histBody = document.getElementById('wo-prog-history-body');
+    if(histBody) histBody.innerHTML = `<div style="text-align:center;padding:2rem 1rem;color:var(--muted2)">
+      <div style="font-size:2rem;margin-bottom:0.75rem">💪</div>
+      <div style="font-size:0.82rem">Enregistre tes premières séances<br>pour voir la progression ici.</div>
+    </div>`;
+    const exoBody = document.getElementById('wo-prog-exo-body');
+    if(exoBody) exoBody.innerHTML = '';
+    return;
+  }
+
+  const {typesArr, labels, datasets} = woBuildProgSeries(period);
+
+  // Hero : moyenne du dernier point connu de chaque courbe = progression globale actuelle
+  const finals = datasets.map(d=>{
+    for(let i=d.data.length-1;i>=0;i--) if(d.data[i]!==null) return d.data[i];
+    return null;
+  }).filter(v=>v!==null);
+  const heroVal = finals.length ? Math.round(finals.reduce((a,b)=>a+b,0)/finals.length) : null;
+  if(heroEl){
+    if(heroVal===null){ heroEl.textContent='—'; heroEl.style.color='var(--text)'; }
+    else{
+      const up=heroVal>0, eq=heroVal===0;
+      heroEl.textContent = `${up?'+':''}${heroVal}%`;
+      heroEl.style.color = up?'#4ade80':eq?'var(--text)':'var(--red)';
+    }
+  }
+
+  // Repères rapides
+  const totalSessions = typesArr.reduce((s,[tid])=>s+woV2GetSessions(tid).length,0);
+  const totalVol = typesArr.reduce((s,[tid])=> s + woV2GetSessions(tid).reduce((sv,sess)=>sv+woSessVol(sess),0), 0);
+  const card1 = document.getElementById('wo-prog-card-sessions'); if(card1) card1.textContent = totalSessions;
+  const card2 = document.getElementById('wo-prog-card-volume');
+  if(card2) card2.textContent = `${Math.round(totalVol).toLocaleString('fr-FR')} kg`;
+
+  // Légende cliquable (isoler une courbe)
+  const legendEl = document.getElementById('wo-prog-legend');
+  if(legendEl){
+    legendEl.innerHTML = datasets.map(d=>`
+      <div class="clegend ${window._woDsHidden[d.tid]?'off':''}" style="color:${d.color}" data-tid="${d.tid}" onclick="woToggleDS('${d.tid}',this)">
+        <div class="cl-dot" style="background:${d.color}"></div>${d.label}
+      </div>`).join('');
+  }
+
+  woRenderMainProgChart(labels, datasets);
+
+  const histBody = document.getElementById('wo-prog-history-body');
+  if(histBody) histBody.innerHTML = woBuildHistoryHtml(typesArr);
+  const exoBody = document.getElementById('wo-prog-exo-body');
+  if(exoBody) exoBody.innerHTML = woBuildExoHtml(typesArr);
+}
+
+// Isoler/masquer une courbe via la légende
+function woToggleDS(tid, el){
+  const hide = !el.classList.contains('off');
+  el.classList.toggle('off', hide);
+  window._woDsHidden[tid] = hide;
+  const chart = window._woMainChart;
+  if(!chart) return;
+  const ds = chart.data.datasets.find(d=>d.__tid===tid);
+  if(ds){ ds.hidden = hide; chart.update('none'); }
+}
+
+// Graphique principal : 1 courbe % par type de séance, sur un axe X commun
+window._woMainChart = null;
+function woRenderMainProgChart(labels, datasets){
+  const canvas = document.getElementById('wo-prog-chart');
+  if(!canvas) return;
+  if(window._woMainChart) window._woMainChart.destroy();
+  const isLight = document.body.classList.contains('light-mode');
+  const gridC = isLight?'rgba(0,0,0,0.06)':'rgba(255,255,255,0.04)';
+  const tickC = isLight?'#6b7280':'#404d60';
+  window._woMainChart = new Chart(canvas.getContext('2d'),{
+    type:'line',
+    data:{labels, datasets: datasets.map(d=>{
+      const col = _cssVar(d.color); // Chart.js/canvas ne comprend pas var(--xxx)
+      return {
+        label:d.label, data:d.data, borderColor:col, backgroundColor:col+'18',
+        borderWidth:2, pointRadius:0, pointHoverRadius:4, pointHitRadius:10,
+        tension:0.35, fill:false, spanGaps:true, hidden: !!window._woDsHidden[d.tid], __tid:d.tid
+      };
+    })},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:isLight?'#fff':'#1a2030',
+          borderColor:'rgba(128,128,128,0.2)', borderWidth:1,
+          titleColor:isLight?'#111':'#f0ede6', bodyColor:'#6b7a90', padding:8,
+          titleFont:{family:'DM Sans',size:10}, bodyFont:{family:'DM Sans',size:11},
+          callbacks:{label:c=> c.raw===null ? null : `  ${c.dataset.label} : ${c.raw>0?'+':''}${c.raw}%`}
+        }
+      },
+      layout:{padding:{top:6,right:4,bottom:2,left:4}},
+      scales:{
+        x:{display:true, ticks:{color:tickC,font:{family:'DM Sans',size:9},maxRotation:0,autoSkip:true,maxTicksLimit:6}, grid:{display:false}},
+        y:{display:true, ticks:{color:tickC,font:{family:'DM Sans',size:9},callback:v=>v+'%'}, grid:{color:gridC}}
+      }
+    }
+  });
+}
+
+/* ── Détail repliable : historique séance par séance (regroupé par type) ── */
+function woBuildHistoryHtml(typesArr){
+  return typesArr.map(([tid,t])=>{
+    const sortedAsc = [...woV2GetSessions(tid)].sort((a,b)=>a.date.localeCompare(b.date));
     const sortedDesc = [...sortedAsc].reverse();
     const showLimit = 3;
     const visibles = sortedDesc.slice(0, showLimit);
     const hasMore = sortedDesc.length > showLimit;
 
-    const rows = visibles.map((sess)=>{
-      // Trouver la séance précédente dans l'ordre chronologique
-      const idxAsc = sortedAsc.findIndex(s=>s.date===sess.date);
-      const prev = idxAsc > 0 ? sortedAsc[idxAsc-1] : null;
-
-      // Progression : moyenne des % par exo, chaque exo appariant série par série (série 1 vs série 1…)
-      let pct = null;
-      if(prev && sess.exercises?.length && prev.exercises?.length){
-        const indivPcts = [];
-        sess.exercises.forEach(exo=>{
-          const prevExo = prev.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
-          if(!prevExo) return;
-          const mp = woMatchedProgress(exo.sets||[], prevExo.sets||[]);
-          if(mp.pct !== null) indivPcts.push(mp.pct);
-        });
-        if(indivPcts.length){
-          pct = Math.round(indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length);
-        }
-      }
-
+    const rowHtml = (sess, idxAsc)=>{
+      const prev = idxAsc>0 ? sortedAsc[idxAsc-1] : null;
+      const pct = woSessPairPct(sess, prev);
       const vol = woSessVol(sess);
       const exoCount = sess.exercises?.filter(e=>e.sets?.length>0).length || 0;
       const dur = sess.duration ? ` · ${sess.duration} min` : '';
-      const isFirst = sess.date === sortedDesc[0].date; // la plus récente
-
-      // Badge couleur bulle
+      const isFirst = idxAsc === sortedAsc.length-1;
       let badge;
       if(pct !== null){
-        const up = pct > 0, eq = pct === 0;
-        const col = up ? '#4ade80' : eq ? 'var(--muted)' : 'var(--red)';
-        const bg  = up ? 'rgba(74,222,128,0.12)' : eq ? 'var(--s3)' : 'var(--red-bg)';
-        const bd  = up ? 'rgba(74,222,128,0.35)' : eq ? 'var(--border2)' : 'rgba(232,56,56,0.35)';
-        badge = `<div style="font-size:0.75rem;font-weight:800;color:${col};background:${bg};border:1.5px solid ${bd};border-radius:50px;padding:4px 11px;flex-shrink:0;min-width:58px;text-align:center;letter-spacing:0.01em">${up?'▲':'▼'} ${up?'+':''}${pct}%</div>`;
+        const up = pct>0, eq = pct===0;
+        const col = up?'#4ade80':eq?'var(--muted)':'var(--red)';
+        const bg  = up?'rgba(74,222,128,0.12)':eq?'var(--s3)':'var(--red-bg)';
+        const bd  = up?'rgba(74,222,128,0.35)':eq?'var(--border2)':'rgba(232,56,56,0.35)';
+        badge = `<div style="font-size:0.72rem;font-weight:800;color:${col};background:${bg};border:1.5px solid ${bd};border-radius:50px;padding:4px 10px;flex-shrink:0;min-width:54px;text-align:center">${up?'▲':'▼'} ${up?'+':''}${pct}%</div>`;
       } else if(idxAsc===0){
-        badge = `<div style="font-size:0.62rem;color:var(--muted2);background:var(--s3);border:1px solid var(--border);border-radius:50px;padding:4px 10px;flex-shrink:0;white-space:nowrap">1ère séance</div>`;
+        badge = `<div style="font-size:0.6rem;color:var(--muted2);background:var(--s3);border:1px solid var(--border);border-radius:50px;padding:4px 10px;flex-shrink:0;white-space:nowrap">1ère séance</div>`;
       } else {
-        badge = `<div style="font-size:0.62rem;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-d);border-radius:50px;padding:4px 10px;flex-shrink:0">Nouveau</div>`;
+        badge = `<div style="font-size:0.6rem;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-d);border-radius:50px;padding:4px 10px;flex-shrink:0">Nouveau</div>`;
       }
-
-      return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
-        <div style="width:7px;height:7px;border-radius:50%;background:${t.color};flex-shrink:0;opacity:${isFirst?'1':'0.45'};box-shadow:${isFirst?'0 0 6px '+t.color+'99':'none'}"></div>
+      return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
+        <div style="width:6px;height:6px;border-radius:50%;background:${t.color};flex-shrink:0;opacity:${isFirst?'1':'0.45'}"></div>
         <div style="flex:1;min-width:0">
-          <div style="font-size:0.8rem;font-weight:${isFirst?'600':'400'};color:${isFirst?'var(--text)':'var(--muted)'}">${fmtDL(sess.date)}${dur}</div>
-          <div style="font-size:0.62rem;color:var(--muted2);margin-top:1px">${exoCount} exo${exoCount!==1?'s':''} · ${Math.round(vol).toLocaleString('fr-FR')} kg vol.</div>
+          <div style="font-size:0.78rem;font-weight:${isFirst?'600':'400'};color:${isFirst?'var(--text)':'var(--muted)'}">${fmtDL(sess.date)}${dur}</div>
+          <div style="font-size:0.6rem;color:var(--muted2);margin-top:1px">${exoCount} exo${exoCount!==1?'s':''} · ${Math.round(vol).toLocaleString('fr-FR')} kg vol.</div>
         </div>
         ${badge}
       </div>`;
-    }).join('');
+    };
 
-    const expandBtn = hasMore ? `<button onclick="woRenderProgSessionExpanded('${tid}')"
-      style="width:100%;margin-top:0.5rem;padding:6px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);font-size:0.72rem;color:var(--muted);cursor:pointer;font-family:DM Sans,sans-serif">
+    const rows = visibles.map(sess=>rowHtml(sess, sortedAsc.findIndex(s=>s.date===sess.date))).join('');
+    const expandBtn = hasMore ? `<button onclick="woHistoryExpand('${tid}')"
+      style="width:100%;margin-top:0.4rem;padding:6px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);font-size:0.7rem;color:var(--muted);cursor:pointer;font-family:DM Sans,sans-serif">
       ↓ Voir les ${sortedDesc.length - showLimit} séances précédentes</button>` : '';
 
-    // Tendance globale sur toutes les séances (1ère vs dernière)
     let trendBadge = '';
     if(sortedAsc.length >= 2){
-      const first = sortedAsc[0], last = sortedAsc[sortedAsc.length-1];
-      const indivPcts=[];
-      last.exercises?.forEach(exo=>{
-        const fExo = first.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
-        if(!fExo) return;
-        const mp = woMatchedProgress(exo.sets||[], fExo.sets||[]);
-        if(mp.pct !== null) indivPcts.push(mp.pct);
-      });
-      if(indivPcts.length){
-        const tp = Math.round(indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length);
+      const tp = woSessPairPct(sortedAsc[sortedAsc.length-1], sortedAsc[0]);
+      if(tp !== null){
         const tc = tp>0?'#4ade80':tp<0?'var(--red)':'var(--muted)';
-        trendBadge = `<span style="font-size:0.62rem;font-weight:700;color:${tc};background:${tc}18;border:1px solid ${tc}44;border-radius:var(--r-pill);padding:2px 8px">${tp>0?'▲ +':'▼ '}${tp}% depuis début</span>`;
+        trendBadge = `<span style="font-size:0.6rem;font-weight:700;color:${tc};background:${tc}18;border:1px solid ${tc}44;border-radius:var(--r-pill);padding:2px 7px">${tp>0?'▲ +':'▼ '}${tp}% depuis début</span>`;
       }
     }
 
-    return `<div class="card" style="margin-bottom:0.85rem;padding:1rem">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.65rem">
-        <div style="width:10px;height:10px;border-radius:50%;background:${t.color};box-shadow:0 0 8px ${t.color}88;flex-shrink:0"></div>
-        <div style="font-family:Playfair Display,serif;font-size:1rem;font-weight:600;color:${t.color};flex:1">${t.label}</div>
+    return `<div style="margin-bottom:1.1rem">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.4rem">
+        <div style="width:8px;height:8px;border-radius:50%;background:${t.color};flex-shrink:0"></div>
+        <div style="font-size:0.78rem;font-weight:600;color:${t.color};flex:1">${t.label}</div>
         <div style="display:flex;align-items:center;gap:6px">
           ${trendBadge}
-          <div style="font-size:0.6rem;color:var(--muted2)">${sortedAsc.length} séance${sortedAsc.length!==1?'s':''}</div>
+          <div style="font-size:0.58rem;color:var(--muted2)">${sortedAsc.length} séance${sortedAsc.length!==1?'s':''}</div>
         </div>
       </div>
-      <div id="wo-prog-session-rows-${tid}">
-        ${rows || '<div style="font-size:0.75rem;color:var(--muted2);padding:0.5rem 0">Aucune séance encore.</div>'}
+      <div id="wo-prog-hist-rows-${tid}">
+        ${rows || '<div style="font-size:0.72rem;color:var(--muted2);padding:0.4rem 0">Aucune séance encore.</div>'}
         ${expandBtn}
       </div>
     </div>`;
-  }).filter(Boolean).join('');
-
-  el.innerHTML = cards || `<div style="text-align:center;padding:3rem 1rem;color:var(--muted2)">
-    <div style="font-size:2rem;margin-bottom:0.75rem">💪</div>
-    <div style="font-size:0.82rem">Enregistre tes premières séances<br>pour voir la progression ici.</div>
-  </div>`;
+  }).join('');
 }
 
-/* ── Afficher toutes les séances d'un type (vue étendue) ── */
-function woRenderProgSessionExpanded(tid){
+/* ── Afficher toutes les séances d'un type dans l'historique (vue étendue) ── */
+function woHistoryExpand(tid){
   const allTypes = woGetAllTypes();
   const t = allTypes[tid]; if(!t) return;
-  const sessions = woV2GetSessions(tid);
-  const sortedAsc = [...sessions].sort((a,b)=>a.date.localeCompare(b.date));
+  const sortedAsc = [...woV2GetSessions(tid)].sort((a,b)=>a.date.localeCompare(b.date));
   const sortedDesc = [...sortedAsc].reverse();
-  const container = document.getElementById('wo-prog-session-rows-'+tid);
+  const container = document.getElementById('wo-prog-hist-rows-'+tid);
   if(!container) return;
 
-  const rows = sortedDesc.map((sess)=>{
+  const rows = sortedDesc.map(sess=>{
     const idxAsc = sortedAsc.findIndex(s=>s.date===sess.date);
-    const prev = idxAsc > 0 ? sortedAsc[idxAsc-1] : null;
-    let pct = null;
-    if(prev && sess.exercises?.length && prev.exercises?.length){
-      const indivPcts=[];
-      sess.exercises.forEach(exo=>{
-        const prevExo=prev.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
-        if(!prevExo) return;
-        const mp=woMatchedProgress(exo.sets||[], prevExo.sets||[]);
-        if(mp.pct!==null) indivPcts.push(mp.pct);
-      });
-      if(indivPcts.length){
-        pct=Math.round(indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length);
-      }
-    }
-    const vol=woSessVol(sess);
-    const exoCount=sess.exercises?.filter(e=>e.sets?.length>0).length||0;
-    const dur=sess.duration?` · ${sess.duration} min`:'';
-    const isFirst=idxAsc===sortedAsc.length-1;
+    const prev = idxAsc>0 ? sortedAsc[idxAsc-1] : null;
+    const pct = woSessPairPct(sess, prev);
+    const vol = woSessVol(sess);
+    const exoCount = sess.exercises?.filter(e=>e.sets?.length>0).length||0;
+    const dur = sess.duration?` · ${sess.duration} min`:'';
+    const isFirst = idxAsc===sortedAsc.length-1;
     let badge;
     if(pct!==null){
       const up=pct>0,eq=pct===0;
       const col=up?'#4ade80':eq?'var(--muted)':'var(--red)';
       const bg=up?'rgba(74,222,128,0.12)':eq?'var(--s3)':'var(--red-bg)';
       const bd=up?'rgba(74,222,128,0.35)':eq?'var(--border2)':'rgba(232,56,56,0.35)';
-      badge=`<div style="font-size:0.75rem;font-weight:800;color:${col};background:${bg};border:1.5px solid ${bd};border-radius:50px;padding:4px 11px;flex-shrink:0;min-width:58px;text-align:center">${up?'▲':'▼'} ${up?'+':''}${pct}%</div>`;
+      badge=`<div style="font-size:0.72rem;font-weight:800;color:${col};background:${bg};border:1.5px solid ${bd};border-radius:50px;padding:4px 10px;flex-shrink:0;min-width:54px;text-align:center">${up?'▲':'▼'} ${up?'+':''}${pct}%</div>`;
     }else if(idxAsc===0){
-      badge=`<div style="font-size:0.62rem;color:var(--muted2);background:var(--s3);border:1px solid var(--border);border-radius:50px;padding:4px 10px;flex-shrink:0;white-space:nowrap">1ère séance</div>`;
+      badge=`<div style="font-size:0.6rem;color:var(--muted2);background:var(--s3);border:1px solid var(--border);border-radius:50px;padding:4px 10px;flex-shrink:0;white-space:nowrap">1ère séance</div>`;
     }else{
-      badge=`<div style="font-size:0.62rem;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-d);border-radius:50px;padding:4px 10px;flex-shrink:0">Nouveau</div>`;
+      badge=`<div style="font-size:0.6rem;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-d);border-radius:50px;padding:4px 10px;flex-shrink:0">Nouveau</div>`;
     }
-    return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
-      <div style="width:7px;height:7px;border-radius:50%;background:${t.color};flex-shrink:0;opacity:${isFirst?'1':'0.45'}"></div>
+    return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
+      <div style="width:6px;height:6px;border-radius:50%;background:${t.color};flex-shrink:0;opacity:${isFirst?'1':'0.45'}"></div>
       <div style="flex:1;min-width:0">
-        <div style="font-size:0.8rem;font-weight:${isFirst?'600':'400'};color:${isFirst?'var(--text)':'var(--muted)'}">${fmtDL(sess.date)}${dur}</div>
-        <div style="font-size:0.62rem;color:var(--muted2);margin-top:1px">${exoCount} exo${exoCount!==1?'s':''} · ${Math.round(vol).toLocaleString('fr-FR')} kg vol.</div>
+        <div style="font-size:0.78rem;font-weight:${isFirst?'600':'400'};color:${isFirst?'var(--text)':'var(--muted)'}">${fmtDL(sess.date)}${dur}</div>
+        <div style="font-size:0.6rem;color:var(--muted2);margin-top:1px">${exoCount} exo${exoCount!==1?'s':''} · ${Math.round(vol).toLocaleString('fr-FR')} kg vol.</div>
       </div>
       ${badge}
     </div>`;
   }).join('');
   container.innerHTML = rows;
+}
+
+/* ── Détail repliable : progression exercice par exercice (regroupé par type) ──
+   Chaque exercice est un accordéon indépendant ; sa courbe n'est dessinée qu'à
+   l'ouverture (perf + tailles de canvas correctes tant qu'il est masqué). ── */
+window._woExoChartData = window._woExoChartData || {}; // canvasId -> {labels,data,color}
+function woBuildExoHtml(typesArr){
+  const groups = typesArr.map(([tid,t])=>{
+    const sortedAsc = [...woV2GetSessions(tid)].sort((a,b)=>a.date.localeCompare(b.date));
+    if(!sortedAsc.length) return '';
+
+    const exoMap = {}; // key -> {name, occ:[{date,sets}]}
+    sortedAsc.forEach(sess=>{
+      (sess.exercises||[]).forEach(exo=>{
+        const sets = (exo.sets||[]).filter(s=>!s.skipped);
+        if(!sets.length) return;
+        const key = exo.id || exo.name;
+        if(!exoMap[key]) exoMap[key] = {name:exo.name, occ:[]};
+        exoMap[key].occ.push({date:sess.date, sets});
+      });
+    });
+
+    const exoList = Object.values(exoMap).sort((a,b)=> b.occ.length - a.occ.length || a.name.localeCompare(b.name));
+    if(!exoList.length) return '';
+
+    const items = exoList.map((exo,idx)=>{
+      const n = exo.occ.length;
+      const canvasId = `wo-prog-exo-chart-${tid}-${idx}`;
+      let badge = `<span style="font-size:0.58rem;color:var(--muted2);background:var(--s3);border:1px solid var(--border2);border-radius:var(--r-pill);padding:2px 8px;white-space:nowrap">1 séance</span>`;
+      let bodyHtml = `<div style="font-size:0.7rem;color:var(--muted2);padding:0.4rem 0">Pas encore assez de séances pour tracer une courbe.</div>`;
+
+      if(n >= 2){
+        const first = exo.occ[0], last = exo.occ[n-1];
+        const mp = woMatchedProgress(last.sets, first.sets);
+        if(mp.pct !== null){
+          const up = mp.pct>0, eq = mp.pct===0;
+          const col = up?'#4ade80':eq?'var(--muted)':'var(--red)';
+          const bg  = up?'rgba(74,222,128,0.12)':eq?'var(--s3)':'var(--red-bg)';
+          const bd  = up?'rgba(74,222,128,0.35)':eq?'var(--border2)':'rgba(232,56,56,0.35)';
+          badge = `<span style="font-size:0.66rem;font-weight:700;color:${col};background:${bg};border:1px solid ${bd};border-radius:var(--r-pill);padding:2px 9px;white-space:nowrap">${up?'▲':'▼'} ${up?'+':''}${mp.pct}%</span>`;
+        } else {
+          badge = `<span style="font-size:0.58rem;color:var(--muted2);background:var(--s3);border:1px solid var(--border2);border-radius:var(--r-pill);padding:2px 8px;white-space:nowrap">—</span>`;
+        }
+        const labels = exo.occ.map(o=>{ const [,m,dd]=o.date.split('-'); return `${dd}/${m}`; });
+        const data   = exo.occ.map(o => woMatchedProgress(o.sets, first.sets).pct);
+        window._woExoChartData[canvasId] = {labels, data, color:t.color};
+        bodyHtml = `<div class="chart-wrap" style="height:120px;margin-top:0.3rem"><canvas id="${canvasId}"></canvas></div>`;
+      }
+
+      return `<details class="chart-details" style="margin-bottom:0.4rem" ontoggle="if(this.open) woRenderProgExoChart('${canvasId}')">
+        <summary>
+          <span style="flex:1;min-width:0;font-size:0.73rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${exo.name}</span>
+          <span style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+            <span style="font-size:0.56rem;color:var(--muted2)">${n} séance${n!==1?'s':''}</span>
+            ${badge}
+          </span>
+        </summary>
+        <div class="chart-details-body">${bodyHtml}</div>
+      </details>`;
+    }).join('');
+
+    return `<div style="margin-bottom:1rem">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.4rem">
+        <div style="width:8px;height:8px;border-radius:50%;background:${t.color};flex-shrink:0"></div>
+        <div style="font-size:0.78rem;font-weight:600;color:${t.color}">${t.label}</div>
+      </div>
+      ${items}
+    </div>`;
+  }).filter(Boolean).join('');
+
+  return groups || `<div style="font-size:0.72rem;color:var(--muted2);padding:0.5rem 0">Aucun exercice enregistré.</div>`;
+}
+
+// Rendu différé du graphique d'un exercice, déclenché à l'ouverture de son accordéon
+function woRenderProgExoChart(canvasId){
+  const d = window._woExoChartData[canvasId];
+  if(!d) return;
+  woRenderEvoChart(canvasId, d.labels, d.data, d.color);
 }
 
 /* ════════════════════════════════════════
@@ -18735,6 +19098,21 @@ function woRenderVolumeTable(){
   const nowD   = new Date(today()+'T12:00');
   const cutoff = new Date(nowD.getTime()-28*86400000).toISOString().split('T')[0];
   const recent = allSessionsFlat.filter(s=>s.date>=cutoff);
+
+  // Semaine calendaire précédente (lundi → dimanche) : volume réel, sans moyenne
+  const curDow    = nowD.getDay()||7; // 1=lundi … 7=dimanche
+  const curMonday = new Date(nowD); curMonday.setDate(nowD.getDate()-curDow+1);
+  const prevMonday = new Date(curMonday); prevMonday.setDate(curMonday.getDate()-7);
+  const prevSunday = new Date(curMonday); prevSunday.setDate(curMonday.getDate()-1);
+  const pwStart = prevMonday.toISOString().split('T')[0];
+  const pwEnd   = prevSunday.toISOString().split('T')[0];
+  let prevWeekSets = 0;
+  allSessionsFlat.filter(s=>s.date>=pwStart && s.date<=pwEnd).forEach(sess=>{
+    (sess.exercises||[]).forEach(exo=>{
+      if(paused.has(exo.name)) return;
+      prevWeekSets += (exo.sets||[]).filter(s=>!s.skipped).length;
+    });
+  });
 
   if(!recent.length){
     el.innerHTML='<div style="font-size:0.75rem;color:var(--muted2);text-align:center;padding:1rem 0">Pas de séance dans les 4 dernières semaines.</div>';
@@ -18791,9 +19169,15 @@ function woRenderVolumeTable(){
 
   const grandTotal = Object.values(byMuscle).reduce((s,arr)=>s+arr.reduce((ss,e)=>ss+e.weekSets,0),0);
 
-  el.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.85rem;padding:0.55rem 0.75rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm)">
-    <span style="font-size:0.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Total · toutes zones</span>
-    <span style="font-size:0.88rem;font-weight:700;color:var(--text)">${Math.round(grandTotal*10)/10} <span style="font-size:0.6rem;font-weight:400;color:var(--muted)">sér./sem</span></span>
+  el.innerHTML = `<div style="margin-bottom:0.85rem;display:flex;flex-direction:column;gap:5px;align-items:flex-end;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">
+    <div style="display:flex;align-items:baseline;gap:8px">
+      <span style="font-size:0.68rem;color:var(--muted)">Total · toutes zones</span>
+      <span style="font-size:0.95rem;font-weight:700;color:var(--lime)">${Math.round(grandTotal*10)/10} <span style="font-size:0.62rem;font-weight:400;color:var(--muted)">sér./sem</span></span>
+    </div>
+    <div style="display:flex;align-items:baseline;gap:8px">
+      <span style="font-size:0.68rem;color:var(--muted)">Sem. dernière (réelle)</span>
+      <span style="font-size:0.95rem;font-weight:700;color:var(--text)">${prevWeekSets} <span style="font-size:0.62rem;font-weight:400;color:var(--muted)">séries</span></span>
+    </div>
   </div>`
   + sorted.map(muscle=>{
     const exos  = byMuscle[muscle].sort((a,b)=>b.weekSets-a.weekSets);
@@ -18810,25 +19194,31 @@ function woRenderVolumeTable(){
       else
         refHint=`<span style="font-size:0.58rem;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-d);border-radius:var(--r-pill);padding:1px 7px;white-space:nowrap">✓ zone optimale</span>`;
     }
-    return `<div style="margin-bottom:1rem;padding-bottom:0.9rem;border-bottom:1px solid var(--border)">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap">
-        <div style="width:8px;height:8px;border-radius:2px;background:${col};flex-shrink:0"></div>
-        <div style="font-size:0.63rem;font-weight:700;color:${col};text-transform:uppercase;letter-spacing:0.09em;flex:1">${muscle}</div>
-        <div style="font-size:0.72rem;font-weight:700;color:var(--text)">${Math.round(total*10)/10} sér./sem</div>
-        ${refHint}
+    return `<details class="chart-details" style="margin-bottom:0.6rem">
+      <summary>
+        <span style="display:flex;align-items:center;gap:6px;flex:1;min-width:0">
+          <span style="width:8px;height:8px;border-radius:2px;background:${col};flex-shrink:0;display:inline-block"></span>
+          <span style="font-weight:700;color:${col};text-transform:uppercase;letter-spacing:0.09em;font-size:0.63rem">${muscle}</span>
+        </span>
+        <span style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+          <span style="font-weight:700;color:var(--text);font-size:0.72rem">${Math.round(total*10)/10} sér./sem</span>
+          ${refHint}
+        </span>
+      </summary>
+      <div class="chart-details-body">
+        ${exos.map(e=>{
+          const avg=Math.round(e.avgPerSess*10)/10;
+          const freq=Math.round(e.freqPerWeek*10)/10;
+          return `<div style="display:flex;align-items:center;gap:6px;padding:3px 0">
+            <div style="flex:1;font-size:0.73rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">${e.name}</div>
+            <div style="font-size:0.65rem;color:var(--muted);flex-shrink:0;text-align:right">
+              <span style="color:var(--text);font-weight:600">${avg}</span> sér.
+              <span style="color:var(--muted2)"> · ${freq}×/sem</span>
+            </div>
+          </div>`;
+        }).join('')}
       </div>
-      ${exos.map(e=>{
-        const avg=Math.round(e.avgPerSess*10)/10;
-        const freq=Math.round(e.freqPerWeek*10)/10;
-        return `<div style="display:flex;align-items:center;gap:6px;padding:3px 0 3px 14px">
-          <div style="flex:1;font-size:0.73rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">${e.name}</div>
-          <div style="font-size:0.65rem;color:var(--muted);flex-shrink:0;text-align:right">
-            <span style="color:var(--text);font-weight:600">${avg}</span> sér.
-            <span style="color:var(--muted2)"> · ${freq}×/sem</span>
-          </div>
-        </div>`;
-      }).join('')}
-    </div>`;
+    </details>`;
   }).join('');
 }
 
@@ -20733,25 +21123,25 @@ function _renderKcalRest(totals, goal, macroGoals) {
     el.style.color = rest < 0 ? 'var(--red)' : rest < 200 ? 'var(--orange)' : 'var(--lime)';
     if (sub)   sub.textContent   = '/ ' + goal.toLocaleString('fr-FR') + ' kcal';
     if (label) label.textContent = 'Restantes';
-    if (card)  card.style.borderColor = rest < 0 ? 'rgba(232,56,56,.35)' : rest < 200 ? 'rgba(251,146,60,.35)' : 'rgba(74,222,128,.3)';
   } else if (hasFood) {
     el.textContent = totals.kcal.toLocaleString('fr-FR');
     el.style.color = 'var(--text)';
     if (sub)   sub.textContent   = 'kcal · tap objectif';
     if (label) label.textContent = 'Ingérées';
-    if (card)  card.style.borderColor = 'var(--border)';
   } else {
     el.textContent = '—';
     el.style.color = 'var(--muted2)';
     if (sub)   sub.textContent   = 'Tap → objectif';
     if (label) label.textContent = 'Restantes';
-    if (card)  card.style.borderColor = 'var(--border)';
     if (macroEl) macroEl.style.display = 'none';
     return;
   }
 
   /* ── Macros — toujours visibles dès qu\'il y a de la nourriture ── */
-  if (macroEl && hasFood) {
+  const gEl = document.getElementById('ap-kcal-rest-g');
+  const lEl = document.getElementById('ap-kcal-rest-l');
+  const pEl = document.getElementById('ap-kcal-rest-p');
+  if (macroEl && hasFood && gEl && lEl && pEl) {
     let vG, vL, vP, modeRest = false;
     if (goal && macroGoals) {
       vG = macroGoals.gluc - totals.gluc;
@@ -20763,14 +21153,11 @@ function _renderKcalRest(totals, goal, macroGoals) {
       vL = totals.lip;
       vP = totals.prot;
     }
-    const cell = (v, col, muted) => {
-      const c = modeRest ? (v < 0 ? 'var(--red)' : v < 10 ? 'var(--orange)' : col) : col;
-      return '<span style="display:inline-flex;align-items:baseline;gap:1px;white-space:nowrap;margin-right:3px">'
-        + '<span style="font-size:0.72rem;font-weight:700;color:' + c + ';line-height:1">' + Math.round(v) + '</span>'
-        + '<span style="font-size:0.45rem;color:var(--muted2)">g' + muted + '</span>'
-        + '</span>';
+    const setCell = (el, v) => {
+      el.textContent = Math.round(v) + 'g';
+      el.style.color = modeRest ? (v < 0 ? 'var(--red)' : v < 10 ? 'var(--orange)' : 'var(--text)') : 'var(--text)';
     };
-    macroEl.innerHTML = cell(vG, '#2fd6b4', 'G') + cell(vL, 'var(--orange)', 'L') + cell(vP, 'var(--lime)', 'P');
+    setCell(gEl, vG); setCell(lEl, vL); setCell(pEl, vP);
     macroEl.style.display = 'flex';
   } else if (macroEl) {
     macroEl.style.display = 'none';
