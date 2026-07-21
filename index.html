@@ -6160,31 +6160,33 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <!-- STYLES SOMMEIL APPLE -->
 <style>
 /* ─── SLEEP PAGE v10 — site style ─── */
-#page-sommeil { padding-bottom:5rem; }
-.sl-tabs { display:flex; border-bottom:1px solid var(--border); margin:0 -0.85rem 1.25rem; padding:0 0.85rem; }
-.sl-tab { flex:1; padding:0.75rem 0.5rem; text-align:center; font-size:0.82rem; font-weight:500; color:var(--muted); cursor:pointer; border:none; background:none; font-family:Syne,sans-serif; border-bottom:2px solid transparent; margin-bottom:-1px; transition:all var(--trans); -webkit-tap-highlight-color:transparent; }
-.sl-tab.active { color:var(--text); border-bottom-color:var(--lime); }
-.sl-score-ring-wrap { position:relative; width:110px; height:110px; flex-shrink:0; }
+#page-sommeil { padding-bottom:5rem; padding-top:0.6rem; }
+#page-sommeil{ --sl-accent:#a78bfa; --sl-accent-d:#7c3aed; --sl-accent-bg:rgba(167,139,250,0.12); }
+
+/* Onglets principaux en pilule (style Apple Health) */
+#page-sommeil .sh-tabs{background:var(--s1);border-bottom:none;border-radius:var(--r-pill);padding:3px;margin-left:0;margin-right:0;gap:4px}
+#page-sommeil .sh-tab{border-radius:var(--r-pill);border-bottom:none;padding:0.55rem 0.4rem;font-size:0.72rem;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
+#page-sommeil .sh-tab.active{background:var(--s2);color:var(--sl-accent)}
+
+/* Le score (à gauche) et l'anneau (à droite) restent toujours côte à côte, jamais l'un sous l'autre.
+   Marge à droite pour dégager l'anneau de la colonne occupée par la bulle de compte (fixe, en haut à droite),
+   qui peut sinon se retrouver juste au-dessus au moindre scroll. */
+#page-sommeil .hero-row{flex-wrap:nowrap;gap:0.9rem;padding-right:2.75rem}
+
+.sl-score-ring-wrap { position:relative; flex-shrink:0; }
 .sl-score-ring-wrap svg { transform:rotate(-90deg); }
-.sl-score-val { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-.sl-score-num { font-family:Playfair Display,serif; font-size:2rem; font-weight:600; color:var(--text); line-height:1; }
-.sl-score-lbl { font-size:0.55rem; color:var(--muted2); text-transform:uppercase; letter-spacing:0.1em; margin-top:2px; font-family:Syne,sans-serif; }
-.sl-graph-wrap { background:var(--s1); border-radius:var(--r); padding:1rem 0.75rem 0.75rem; border:1px solid var(--border); margin-bottom:1rem; position:relative; overflow:hidden; }
-.sl-graph-title { font-size:0.62rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted2); font-family:Syne,sans-serif; }
-.sl-graph-duration { font-size:0.7rem; color:var(--muted); font-family:Syne,sans-serif; }
-.sl-stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.65rem; margin-bottom:1rem; }
-.sl-stat-card { background:var(--s1); border-radius:var(--r); padding:0.9rem 1rem; border:1px solid var(--border); position:relative; overflow:hidden; }
-.sl-stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; border-radius:var(--r) var(--r) 0 0; }
-.sl-stat-card.sl-card-deep::before  { background:linear-gradient(90deg,#4c1d95,#7c3aed); }
-.sl-stat-card.sl-card-rem::before   { background:linear-gradient(90deg,var(--blue-d),var(--blue)); }
-.sl-stat-card.sl-card-core::before  { background:linear-gradient(90deg,var(--teal-d),var(--teal)); }
-.sl-stat-card.sl-card-awake::before { background:linear-gradient(90deg,var(--orange-d),var(--orange)); }
-.sl-stat-card.sl-card-score::before { background:linear-gradient(90deg,var(--lime-d),var(--lime)); }
-.sl-stat-card.sl-card-total::before { background:linear-gradient(90deg,var(--pink-d),var(--pink)); }
-.sl-stat-label { font-size:0.6rem; color:var(--muted2); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.35rem; font-family:Syne,sans-serif; }
-.sl-stat-value { font-family:Playfair Display,serif; font-size:1.5rem; font-weight:400; color:var(--text); line-height:1; }
+.sl-score-ring-txt { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif; font-weight:700; font-size:1.4rem; color:var(--text); }
+.sl-graph-wrap { background:var(--s0); border-radius:var(--r); padding:0.85rem 0.7rem 0.7rem; border:none; margin-bottom:0.8rem; position:relative; overflow:hidden; }
+.sl-graph-title { font-size:0.62rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted2); font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif; }
+.sl-graph-duration { font-size:0.7rem; color:var(--muted); font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif; }
 .sl-stat-unit  { font-size:0.7rem; color:var(--muted); margin-left:2px; font-family:Syne,sans-serif; }
-.sl-stat-sub   { font-size:0.65rem; color:var(--muted); margin-top:4px; font-family:Syne,sans-serif; }
+
+/* Historique : typographie harmonisée avec le nouveau style */
+#page-sommeil .sl-history-card{ border:1px solid var(--border); }
+#page-sommeil .sl-history-date{ font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif; }
+#page-sommeil .sl-history-score{ font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif; }
+#page-sommeil .sl-history-meta{ font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif; }
+
 .sl-legend { display:flex; gap:0.85rem; flex-wrap:wrap; padding:0.5rem 0.25rem 0; }
 .sl-legend-item { display:flex; align-items:center; gap:5px; font-size:0.63rem; color:var(--muted); font-family:Syne,sans-serif; }
 .sl-legend-dot { width:8px; height:8px; border-radius:2px; flex-shrink:0; }
@@ -6270,53 +6272,57 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   <h2>Suivi du <em>sommeil</em></h2>
   <p style="font-size:0.7rem;color:var(--muted2);letter-spacing:0.06em;text-transform:uppercase;font-family:Syne,sans-serif;margin-top:2px">Score · Phases · Cycles · Analyse</p>
 </div>
-<div class="sl-tabs">
-  <button class="sl-tab active" id="sl-tab-analyse" onclick="slSwitchTab('analyse')">Analyse</button>
-  <button class="sl-tab" id="sl-tab-track" onclick="slSwitchTab('track')">Suivre</button>
-  <button class="sl-tab" id="sl-tab-history" onclick="slSwitchTab('history')">Historique</button>
-  <button class="sl-tab" id="sl-tab-tips" onclick="slSwitchTab('tips')">Conseils</button>
+<div class="sh-tabs" style="margin-bottom:1rem">
+  <button class="sh-tab active" id="sl-tab-analyse" onclick="slSwitchTab('analyse')">Analyse</button>
+  <button class="sh-tab" id="sl-tab-track" onclick="slSwitchTab('track')">Suivre</button>
+  <button class="sh-tab" id="sl-tab-history" onclick="slSwitchTab('history')">Historique</button>
+  <button class="sh-tab" id="sl-tab-tips" onclick="slSwitchTab('tips')">Conseils</button>
 </div>
 <div id="sl-panel-analyse" class="sh-tab-panel active">
   <!-- Apple Health style: Time in bed / Time asleep header -->
-  <div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.2rem;margin-bottom:1rem" class="sl-anim-in">
-    <div style="display:flex;align-items:center;gap:1rem">
-      <!-- Score ring left -->
-      <div class="sl-score-ring-wrap">
-        <svg viewBox="0 0 36 36" width="100" height="100">
-          <circle cx="18" cy="18" r="15" fill="none" stroke="var(--s3)" stroke-width="3.5"/>
-          <circle id="sl-score-ring" cx="18" cy="18" r="15" fill="none" stroke="url(#slScoreGrad)" stroke-width="3.5" stroke-dasharray="94.25" stroke-dashoffset="94.25" stroke-linecap="round" style="transition:stroke-dashoffset 1.2s cubic-bezier(0.34,1.56,0.64,1)"/>
-          <defs><linearGradient id="slScoreGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#35c9a0"/></linearGradient></defs>
-        </svg>
-        <div class="sl-score-val"><div class="sl-score-num" id="sl-score-display">--</div><div class="sl-score-lbl">Score</div></div>
+  <!-- Hero : score de la nuit -->
+  <div class="hero-row sl-anim-in" style="align-items:center;justify-content:flex-start">
+    <div>
+      <div class="hero-lbl">Score de sommeil</div>
+      <div class="hero-val-row">
+        <div class="hero-badge" id="sl-grade-badge">--</div>
       </div>
-      <!-- Right side: time + grade + meta -->
-      <div style="flex:1;min-width:0">
-        <!-- Time in bed / Time asleep row -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.6rem;padding-bottom:0.6rem;border-bottom:1px solid var(--border)">
-          <div>
-            <div style="font-size:0.52rem;color:var(--muted2);text-transform:uppercase;letter-spacing:0.08em;font-family:Syne,sans-serif;margin-bottom:1px">Temps au lit</div>
-            <div id="sl-time-in-bed" style="font-family:Playfair Display,serif;font-size:1.25rem;color:var(--text);line-height:1">--h--</div>
-          </div>
-          <div>
-            <div style="font-size:0.52rem;color:var(--muted2);text-transform:uppercase;letter-spacing:0.08em;font-family:Syne,sans-serif;margin-bottom:1px">Endormi</div>
-            <div id="sl-time-asleep" style="font-family:Playfair Display,serif;font-size:1.25rem;color:var(--text);line-height:1">--h--</div>
-          </div>
-        </div>
-        <!-- Grade, cycles, recovery -->
-        <div style="font-size:0.7rem;color:var(--muted2);font-family:Syne,sans-serif;margin-bottom:4px" id="sl-timerange-display">--:-- – --:--</div>
-        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:4px">
-          <span id="sl-grade-badge" style="font-size:0.65rem;padding:2px 10px;border-radius:var(--r-pill);border:1px solid var(--border);color:var(--muted);font-family:Syne,sans-serif;font-weight:500">--</span>
-          <span style="font-size:0.65rem;color:var(--muted2);font-family:Syne,sans-serif" id="sl-cycles-display">-- cycles</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="font-size:0.6rem;color:var(--muted2);font-family:Syne,sans-serif">Recuperation</div>
-          <div id="sl-recovery-score" style="font-family:Playfair Display,serif;font-size:1.1rem;color:#a78bfa;line-height:1">--</div>
-          <div style="font-size:0.6rem;color:var(--muted2);font-family:Syne,sans-serif">/100</div>
-        </div>
-      </div>
+      <div class="hero-underline" style="background:var(--sl-accent)"></div>
+      <div id="sl-timerange-display" style="font-size:0.68rem;color:var(--muted2);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;margin-top:8px">--:-- – --:--</div>
+    </div>
+    <div class="sl-score-ring-wrap" style="width:88px;height:88px">
+      <svg viewBox="0 0 36 36" width="88" height="88">
+        <circle cx="18" cy="18" r="15" fill="none" stroke="var(--s3)" stroke-width="3.5"/>
+        <circle id="sl-score-ring" cx="18" cy="18" r="15" fill="none" stroke="url(#slScoreGrad)" stroke-width="3.5" stroke-dasharray="94.25" stroke-dashoffset="94.25" stroke-linecap="round" style="transition:stroke-dashoffset 1.2s cubic-bezier(0.34,1.56,0.64,1)"/>
+        <defs><linearGradient id="slScoreGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#35c9a0"/></linearGradient></defs>
+      </svg>
+      <div class="sl-score-ring-txt" id="sl-score-display">--</div>
     </div>
   </div>
-  <div class="sl-graph-wrap sl-anim-in" style="animation-delay:.08s">
+
+  <!-- Repères : temps au lit / endormi / cycles / récupération -->
+  <div class="sub-card-row sl-anim-in" style="animation-delay:.06s">
+    <div class="sub-card">
+      <div class="sub-card-lbl">Temps au lit</div>
+      <div class="sub-card-val" id="sl-time-in-bed">--h--</div>
+    </div>
+    <div class="sub-card">
+      <div class="sub-card-lbl">Endormi</div>
+      <div class="sub-card-val" id="sl-time-asleep">--h--</div>
+    </div>
+  </div>
+  <div class="sub-card-row sl-anim-in" style="animation-delay:.09s">
+    <div class="sub-card">
+      <div class="sub-card-lbl">Cycles</div>
+      <div class="sub-card-val" id="sl-cycles-display">--</div>
+    </div>
+    <div class="sub-card">
+      <div class="sub-card-lbl">Récupération</div>
+      <div class="sub-card-val" style="color:var(--sl-accent)"><span id="sl-recovery-score">--</span><span style="font-size:0.62rem;color:var(--muted);margin-left:2px">/100</span></div>
+    </div>
+  </div>
+
+  <div class="sl-graph-wrap sl-anim-in" style="animation-delay:.12s">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem">
       <div class="sl-graph-title">Phases de sommeil</div>
       <div class="sl-graph-duration" id="sl-graph-period-lbl">Cette nuit</div>
@@ -6345,25 +6351,50 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
         <div id="sl-tooltip"></div>
       </div>
     </div>
-    <div class="sl-legend">
-      <div class="sl-legend-item"><div class="sl-legend-dot" style="background:#8b5cf6"></div>Deep</div>
-      <div class="sl-legend-item"><div class="sl-legend-dot" style="background:var(--blue)"></div>REM</div>
-      <div class="sl-legend-item"><div class="sl-legend-dot" style="background:var(--teal)"></div>Core</div>
-      <div class="sl-legend-item"><div class="sl-legend-dot" style="background:var(--orange)"></div>Eveil</div>
+    <div class="clegend-row" style="margin-top:0.5rem;margin-bottom:0">
+      <div class="clegend" style="color:#8b5cf6;cursor:default"><div class="cl-dot" style="background:#8b5cf6"></div>Deep</div>
+      <div class="clegend" style="color:var(--blue);cursor:default"><div class="cl-dot" style="background:var(--blue)"></div>REM</div>
+      <div class="clegend" style="color:var(--teal);cursor:default"><div class="cl-dot" style="background:var(--teal)"></div>Core</div>
+      <div class="clegend" style="color:var(--orange);cursor:default"><div class="cl-dot" style="background:var(--orange)"></div>Eveil</div>
     </div>
   </div>
-  <div class="sl-stats-grid">
-    <div class="sl-stat-card sl-card-total sl-anim-in" style="animation-delay:.12s"><div class="sl-stat-label">Duree totale</div><div class="sl-stat-value" id="sl-s-total">--</div><div class="sl-stat-sub" id="sl-s-eff">Efficacite --%</div></div>
-    <div class="sl-stat-card sl-card-score sl-anim-in" style="animation-delay:.16s"><div class="sl-stat-label">Score global</div><div class="sl-stat-value" id="sl-s-score">--</div><div class="sl-stat-sub" id="sl-s-grade">--</div></div>
-    <div class="sl-stat-card sl-card-deep sl-anim-in" style="animation-delay:.2s"><div class="sl-stat-label">Deep sleep</div><div class="sl-stat-value" id="sl-s-deep">--<span class="sl-stat-unit">min</span></div><div class="sl-stat-sub" id="sl-s-deep-pct">--%</div></div>
-    <div class="sl-stat-card sl-card-rem sl-anim-in" style="animation-delay:.24s"><div class="sl-stat-label">REM</div><div class="sl-stat-value" id="sl-s-rem">--<span class="sl-stat-unit">min</span></div><div class="sl-stat-sub" id="sl-s-rem-pct">--%</div></div>
-    <div class="sl-stat-card sl-card-core sl-anim-in" style="animation-delay:.28s"><div class="sl-stat-label">Core sleep</div><div class="sl-stat-value" id="sl-s-core">--<span class="sl-stat-unit">min</span></div><div class="sl-stat-sub" id="sl-s-core-pct">--%</div></div>
-    <div class="sl-stat-card sl-card-awake sl-anim-in" style="animation-delay:.32s"><div class="sl-stat-label">Eveils</div><div class="sl-stat-value" id="sl-s-awake">--<span class="sl-stat-unit">x</span></div><div class="sl-stat-sub" id="sl-s-awake-min">--min</div></div>
+
+  <!-- Repères : durée totale + répartition des phases -->
+  <div class="sub-card sl-anim-in" style="animation-delay:.16s;margin-bottom:0.55rem">
+    <div class="sub-card-lbl">Durée totale</div>
+    <div class="sub-card-val" id="sl-s-total">--</div>
+    <div class="sub-card-sub" id="sl-s-eff">Efficacité --%</div>
   </div>
-  <div class="sl-breakdown-card sl-anim-in" style="animation-delay:.36s">
-    <div class="card-title">Composantes du score</div>
-    <div id="sl-score-breakdown" style="display:flex;flex-direction:column;gap:0.6rem"></div>
+  <div class="sub-card-row sl-anim-in" style="animation-delay:.2s">
+    <div class="sub-card">
+      <div class="sub-card-lbl">Deep sleep</div>
+      <div class="sub-card-val" style="color:#8b5cf6" id="sl-s-deep">--</div>
+      <div class="sub-card-sub" id="sl-s-deep-pct">--%</div>
+    </div>
+    <div class="sub-card">
+      <div class="sub-card-lbl">REM</div>
+      <div class="sub-card-val" style="color:var(--blue)" id="sl-s-rem">--</div>
+      <div class="sub-card-sub" id="sl-s-rem-pct">--%</div>
+    </div>
   </div>
+  <div class="sub-card-row sl-anim-in" style="animation-delay:.24s">
+    <div class="sub-card">
+      <div class="sub-card-lbl">Core sleep</div>
+      <div class="sub-card-val" style="color:var(--teal)" id="sl-s-core">--</div>
+      <div class="sub-card-sub" id="sl-s-core-pct">--%</div>
+    </div>
+    <div class="sub-card">
+      <div class="sub-card-lbl">Éveils</div>
+      <div class="sub-card-val" style="color:var(--orange)" id="sl-s-awake">--</div>
+      <div class="sub-card-sub" id="sl-s-awake-min">--min</div>
+    </div>
+  </div>
+  <details class="chart-details sl-anim-in" style="animation-delay:.36s">
+    <summary>Composantes du score</summary>
+    <div class="chart-details-body">
+      <div id="sl-score-breakdown" style="display:flex;flex-direction:column;gap:0.6rem"></div>
+    </div>
+  </details>
   <!-- Trend chart 7 days -->
   <div class="sl-breakdown-card sl-anim-in" style="animation-delay:.44s;display:none" id="sl-trend-block">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
