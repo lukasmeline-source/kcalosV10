@@ -64,6 +64,27 @@
 .light-mode .btn{color:#ffffff}
 .light-mode .btn.blue,.light-mode .btn.teal{color:#ffffff}
 .light-mode .pwa-btn.install{color:#ffffff}
+/* ── PASTEL MODE ── */
+.pastel-mode{
+  --bg:#f7f1ea;--s0:#fffcf8;--s1:#f3ece1;--s2:#ece1d1;--s3:#ddccb4;
+  --border:rgba(90,68,45,0.12);--border2:rgba(90,68,45,0.20);
+  --text:#3a2f22;--muted:#8a7a63;--muted2:#a89878;
+  --lime:#6f8f2e;--lime-d:#4a6318;--lime-bg:rgba(111,143,46,0.12);
+  --blue:#4f7fa3;--blue-d:#345c78;--blue-bg:rgba(79,127,163,0.12);
+  --orange:#c1832f;--orange-d:#8f5f10;--orange-bg:rgba(193,131,47,0.12);
+  --pink:#bb639a;--pink-d:#853f6d;--pink-bg:rgba(187,99,154,0.12);
+  --teal:#48927f;--teal-d:#2b6656;--teal-bg:rgba(72,146,127,0.12);
+  --red:#bd5a52;--red-bg:rgba(189,90,82,0.12);
+  --shadow-card:0 1px 12px rgba(80,60,30,0.09),0 0 0 0.5px rgba(80,60,30,0.04);
+  --shadow-float:0 4px 24px rgba(80,60,30,0.14),0 0 0 0.5px rgba(80,60,30,0.06);
+  --shadow-inset:inset 0 1px 0 rgba(255,255,255,0.85);
+}
+.pastel-mode input[type="date"]{color-scheme:light}
+.pastel-mode .btn{color:#ffffff}
+.pastel-mode .btn.blue,.pastel-mode .btn.teal{color:#ffffff}
+.pastel-mode .pwa-btn.install{color:#ffffff}
+.pastel-mode .db-card{background:var(--s0);box-shadow:0 1px 6px rgba(80,60,30,0.06)}
+.pastel-mode .sidebar{box-shadow:2px 0 8px rgba(80,60,30,0.06)}
 /* ── SCROLLBAR (thème unifié, remplace la scrollbar blanche native) ── */
 *{scrollbar-width:thin;scrollbar-color:var(--s3) transparent}
 ::-webkit-scrollbar{width:8px;height:8px}
@@ -72,7 +93,7 @@
 ::-webkit-scrollbar-thumb:hover{background:var(--muted2)}
 ::-webkit-scrollbar-corner{background:transparent}
 html{scroll-behavior:smooth;color-scheme:dark;overflow-x:hidden;overscroll-behavior-x:none;width:100%}
-.light-mode{color-scheme:light}
+.light-mode,.pastel-mode{color-scheme:light}
 /* ── Désactive la sélection de texte par appui long sur mobile (gêne le drag des widgets,
    les swipes, les longs-press sur les boutons, etc.) — sauf dans les champs éditables,
    où la sélection/saisie normale reste nécessaire. ── */
@@ -110,33 +131,23 @@ body{background:var(--bg);color:var(--text);font-family:Syne,sans-serif;font-wei
 .nav-icon{font-size:1rem;width:20px;text-align:center}
 .sidebar-footer{margin-top:auto;font-size:0.66rem;color:var(--muted2);text-align:center;line-height:1.6;padding-top:1rem;border-top:1px solid var(--border)}
 
-/* ── THEME TOGGLE ── */
-.theme-toggle{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0.55rem 0.85rem;border-radius:var(--r-sm);
-  background:var(--s2);border:1px solid var(--border);
-  margin-bottom:0.5rem;cursor:pointer;
-  font-size:0.75rem;color:var(--muted);
-  transition:all var(--trans);user-select:none;
+/* ── THEME SWATCHES ── */
+.theme-swatches{display:flex;gap:10px;flex-shrink:0}
+.theme-swatch{
+  width:30px;height:30px;border-radius:50%;padding:0;position:relative;
+  border:2px solid var(--border2);cursor:pointer;transition:all var(--trans);
+  -webkit-tap-highlight-color:transparent;
 }
-.theme-toggle:hover{border-color:var(--border2);color:var(--text)}
-.theme-toggle-label{display:flex;align-items:center;gap:8px;font-weight:400}
-.theme-toggle-label svg{flex-shrink:0;opacity:0.7}
-.theme-switch{
-  width:34px;height:18px;border-radius:9px;
-  background:var(--s3);border:1px solid var(--border2);
-  position:relative;transition:background var(--trans);flex-shrink:0;
+.theme-swatch:hover{transform:scale(1.08)}
+.theme-swatch.active{border-color:var(--lime);box-shadow:0 0 0 3px var(--lime-bg)}
+.theme-swatch.active::after{
+  content:'';position:absolute;inset:0;margin:auto;
+  width:6px;height:6px;border-radius:50%;background:var(--lime);
 }
-.light-mode .theme-switch{background:var(--lime-bg);border-color:var(--lime-d)}
-.theme-switch::after{
-  content:'';position:absolute;top:2px;left:2px;
-  width:12px;height:12px;border-radius:50%;
-  background:var(--muted2);transition:all var(--trans);
-}
+.theme-swatch.t-dark{background:linear-gradient(135deg,#14161f,#09090f)}
+.theme-swatch.t-light{background:linear-gradient(135deg,#ffffff,#e4e7ee)}
+.theme-swatch.t-pastel{background:linear-gradient(135deg,#fffcf8,#ece1d1)}
 .light-mode .db-card{background:var(--s0);box-shadow:0 1px 6px rgba(0,0,0,0.06)}
-.light-mode .theme-switch::after{
-  left:18px;background:var(--lime);
-}
 /* bottom nav theme btn */
 .bn-theme{
   flex:0 0 auto;width:46px;
@@ -378,6 +389,14 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 #page-apports .ap-date-nav{margin-bottom:0.9rem}
 #page-apports .ap-date-label{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
 
+/* Tendances : pas de point vert devant les titres de carte, typographie DM Sans (cohérent avec Progression/Sommeil) */
+#ap-panel-tendances .card-title{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
+#ap-panel-tendances .card-title::before{display:none}
+#ap-panel-tendances .clegend-row{margin-top:0.5rem}
+#ap-panel-tendances .mc-title{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
+.fh-toggle-btn{display:flex;align-items:center;justify-content:center;gap:5px;width:100%;margin-top:0.6rem;padding:0.55rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--teal);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.72rem;font-weight:600;cursor:pointer;transition:all var(--trans);-webkit-tap-highlight-color:transparent}
+.fh-toggle-btn:active{background:var(--s1);transform:scale(0.98)}
+
 
 #page-progression .sh-tabs{background:var(--s1);border-bottom:none;border-radius:var(--r-pill);padding:3px;margin-left:0;margin-right:0;gap:4px}
 #page-progression .sh-tab{border-radius:var(--r-pill);border-bottom:none;padding:0.5rem 0.4rem;font-size:0.72rem;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
@@ -539,22 +558,12 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 .mini-chart-wrap canvas{max-height:160px}
 
 /* ══════════════════════════════════════
-   TIMING DES MACROS — reproduction fidele du guide original,
-   recoloree avec les tokens KCALos (voir variables --tmg-*)
+   SCHEMAS "TIMING DES MACROS" — repris dans l'onglet Tendances
+   (l'ancienne page Timing complète a été retirée)
 ══════════════════════════════════════ */
-#ap-panel-timing{
-  --tmg-bg:var(--s0);--tmg-surface:var(--s1);--tmg-surface2:var(--s2);--tmg-border:var(--border);
-  --tmg-text:var(--text);--tmg-muted:var(--muted);--tmg-accent:var(--text);
-  --tmg-carb:#2fd6b4;--tmg-prot:var(--lime);--tmg-fat:var(--orange);--tmg-k:#c9a0e0;--tmg-anab:var(--teal);
-  background:var(--tmg-bg);color:var(--tmg-text);font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.75;
-  border-radius:var(--r);border:1px solid var(--tmg-border);overflow:hidden;
-}
-
-#ap-panel-timing *{box-sizing:border-box;margin:0;padding:0;}#ap-panel-timing header{border-bottom:1px solid var(--tmg-border);padding:28px 32px 0;max-width:1100px;margin:0 auto;}#ap-panel-timing header .label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--tmg-muted);margin-bottom:8px;}#ap-panel-timing header h1{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--tmg-accent);margin-bottom:18px;}#ap-panel-timing .profile-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px;}#ap-panel-timing .stat{background:var(--tmg-surface);border:1px solid var(--tmg-border);border-radius:var(--r-sm);padding:9px 13px;}#ap-panel-timing .stat-label{font-size:9px;color:var(--tmg-muted);letter-spacing:1px;text-transform:uppercase;}#ap-panel-timing .stat-value{font-size:15px;font-weight:600;color:var(--tmg-accent);}#ap-panel-timing .tabs-nav{display:flex;border-bottom:1px solid var(--tmg-border);padding:0 32px;max-width:1100px;margin:0 auto;background:var(--tmg-bg);position:sticky;top:0;z-index:20;overflow-x:auto;}#ap-panel-timing .tab-btn{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:14px 18px;border:none;background:transparent;cursor:pointer;color:var(--tmg-muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color var(--trans),border-color var(--trans);white-space:nowrap;}#ap-panel-timing .tab-btn:hover{color:var(--tmg-accent);}#ap-panel-timing .tab-btn.ac{border-bottom-color:currentColor;}#ap-panel-timing .tmg-page{display:none;max-width:1100px;margin:0 auto;padding:36px 32px 80px;}#ap-panel-timing .tmg-page.active{display:block;}#ap-panel-timing .section-intro{color:var(--tmg-muted);font-size:12px;margin-bottom:24px;border-left:2px solid var(--tmg-border);padding-left:14px;line-height:1.85;}#ap-panel-timing .h2{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--tmg-accent);margin-bottom:18px;margin-top:32px;border-bottom:1px solid var(--tmg-border);padding-bottom:9px;}#ap-panel-timing .h2:first-of-type{margin-top:0;}#ap-panel-timing .block{background:var(--tmg-surface);border:1px solid var(--tmg-border);border-left:3px solid var(--tmg-border);border-radius:var(--r-sm);box-shadow:var(--shadow-card);padding:18px 20px;margin-bottom:12px;}#ap-panel-timing .block.carb{border-left-color:var(--tmg-carb);}#ap-panel-timing .block.prot{border-left-color:var(--tmg-prot);}#ap-panel-timing .block.fat{border-left-color:var(--tmg-fat);}#ap-panel-timing .block.nak{border-left-color:var(--tmg-k);}#ap-panel-timing .block.anab{border-left-color:var(--tmg-anab);}#ap-panel-timing .block.warn{border-left-color:var(--red);background:var(--red-bg);}#ap-panel-timing .block.tip{border-left-color:var(--muted2);background:var(--tmg-surface2);}#ap-panel-timing .block.hl-carb{border-left-color:var(--tmg-carb);background:rgba(47,214,180,0.08);}#ap-panel-timing .block.hl-prot{border-left-color:var(--tmg-prot);background:rgba(184,224,48,0.08);}#ap-panel-timing .block.hl-anab{border-left-color:var(--tmg-anab);background:rgba(53,201,160,0.08);}#ap-panel-timing .bt{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:9px;color:var(--tmg-accent);display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}#ap-panel-timing .bt .sub{font-family:'IBM Plex Mono',monospace;font-weight:400;font-size:10px;color:var(--tmg-muted);letter-spacing:0;text-transform:none;}#ap-panel-timing ul{padding-left:16px;}#ap-panel-timing ul li{margin-bottom:4px;}#ap-panel-timing ul li::marker{color:var(--tmg-muted);}#ap-panel-timing strong{color:var(--tmg-accent);font-weight:600;}#ap-panel-timing table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px;}#ap-panel-timing th{text-align:left;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--tmg-muted);border-bottom:1px solid var(--tmg-border);padding:7px 9px;font-weight:400;}#ap-panel-timing td{padding:8px 9px;border-bottom:1px solid var(--tmg-border);vertical-align:top;}#ap-panel-timing tr:last-child td{border-bottom:none;}#ap-panel-timing .timeline{padding-left:10px;}#ap-panel-timing .tl-item{position:relative;padding:0 0 24px 26px;border-left:1px solid var(--tmg-border);}#ap-panel-timing .tl-item:last-child{border-left:1px solid transparent;padding-bottom:0;}#ap-panel-timing .tl-dot{width:10px;height:10px;border-radius:50%;position:absolute;left:-5px;top:4px;}#ap-panel-timing .tl-time{font-size:9px;letter-spacing:2px;color:var(--tmg-muted);text-transform:uppercase;margin-bottom:3px;}#ap-panel-timing .tl-label{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--tmg-accent);margin-bottom:7px;}#ap-panel-timing .schema-wrap{margin:20px 0;overflow:hidden;border-radius:var(--r-sm);}#ap-panel-timing .schema-wrap svg{display:block;width:100%;max-width:100%;height:auto;}#ap-panel-timing .schema-cap{text-align:center;font-size:10px;color:var(--tmg-muted);margin-top:8px;letter-spacing:1px;}#ap-panel-timing .diagram-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0;}#ap-panel-timing .liste-layout{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;}#ap-panel-timing .liste-filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}#ap-panel-timing .filter-btn{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:6px 14px;border:1px solid var(--tmg-border);border-radius:var(--r-pill);background:transparent;color:var(--tmg-muted);cursor:pointer;transition:all var(--trans);}#ap-panel-timing .filter-btn:hover,
-#ap-panel-timing .filter-btn.active{color:var(--tmg-accent);border-color:var(--tmg-accent);background:var(--tmg-surface2);}#ap-panel-timing .filter-btn.fg{border-color:var(--tmg-carb);color:var(--tmg-carb);}#ap-panel-timing .filter-btn.fp{border-color:var(--tmg-prot);color:var(--tmg-prot);}#ap-panel-timing .filter-btn.ff{border-color:var(--tmg-fat);color:var(--tmg-fat);}#ap-panel-timing .food-list{display:flex;flex-direction:column;gap:6px;}#ap-panel-timing .food-item{display:block;background:var(--tmg-surface);border:1px solid var(--tmg-border);border-radius:var(--r-sm);padding:14px 16px;cursor:pointer;transition:border-color var(--trans),background var(--trans),transform var(--trans);}#ap-panel-timing .food-item:hover{border-color:var(--border2);background:var(--tmg-surface2);transform:translateY(-1px);}#ap-panel-timing .food-item.selected{border-color:var(--tmg-anab);background:rgba(53,201,160,0.04);}#ap-panel-timing .food-check-wrap{display:flex;gap:12px;align-items:flex-start;}#ap-panel-timing .food-check-wrap input[type=checkbox]{margin-top:4px;width:15px;height:15px;accent-color:var(--tmg-anab);flex-shrink:0;cursor:pointer;}#ap-panel-timing .food-info{flex:1;}#ap-panel-timing .food-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px;}#ap-panel-timing .food-name{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--tmg-accent);}#ap-panel-timing .food-badge{font-size:9px;padding:1px 7px;border-radius:var(--r-pill);letter-spacing:1px;text-transform:uppercase;flex-shrink:0;}#ap-panel-timing .food-meta{font-size:10px;color:var(--tmg-muted);}#ap-panel-timing .food-timing{font-size:10px;color:var(--tmg-muted);margin-bottom:4px;}#ap-panel-timing .food-desc{font-size:11.5px;color:var(--tmg-muted);line-height:1.6;}#ap-panel-timing .cat-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--tmg-muted);padding:12px 0 6px;display:block;border-bottom:1px solid var(--tmg-border);margin-bottom:8px;}#ap-panel-timing .cat-label.cg{color:var(--tmg-carb);border-color:rgba(47,214,180,.3);}#ap-panel-timing .cat-label.cp{color:var(--tmg-prot);border-color:rgba(184,224,48,.3);}#ap-panel-timing .cat-label.cf{color:var(--tmg-fat);border-color:rgba(240,160,48,.3);}#ap-panel-timing .cart-panel{background:var(--tmg-surface);border:1px solid var(--tmg-border);border-radius:var(--r-sm);box-shadow:var(--shadow-card);position:sticky;top:64px;overflow:hidden;}#ap-panel-timing .cart-header{padding:16px 18px;border-bottom:1px solid var(--tmg-border);display:flex;align-items:center;justify-content:space-between;}#ap-panel-timing .cart-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:var(--tmg-accent);}#ap-panel-timing .cart-count{font-size:10px;background:var(--tmg-anab);color:#080a0d;border-radius:var(--r-pill);padding:2px 8px;font-weight:600;}#ap-panel-timing .cart-empty{padding:24px 18px;text-align:center;color:var(--tmg-muted);font-size:12px;}#ap-panel-timing .cart-items{max-height:520px;overflow-y:auto;}#ap-panel-timing .cart-item{display:flex;align-items:flex-start;gap:10px;padding:11px 16px;border-bottom:1px solid var(--tmg-border);}#ap-panel-timing .cart-item:last-child{border-bottom:none;}#ap-panel-timing .cart-item-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}#ap-panel-timing .cart-item-info{flex:1;}#ap-panel-timing .cart-item-name{font-size:12px;font-weight:600;color:var(--tmg-accent);}#ap-panel-timing .cart-item-timing{font-size:10px;color:var(--tmg-muted);}#ap-panel-timing .cart-remove{background:transparent;border:none;color:var(--tmg-muted);cursor:pointer;font-size:14px;padding:0 2px;line-height:1;transition:color var(--trans);}#ap-panel-timing .cart-remove:hover{color:var(--red);}#ap-panel-timing .cart-footer{padding:14px 18px;border-top:1px solid var(--tmg-border);display:flex;gap:8px;}#ap-panel-timing .cart-btn{flex:1;padding:9px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;border:none;border-radius:var(--r-sm);cursor:pointer;transition:all var(--trans);}#ap-panel-timing .cart-copy{background:var(--tmg-anab);color:#080a0d;font-weight:600;}#ap-panel-timing .cart-copy:hover{filter:brightness(1.12);}#ap-panel-timing .cart-clear{background:transparent;border:1px solid var(--tmg-border);color:var(--tmg-muted);}#ap-panel-timing .cart-clear:hover{border-color:var(--red);color:var(--red);}#ap-panel-timing .copied-msg{display:none;text-align:center;font-size:10px;color:var(--tmg-anab);padding:4px;}#ap-panel-timing .search-bar{position:relative;margin-bottom:14px;}#ap-panel-timing .search-bar input{width:100%;background:var(--tmg-surface);border:1px solid var(--tmg-border);border-radius:var(--r-sm);color:var(--tmg-text);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:9px 14px 9px 36px;outline:none;transition:border-color var(--trans);}#ap-panel-timing .search-bar input:focus{border-color:var(--border2);}#ap-panel-timing .search-bar .search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--tmg-muted);font-size:13px;pointer-events:none;}#ap-panel-timing footer{max-width:1100px;margin:0 auto;padding:18px 32px 40px;border-top:1px solid var(--tmg-border);font-size:11px;color:var(--tmg-muted);}
-#ap-panel-timing .acc-item{border:1px solid var(--tmg-border);border-radius:var(--r-sm);margin-bottom:8px;background:var(--tmg-surface);overflow:hidden;}#ap-panel-timing .acc-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;user-select:none;transition:background var(--trans);}#ap-panel-timing .acc-header:hover{background:var(--tmg-surface2);}#ap-panel-timing .acc-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--tmg-accent);}#ap-panel-timing .acc-arrow{font-size:13px;color:var(--tmg-muted);transition:transform .25s;flex-shrink:0;}#ap-panel-timing .acc-header.open .acc-arrow{transform:rotate(180deg);}#ap-panel-timing .acc-header.open{border-bottom:1px solid var(--tmg-border);}#ap-panel-timing .acc-body{display:none;padding:20px 20px 24px;}#ap-panel-timing .acc-body.open{display:block;}
-@media(max-width:620px){#ap-panel-timing .diagram-grid{grid-template-columns:1fr;}}
-@media(max-width:800px){#ap-panel-timing .liste-layout{grid-template-columns:1fr;}}
+#ap-panel-tendances .schema-wrap{margin:8px 0 20px;overflow:hidden;border-radius:var(--r-sm)}
+#ap-panel-tendances .schema-wrap svg{display:block;width:100%;max-width:100%;height:auto}
+#ap-panel-tendances .schema-cap{text-align:center;font-size:10px;color:var(--muted2);margin-top:8px;letter-spacing:1px}
 
 /* ── TOAST ── */
 .toast{position:fixed;bottom:1.75rem;right:1.75rem;padding:0.7rem 1.1rem;background:var(--s3);border:1px solid var(--border2);border-radius:var(--r-sm);font-size:0.78rem;color:var(--text);transform:translateY(15px);opacity:0;pointer-events:none;transition:all 0.28s ease;z-index:999;display:flex;align-items:center;gap:8px;max-width:calc(100vw - 2rem)}
@@ -2598,26 +2607,20 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <button class="account-tab active" onclick="switchAccountTab('profil')"><span class="ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="8" cy="5.5" r="3"/><path d="M2.5 14c0-3 2.4-5 5.5-5s5.5 2 5.5 5"/></svg></span> Profil</button>
       <button class="account-tab" onclick="switchAccountTab('estimer')"><span class="ico"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 14c-3.3 0-5.2-2-5.2-4.3 0-2 1.4-3 1.4-5.2C5.3 6 5.5 7 6.3 7.7c-.1-2.2 1-4.5 3-6 0 2 1 3.8 1.5 5 .5-.8.4-2 .4-3.2 1.8 1.7 2.5 3.8 2.5 5.2C13.7 11 12 14 8 14z"/></svg></span> Estimer</button>
       <button class="account-tab" onclick="switchAccountTab('apparence')"><span class="ico"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><circle cx="8" cy="8" r="6.2"/><circle cx="5.5" cy="6" r="1.1" fill="currentColor" stroke="none"/><circle cx="10.5" cy="6" r="1.1" fill="currentColor" stroke="none"/><circle cx="5.5" cy="10" r="0.9" fill="currentColor" stroke="none"/><circle cx="10.5" cy="10" r="0.9" fill="currentColor" stroke="none"/><circle cx="8" cy="11.5" r="1" fill="currentColor" stroke="none"/></svg></span> Apparence</button>
-      <button class="account-tab" onclick="switchAccountTab('import')"><span class="ico"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="2.5" x2="8" y2="10.5"/><polyline points="5,7.5 8,10.5 11,7.5"/><line x1="3" y1="13.5" x2="13" y2="13.5"/></svg></span> Import</button>
     </div>
 
     <!-- TAB PROFIL -->
     <div class="account-tab-panel active" id="acct-panel-profil">
-      <div class="field"><label>Poids actuel</label><div class="inp-wrap"><input type="number" id="ap-poids" placeholder="75" min="30" max="300" step="0.1"><span class="unit">kg</span></div></div>
       <div class="row2">
         <div class="field"><label>Taille</label><div class="inp-wrap"><input type="number" id="ap-taille" placeholder="175" min="100" max="250"><span class="unit">cm</span></div></div>
         <div class="field"><label>Âge</label><div class="inp-wrap"><input type="number" id="ap-age" placeholder="28" min="10" max="100"><span class="unit">ans</span></div></div>
       </div>
-      <div class="field"><label>Bodyfat</label><div class="inp-wrap"><input type="number" id="ap-bf" placeholder="18" min="3" max="60" step="0.5"><span class="unit">%</span></div></div>
       <div class="field"><label>Sexe</label>
         <div class="radio-group cols2">
           <div class="rb"><input type="radio" name="ap-sexe" id="ap-h" value="homme" checked><label for="ap-h">Homme</label></div>
           <div class="rb"><input type="radio" name="ap-sexe" id="ap-f" value="femme"><label for="ap-f">Femme</label></div>
         </div>
       </div>
-      <div class="div"></div>
-      <div class="field"><label>Objectif de pas / jour</label><div class="inp-wrap"><input type="number" id="ap-step-goal" placeholder="10000" min="1000" max="50000" step="500"><span class="unit">pas</span></div></div>
-      <div class="field"><label>Objectif kcal / jour <span class="hint">optionnel</span></label><div class="inp-wrap"><input type="number" id="ap-kcal-goal" placeholder="auto" min="1000" max="5000"><span class="unit">kcal</span></div></div>
 
       <button class="btn" onclick="saveAccountProfile()" style="margin-top:0.5rem">Enregistrer le profil →</button>
     </div>
@@ -2747,52 +2750,16 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
             <div style="font-size:0.85rem;font-weight:500;color:var(--text)">Mode d'affichage</div>
             <div style="font-size:0.72rem;color:var(--muted);margin-top:2px" id="theme-mode-label">Mode sombre actif</div>
           </div>
-          <div class="theme-toggle" onclick="toggleTheme()" style="margin-bottom:0;padding:0.4rem 0.7rem;flex-shrink:0">
-            <span class="theme-toggle-label">
-              <svg id="theme-icon-sidebar" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-            </span>
-            <div class="theme-switch"></div>
+          <div class="theme-swatches">
+            <button type="button" class="theme-swatch t-dark" data-theme="dark" onclick="setTheme('dark')" aria-label="Mode sombre" title="Sombre"></button>
+            <button type="button" class="theme-swatch t-light" data-theme="light" onclick="setTheme('light')" aria-label="Mode clair" title="Clair"></button>
+            <button type="button" class="theme-swatch t-pastel" data-theme="pastel" onclick="setTheme('pastel')" aria-label="Mode pastel" title="Pastel"></button>
           </div>
         </div>
       </div>
       <div style="font-size:0.72rem;color:var(--muted2);text-align:center;line-height:1.7">Le mode d'affichage est sauvegardé<br>automatiquement sur cet appareil.</div>
     </div>
 
-    <!-- TAB IMPORT -->
-    <div class="account-tab-panel" id="acct-panel-import">
-      <p style="font-size:0.78rem;color:var(--muted);margin-bottom:1rem;line-height:1.6">Importez vos données depuis une app fitness. Les données sont fusionnées sans écraser vos saisies manuelles.</p>
-      <div class="import-zone" id="import-zone"
-           onclick="document.getElementById('file-input').click()"
-           ondragover="event.preventDefault();this.classList.add('drag')"
-           ondragleave="this.classList.remove('drag')"
-           ondrop="handleDrop(event)">
-        <div class="iz-icon">📂</div>
-        <div class="iz-title">Glissez votre fichier ici</div>
-        <div class="iz-sub">ZIP Samsung Health · .csv · .xml</div>
-        <input type="file" id="file-input" accept=".csv,.xml,.zip" onchange="handleFileSelect(event)">
-      </div>
-      <div class="spinner-wrap" id="import-spinner"><div class="spinner"></div>Analyse du fichier…</div>
-      <div class="import-feedback" id="import-feedback">
-        <div id="import-status-msg" style="font-size:0.8rem;margin-bottom:0.7rem"></div>
-        <div class="import-stat-grid">
-          <div class="import-stat"><div class="is-val" id="is-jours">0</div><div class="is-lbl">Jours importés</div></div>
-          <div class="import-stat"><div class="is-val" id="is-poids">0</div><div class="is-lbl">Poids mis à jour</div></div>
-          <div class="import-stat"><div class="is-val" id="is-kcal">0</div><div class="is-lbl">Entrées calories</div></div>
-        </div>
-        <div class="import-log" id="import-log"></div>
-      </div>
-      <div style="margin-top:1.5rem;display:flex;flex-direction:column;gap:0.75rem">
-        <div style="padding:0.85rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm)">
-          <div style="font-size:0.72rem;font-weight:500;color:var(--lime);margin-bottom:4px"><span class="ico" style="margin-right:5px"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M2 5l6-3 6 3v8l-6 3-6-3z"/><line x1="8" y1="2" x2="8" y2="14"/><polyline points="2,5 8,8 14,5"/></svg></span> ZIP Samsung Health <span style="background:var(--lime-bg);border:1px solid var(--lime-d);border-radius:10px;padding:1px 7px;font-size:0.6rem">Recommandé</span></div>
-          <div style="font-size:0.7rem;color:var(--muted);line-height:1.6">App Samsung Health → ⋮ → Paramètres → <strong style="color:var(--text)">Télécharger mes données</strong></div>
-        </div>
-        <div style="padding:0.85rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm)">
-          <div style="font-size:0.72rem;font-weight:500;color:var(--blue);margin-bottom:4px"><span class="ico" style="margin-right:5px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><line x1="3" y1="13" x2="3" y2="7"/><line x1="7" y1="13" x2="7" y2="4.5"/><line x1="11" y1="13" x2="11" y2="8.5"/><line x1="1" y1="13" x2="15" y2="13"/></svg></span> CSV unique / XML Apple Health</div>
-          <div style="font-size:0.7rem;color:var(--muted);line-height:1.6">Colonnes auto-détectées : <code style="color:var(--blue-d)">date, weight, steps, calories</code></div>
-        </div>
-        <button class="btn secondary" onclick="clearAllData()" style="font-size:0.73rem;padding:0.55rem"><span class="ico" style="margin-right:5px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="4.5" x2="13" y2="4.5"/><path d="M5.5 4.5V3.5h5v1"/><path d="M5.5 4.5l.5 9h4l.5-9"/></svg></span> Réinitialiser toutes les données</button>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -3237,7 +3204,6 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   <div class="sh-tabs">
     <button class="sh-tab active" id="ap-tab-piste"     onclick="switchApTab('piste')">Piste</button>
     <button class="sh-tab"        id="ap-tab-tendances"  onclick="switchApTab('tendances')">Tendances</button>
-    <button class="sh-tab"        id="ap-tab-timing"     onclick="switchApTab('timing')">Timing</button>
   </div>
 
   <!-- ── TAB 1 : PISTE (bulles + total) ── -->
@@ -3444,9 +3410,9 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
           <div style="font-size:0.62rem;color:var(--muted)">Depuis aliments enregistrés · OMS : Na &lt;2 g/j · K &gt;3,5 g/j</div>
         </div>
         <!-- Onglets Semaine / Jour -->
-        <div style="display:flex;background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:2px;gap:2px;flex-shrink:0">
-          <button id="nak-tab-week" onclick="nakSwitchView('week')" style="font-size:0.6rem;font-weight:600;padding:4px 10px;border-radius:16px;border:none;cursor:pointer;background:var(--lime);color:#111;font-family:DM Sans,sans-serif;transition:all .15s">Semaine</button>
-          <button id="nak-tab-day"  onclick="nakSwitchView('day')"  style="font-size:0.6rem;font-weight:600;padding:4px 10px;border-radius:16px;border:none;cursor:pointer;background:transparent;color:var(--muted);font-family:DM Sans,sans-serif;transition:all .15s">Jour</button>
+        <div class="mode-switch" style="margin-bottom:0;flex-shrink:0">
+          <div id="nak-tab-week" class="mode-btn" data-mode="week" onclick="nakSwitchView('week')">Semaine</div>
+          <div id="nak-tab-day"  class="mode-btn active" data-mode="day"  onclick="nakSwitchView('day')">Jour</div>
         </div>
       </div>
       <!-- KPI row -->
@@ -3495,6 +3461,10 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
         <div class="mini-chart-wrap" style="margin-top:0">
           <div class="mc-title">Apports &amp; dépenses cette semaine (kcal)</div>
           <div style="position:relative;height:220px"><canvas id="weekChart"></canvas></div>
+          <div class="clegend-row">
+            <div class="clegend" style="color:#5bc8f0;cursor:default"><div class="cl-dot" style="background:#5bc8f0"></div>Apport</div>
+            <div class="clegend" style="color:#c8f04a;cursor:default"><div class="cl-dot" style="background:#c8f04a"></div>Dépense</div>
+          </div>
         </div>
         <!-- Objectifs macros sous le graphique -->
         <div id="trend-goals-wrap" style="margin-top:1.1rem;display:none;border-top:1px solid var(--border);padding-top:1rem">
@@ -3510,430 +3480,18 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
         </div>
       </div>
       <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+        <div style="margin-bottom:1rem">
           <div class="card-title" style="margin-bottom:0">Historique</div>
-          <div style="display:flex;gap:6px">
-            <button class="btn secondary" onclick="exportJSON()" style="font-size:0.68rem;padding:4px 10px;width:auto"><span class="ico"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="13" x2="8" y2="5.5"/><polyline points="5,8.5 8,5.5 11,8.5"/><line x1="3" y1="13" x2="13" y2="13"/></svg></span></button>
-            <button class="btn secondary" onclick="clearFoodData()" style="font-size:0.68rem;padding:4px 10px;width:auto;color:var(--red)"><span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="4.5" x2="13" y2="4.5"/><path d="M5.5 4.5V3.5h5v1"/><path d="M5.5 4.5l.5 9h4l.5-9"/></svg></span></button>
-          </div>
         </div>
         <div id="food-history"><div style="font-size:0.76rem;color:var(--muted2);text-align:center;padding:2rem 0">Aucun apport enregistré.</div></div>
       </div>
     </div>
-  </div><!-- fin panel tendances -->
-
-  <!-- ── TAB 3 : TIMING DES MACROS (reproduction fidele du guide, recoloree KCALos, donnees reelles) ── -->
-  <div class="sh-tab-panel" id="ap-panel-timing">
-<header>
-  <div class="label">Guide Operationnel &middot; Musculation &middot; Nutrition Avancee</div>
-  <h1>Timing des Macronutriments</h1>
-  <div class="profile-grid">
-    <div class="stat"><div class="stat-label">Age</div><div class="stat-value" id="tmg-h-age">—</div></div>
-    <div class="stat"><div class="stat-label">Poids</div><div class="stat-value" id="tmg-h-poids">—</div></div>
-    <div class="stat"><div class="stat-label">Masse grasse</div><div class="stat-value" id="tmg-h-bf">—</div></div>
-    <div class="stat"><div class="stat-label">Seances</div><div class="stat-value" id="tmg-h-seances">—</div></div>
-    <div class="stat"><div class="stat-label">Kcal</div><div class="stat-value" id="tmg-h-kcal">—</div></div>
-    <div class="stat"><div class="stat-label">Glucides</div><div class="stat-value" style="color:var(--tmg-carb)" id="tmg-h-gluc">—</div></div>
-    <div class="stat"><div class="stat-label">Proteines</div><div class="stat-value" style="color:var(--tmg-prot)" id="tmg-h-prot">—</div></div>
-    <div class="stat"><div class="stat-label">Lipides</div><div class="stat-value" style="color:var(--tmg-fat)" id="tmg-h-lip">—</div></div>
-  </div>
-  <div id="tmg-h-hint" style="display:none;font-size:11px;color:var(--tmg-muted);margin-top:-10px;margin-bottom:20px">Renseigne ton objectif calorique (bulle 🍽️ dans Piste) et ton poids (page Fitness) pour remplir ce profil automatiquement.</div>
-</header>
-
-<nav class="tabs-nav">
-  <button class="tab-btn ac" style="color:var(--tmg-carb)" onclick="tmgShowTab('carb',this,'var(--tmg-carb)')">Glucides</button>
-  <button class="tab-btn" onclick="tmgShowTab('prot',this,'var(--tmg-prot)')">Proteines</button>
-  <button class="tab-btn" onclick="tmgShowTab('fat',this,'var(--tmg-fat)')">Lipides</button>
-  <button class="tab-btn" onclick="tmgShowTab('nak',this,'var(--tmg-k)')">Na / K</button>
-  <button class="tab-btn" onclick="tmgShowTab('anab',this,'var(--tmg-anab)')">Circuits Anaboliques</button>
-  <button class="tab-btn" onclick="tmgShowTab('liste',this,'var(--tmg-anab)')">&#128722; Liste de Courses</button>
-</nav>
-
-<div class="tmg-page active" id="tmg-page-carb">
-
-<p class="section-intro">Les decisions de timing ne sont pas arbitraires &mdash; elles activent des cascades moleculaires specifiques. Clique sur chaque circuit pour le deployer.</p>
-<p class="section-intro">Les glucides sont le carburant principal du muscle. Leur rôle va bien au-delà de l'énergie — ils pilotent directement les hormones anaboliques et la récupération.</p>
-
-<!-- Calculateur personnalisé -->
-<div class="h2">Tes besoins personnalisés</div>
-<div class="block hl-carb" style="margin-bottom:14px">
-  <div class="bt" style="color:var(--tmg-carb)">Calcul glucides selon ton profil</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin:12px 0">
-    <div>
-      <label style="font-size:9px;color:var(--tmg-muted);letter-spacing:1px;text-transform:uppercase">Poids (kg)</label>
-      <input id="tmg-c-poids" type="number" value="80" min="40" max="180" style="width:100%;margin-top:4px;background:var(--tmg-surface2);border:1px solid var(--tmg-border);color:var(--tmg-text);padding:7px 10px;font-family:inherit;font-size:13px">
-    </div>
-    <div>
-      <label style="font-size:9px;color:var(--tmg-muted);letter-spacing:1px;text-transform:uppercase">Objectif</label>
-      <select id="tmg-c-obj" style="width:100%;margin-top:4px;background:var(--tmg-surface2);border:1px solid var(--tmg-border);color:var(--tmg-text);padding:7px 10px;font-family:inherit;font-size:13px">
-        <option value="masse">Prise de masse</option>
-        <option value="recomp">Recomposition</option>
-        <option value="seche">Sèche</option>
-      </select>
-    </div>
-    <div>
-      <label style="font-size:9px;color:var(--tmg-muted);letter-spacing:1px;text-transform:uppercase">Séances / semaine</label>
-      <select id="tmg-c-seances" style="width:100%;margin-top:4px;background:var(--tmg-surface2);border:1px solid var(--tmg-border);color:var(--tmg-text);padding:7px 10px;font-family:inherit;font-size:13px">
-        <option value="3">3x</option>
-        <option value="4" selected>4x</option>
-        <option value="5">5x</option>
-        <option value="6">6x</option>
-      </select>
-    </div>
-    <div style="display:flex;align-items:flex-end">
-      <button onclick="tmgCalcCarb()" style="width:100%;padding:8px;background:var(--tmg-carb);color:#000;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;border:none;cursor:pointer;letter-spacing:1px">CALCULER</button>
-    </div>
-  </div>
-  <div id="tmg-carb-result" style="display:none;margin-top:10px;padding:12px;background:rgba(47,214,180,.07);border:1px solid rgba(47,214,180,.2);font-size:13px;line-height:1.7"></div>
-</div>
-
-<!-- Rôle anabolique -->
-<div class="h2">Rôle Anabolique des Glucides</div>
-<div class="diagram-grid">
-<div class="block carb" style="margin-bottom:0"><div class="bt">Énergie & Performance</div>
-<p>Le glycogène musculaire est le seul carburant utilisable à haute intensité (&gt;70% VO2max). Glycogène vide = <strong>force −10 à −15%</strong>, volume d'entraînement effondré. Sans glucides, l'entraînement lourd est physiologiquement impossible sur la durée.</p>
-<ul style="margin-top:8px">
-  <li><strong>1g glycogène retient 3g d'eau</strong> → volume et dureté musculaire directement liés aux réserves</li>
-  <li>Réserves totales : ~400–500g (muscles + foie) = ~1 600–2 000 kcal disponibles</li>
-  <li>Une séance intense vide 40–60% des réserves musculaires</li>
-</ul></div>
-<div class="block carb" style="margin-bottom:0"><div class="bt">Signal Insulinique & Anabolisme</div>
-<p>Les glucides déclenchent la sécrétion d'insuline — l'hormone la plus anabolique après l'effort. En contexte post-WO, l'insuline ouvre simultanément les GLUT-4 (glucose) et potentialise l'entrée des acides aminés dans la cellule musculaire.</p>
-<ul style="margin-top:8px">
-  <li><strong>Post-WO uniquement</strong> : pic insulinique = anabolique + anticatabolique</li>
-  <li>Hors entraînement : pic répété = résistance insulinique progressive</li>
-  <li>Anticatabolique direct : <strong>insuline inhibe MPB</strong> (dégradation protéique)</li>
-</ul></div>
-</div>
-
-<div class="diagram-grid" style="margin-top:14px">
-<div class="block carb" style="margin-bottom:0"><div class="bt">Épargne Protéique</div>
-<p>En présence de glucides suffisants, le corps n'a pas besoin de convertir les acides aminés en glucose (néoglucogenèse). Apport glucidique adéquat = <strong>les protéines servent à construire, pas à brûler</strong>.</p>
-<ul style="margin-top:8px">
-  <li>Déficit glucidique → cortisol → catabolisme musculaire accéléré</li>
-  <li>Céto / très basse glucide : MPB augmente, MPS diminue à volume égal</li>
-</ul></div>
-<div class="block carb" style="margin-bottom:0"><div class="bt">Récupération & Réparation</div>
-<p>La resynthèse du glycogène post-effort nécessite 24–48h avec apport glucidique optimal. Sans ce carburant, la récupération entre séances est incomplète, les performances chutent progressivement sur la semaine.</p>
-<ul style="margin-top:8px">
-  <li>Vitesse de resynthèse max : <strong>~0.7g/kg/h dans les 2 premières heures</strong></li>
-  <li>Glucides + protéines post-WO = resynthèse 38% plus rapide que glucides seuls</li>
-</ul></div>
-</div>
-
-<!-- Comment optimiser -->
-<div class="h2" style="margin-top:24px">Comment Optimiser</div>
-<div class="block hl-carb"><div class="bt" style="color:var(--tmg-carb)">Les 5 règles d'or</div>
-<ul>
-  <li><strong>IG élevé post-WO uniquement</strong> — c'est la seule fenêtre où le pic insulinique est anabolique. Partout ailleurs, favoriser IG bas/modéré.</li>
-  <li><strong>Ne jamais supprimer les glucides en prise de masse</strong> — les régimes low-carb réduisent le volume d'entraînement, la testostérone et la récupération.</li>
-  <li><strong>Priorité glycogène avant la séance</strong> — repas pré-WO 60–90 min avant, IG modéré, peu de fibres et lipides (ralentissent la vidange gastrique).</li>
-  <li><strong>Ajuster selon l'intensité</strong> — jours lourds : +30–50g vs jours légers. Pas de glucides "universels" indépendants de l'entraînement.</li>
-  <li><strong>Glucides intra-WO si séance &gt;75 min</strong> — 30–40g dextrose/maltodextrine préserve le glycogène et maintient le cortisol bas.</li>
-</ul></div>
-
-<div class="block warn"><div class="bt" style="color:#e83838">Erreurs fréquentes</div>
-<ul>
-  <li><strong>Glucides le soir = grossit</strong> (mythe) — les glucides le soir en dîner équilibré sont parfaitement utilisés. C'est l'excès calorique total qui pose problème, pas l'heure.</li>
-  <li><strong>Supprimer les glucides pour sécher</strong> — efficace à court terme, destructeur pour la masse musculaire et les performances à moyen terme.</li>
-  <li><strong>Manger des glucides rapides toute la journée</strong> — crée une résistance insulinique progressive qui dégrade la captation du glucose par le muscle.</li>
-</ul></div>
-
-<!-- Sources -->
-<div class="h2">Sources par IG</div>
-<div class="block tip"><div class="bt">À domicile</div>
-<table><tr><th>Aliment</th><th>IG</th><th>Timing optimal</th><th>Spécificité</th></tr>
-<tr><td><strong>Riz blanc / basmati</strong></td><td>58–72</td><td>Pré + Post-WO</td><td>Référence musculation. Rapide, neutre, sans fibres gênantes.</td></tr>
-<tr><td><strong>Crème de riz</strong></td><td>70–80</td><td>Post-WO</td><td>Digestion express, zéro fibre. Avec whey = duo post-WO optimal.</td></tr>
-<tr><td><strong>Patate douce</strong></td><td>44–61</td><td>Pré-WO</td><td>Potassium, bêta-carotène. Meilleure source glucidique globale.</td></tr>
-<tr><td><strong>Flocons d'avoine</strong></td><td>55</td><td>Matin</td><td>Bêta-glucanes, libération progressive, satiété durable.</td></tr>
-<tr><td><strong>Farine d'avoine</strong></td><td>55–65</td><td>Matin</td><td>Idéale en pancakes. Dissolution instantanée.</td></tr>
-<tr><td><strong>Tapioca</strong></td><td>70–85</td><td>Post-WO</td><td>Zéro fibre, zéro graisse. ~88g glucides/100g sec.</td></tr>
-<tr><td><strong>Pomme de terre cuite</strong></td><td>70–90</td><td>Post-WO</td><td>IG très élevé + potassium. Purée sans beurre = idéal post-WO.</td></tr>
-<tr><td><strong>Maltodextrine</strong></td><td>85–110</td><td>Post-WO shaker</td><td>IG maximal, sans goût. Recharge la plus rapide.</td></tr>
-<tr><td><strong>Pâtes al dente</strong></td><td>40–55</td><td>Repas équilibrés</td><td>IG plus bas que le riz al dente. Pratique en grande quantité.</td></tr>
-<tr><td><strong>Lentilles corail</strong></td><td>21–30</td><td>Repas équilibrés</td><td>IG très bas, fer, protéines végétales.</td></tr>
-<tr><td><strong>Miel pur</strong></td><td>55–70</td><td>Pré/Post-WO</td><td>Fructose + glucose. Double recharge hépatique + musculaire.</td></tr>
-<tr><td><strong>Igname / Taro</strong></td><td>35–51</td><td>Repas équilibrés</td><td>IG plus bas que patate douce. Énergie prolongée.</td></tr>
-<tr><td><strong>Semoule (couscous)</strong></td><td>55–65</td><td>Repas équilibrés</td><td>Cuisson 5 min. Batch idéal.</td></tr>
-</table></div>
-<div class="block carb"><div class="bt">On-the-go</div>
-<table><tr><th>Aliment</th><th>IG</th><th>G/portion</th><th>Usage</th></tr>
-<tr><td><strong>Galettes de riz</strong></td><td>82</td><td>~7g/gal.</td><td>4–6 + shaker whey = repas post-WO express.</td></tr>
-<tr><td><strong>Dattes Medjool</strong></td><td>42–55</td><td>~18g/datte</td><td>3–4 dattes = ~55g glucides + potassium. Pré/Intra-WO.</td></tr>
-<tr><td><strong>Gel énergétique</strong></td><td>80–95</td><td>~22g/sachet</td><td>Absorption max ~90g/h. Maurten, SiS. Intra-WO &gt;75 min.</td></tr>
-<tr><td><strong>Raisin sec / abricots secs</strong></td><td>64–70</td><td>~75g/100g</td><td>Ultra-portable, dense. Alternative naturelle aux gels.</td></tr>
-<tr><td><strong>Banane mûre</strong></td><td>51–65</td><td>~25g</td><td>Potassium + tryptophane. L'aliment polyvalent par excellence.</td></tr>
-<tr><td><strong>Barre avoine-miel</strong></td><td>55–65</td><td>~30g/barre</td><td>Trek, Nakd, OatBar. &gt;70% avoine.</td></tr>
-</table></div>
-</div>
-<!-- PROTEINES -->
-<div class="tmg-page" id="tmg-page-prot">
-<p class="section-intro">Les protéines ne sont pas juste des "briques" musculaires — elles sont des signaux moléculaires qui déclenchent ou inhibent la synthèse protéique selon leur qualité, leur quantité et leur timing.</p>
-
-<!-- Calculateur personnalisé -->
-<div class="h2">Tes besoins personnalisés</div>
-<div class="block hl-prot" style="margin-bottom:14px">
-  <div class="bt" style="color:var(--tmg-prot)">Calcul protéines selon ton profil</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin:12px 0">
-    <div>
-      <label style="font-size:9px;color:var(--tmg-muted);letter-spacing:1px;text-transform:uppercase">Poids (kg)</label>
-      <input id="tmg-p-poids" type="number" value="80" min="40" max="180" style="width:100%;margin-top:4px;background:var(--tmg-surface2);border:1px solid var(--tmg-border);color:var(--tmg-text);padding:7px 10px;font-family:inherit;font-size:13px">
-    </div>
-    <div>
-      <label style="font-size:9px;color:var(--tmg-muted);letter-spacing:1px;text-transform:uppercase">Objectif</label>
-      <select id="tmg-p-obj" style="width:100%;margin-top:4px;background:var(--tmg-surface2);border:1px solid var(--tmg-border);color:var(--tmg-text);padding:7px 10px;font-family:inherit;font-size:13px">
-        <option value="masse">Prise de masse</option>
-        <option value="recomp">Recomposition</option>
-        <option value="seche">Sèche</option>
-      </select>
-    </div>
-    <div>
-      <label style="font-size:9px;color:var(--tmg-muted);letter-spacing:1px;text-transform:uppercase">Niveau</label>
-      <select id="tmg-p-niv" style="width:100%;margin-top:4px;background:var(--tmg-surface2);border:1px solid var(--tmg-border);color:var(--tmg-text);padding:7px 10px;font-family:inherit;font-size:13px">
-        <option value="debut">Débutant (&lt;1 an)</option>
-        <option value="inter" selected>Intermédiaire (1–3 ans)</option>
-        <option value="avance">Avancé (&gt;3 ans)</option>
-      </select>
-    </div>
-    <div style="display:flex;align-items:flex-end">
-      <button onclick="tmgCalcProt()" style="width:100%;padding:8px;background:var(--tmg-prot);color:#000;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;border:none;cursor:pointer;letter-spacing:1px">CALCULER</button>
-    </div>
-  </div>
-  <div id="tmg-prot-result" style="display:none;margin-top:10px;padding:12px;background:rgba(184,224,48,.07);border:1px solid rgba(184,224,48,.2);font-size:13px;line-height:1.7"></div>
-</div>
-
-<!-- Rôle anabolique -->
-<div class="h2">Rôle Anabolique des Protéines</div>
-<div class="diagram-grid">
-<div class="block hl-prot" style="margin-bottom:0"><div class="bt" style="color:var(--tmg-prot)">La Règle des 2.5g de Leucine</div>
-<p>La leucine est l'acide aminé "interrupteur" de mTORC1. En dessous de <strong>2.5g de leucine par prise</strong>, mTOR ne s'active pas suffisamment pour déclencher la MPS — peu importe la quantité de protéines totale. Ce n'est pas la quantité brute qui compte, c'est le seuil leucine.</p>
-<ul style="margin-top:8px">
-  <li>Whey isolate : ~3g leucine pour 30g protéines ✓</li>
-  <li>Œufs entiers : ~2.4g pour 30g — seuil atteint avec 4 œufs</li>
-  <li>Lentilles : ~1.4g pour 30g — nécessite 60g+ pour activer mTOR</li>
-  <li>La MPS est stimulée pendant ~3–5h puis retombe — nécessite de nouvelles prises</li>
-</ul></div>
-<div class="block hl-prot" style="margin-bottom:0"><div class="bt" style="color:var(--tmg-prot)">MPS vs MPB — Le Bilan Net</div>
-<p>La masse musculaire ne progresse que si la <strong>synthèse (MPS) dépasse durablement la dégradation (MPB)</strong>. Les protéines agissent sur les deux leviers : maximiser MPS via leucine + insuline, minimiser MPB via apport continu d'AA et anticatabolisme insulinique.</p>
-<ul style="margin-top:8px">
-  <li>Sans protéines &gt;5h → MPB augmente, bilan négatif</li>
-  <li>Caséine nocturne : maintient MPS positive 6–8h pendant le sommeil</li>
-  <li>Déficit calorique : MPB ×1.5 → besoins protéiques augmentent en sèche</li>
-</ul></div>
-</div>
-
-<div class="diagram-grid" style="margin-top:14px">
-<div class="block hl-prot" style="margin-bottom:0"><div class="bt" style="color:var(--tmg-prot)">Qualité Protéique — Score DIAAS</div>
-<p>Le score DIAAS mesure la digestibilité réelle et le profil en acides aminés essentiels. Une protéine à DIAAS élevé est plus efficacement utilisée pour la MPS gramme pour gramme.</p>
-<ul style="margin-top:8px">
-  <li><strong>Whey isolate</strong> : DIAAS ~1.25 — meilleure source existante</li>
-  <li><strong>Œufs entiers</strong> : DIAAS ~1.13 — référence historique</li>
-  <li><strong>Poulet / Bœuf</strong> : DIAAS ~0.92–1.0</li>
-  <li><strong>Soja</strong> : DIAAS ~0.91 — meilleure source végétale</li>
-  <li><strong>Blé / Gluten</strong> : DIAAS ~0.41 — déficient en lysine</li>
-</ul></div>
-<div class="block hl-prot" style="margin-bottom:0"><div class="bt" style="color:var(--tmg-prot)">Protéines & Hormones Anaboliques</div>
-<p>Au-delà de la MPS directe, les protéines alimentaires influencent l'axe hormonal anabolique :</p>
-<ul style="margin-top:8px">
-  <li><strong>IGF-1</strong> : stimulé par l'apport protéique total — lien direct croissance musculaire</li>
-  <li><strong>Insuline</strong> : les protéines déclenchent aussi un pic insulinique (moindre que glucides) qui potentialise l'entrée des AA en cellule</li>
-  <li><strong>Glucagon</strong> : régule le métabolisme azoté — équilibre avec l'insuline</li>
-  <li>Apport &lt;1.2g/kg → IGF-1 bas, récupération dégradée même à calories égales</li>
-</ul></div>
-</div>
-
-<!-- Comment optimiser -->
-<div class="h2" style="margin-top:24px">Comment Optimiser</div>
-<div class="block hl-prot"><div class="bt" style="color:var(--tmg-prot)">Les 5 règles d'or</div>
-<ul>
-  <li><strong>4–5 prises/jour avec &gt;2.5g leucine chacune</strong> — la MPS est stimulée à chaque prise, pas accumulée sur la journée.</li>
-  <li><strong>Whey post-WO dans les 60 min</strong> — pic aminoacidémique en 45 min, coïncide avec la fenêtre GLUT-4 ouverte.</li>
-  <li><strong>Caséine avant coucher</strong> — libération lente 6–8h, MPS nocturne +22% (Snijders 2015, AJCN). Ne jamais substituer par whey la nuit.</li>
-  <li><strong>Varier les sources</strong> — profils d'AA complémentaires, absorption étalée dans le temps.</li>
-  <li><strong>Augmenter en sèche</strong> — en déficit calorique, monter à 2.4–3.2g/kg pour préserver la masse maigre (Phillips & Van Loon 2011).</li>
-</ul></div>
-
-<div class="block warn"><div class="bt" style="color:#e83838">Ce qui bloque la MPS</div>
-<ul>
-  <li><strong>Prises trop petites (&lt;20g)</strong> — seuil leucine non atteint, mTOR non activé.</li>
-  <li><strong>Une seule grosse prise par jour</strong> — l'excès est oxydé, pas converti en muscle. La MPS se sature.</li>
-  <li><strong>Absence de glucides post-WO</strong> — l'insuline potentialise l'entrée des AA en cellule.</li>
-  <li><strong>Déficit calorique important</strong> — le corps priorise l'énergie sur la synthèse protéique.</li>
-  <li><strong>Trop d'alcool</strong> — inhibe directement mTOR et réduit la MPS de 24–37% (Lang 2004).</li>
-</ul></div>
-
-<!-- Sources -->
-<div class="h2">Sources par Vitesse d'Absorption</div>
-<div class="block tip"><table>
-<tr><th>Source</th><th>Vitesse</th><th>Leucine/30g P</th><th>DIAAS</th><th>Usage optimal</th></tr>
-<tr><td><strong>Whey isolate</strong></td><td>Très rapide (45–90 min)</td><td>~3.0g</td><td>1.25</td><td>Post-WO · Réveil</td></tr>
-<tr><td><strong>Whey concentrate</strong></td><td>Rapide (90–120 min)</td><td>~2.7g</td><td>1.09</td><td>Post-WO</td></tr>
-<tr><td><strong>Œufs entiers (4)</strong></td><td>Modérée (3–4h)</td><td>~2.4g</td><td>1.13</td><td>Matin · Pré-WO</td></tr>
-<tr><td><strong>Poulet / Dinde</strong></td><td>Modérée (3–4h)</td><td>~2.3g</td><td>~1.0</td><td>Tous repas</td></tr>
-<tr><td><strong>Bœuf maigre</strong></td><td>Modérée (3–4h)</td><td>~2.5g</td><td>~0.95</td><td>Dîner</td></tr>
-<tr><td><strong>Saumon (150g)</strong></td><td>Modérée (3–4h)</td><td>~2.2g</td><td>~0.97</td><td>Dîner · Oméga-3 bonus</td></tr>
-<tr><td><strong>Fromage blanc 0%</strong></td><td>Lente (4–6h)</td><td>~2.8g</td><td>~1.0</td><td>Coucher · Dîner</td></tr>
-<tr><td><strong>Caséine micellaire</strong></td><td>Très lente (6–8h)</td><td>~2.6g</td><td>~1.0</td><td>Avant coucher uniquement</td></tr>
-<tr><td><strong>Lentilles</strong></td><td>Lente</td><td>~1.4g</td><td>~0.59</td><td>Dîner · Compléter avec autre source</td></tr>
-</table></div>
-</div>
-<!-- LIPIDES -->
-<div class="tmg-page" id="tmg-page-fat">
-<p class="section-intro">Les lipides sont les seuls macronutriments qui ne peuvent pas être synthétisés par l'organisme en quantité suffisante. Descendre sous 15% des calories en lipides = baisse documentée de la testostérone libre.</p>
-
-<!-- Calculateur personnalisé -->
-<div class="h2">Tes besoins personnalisés</div>
-<div class="block" style="margin-bottom:14px;background:rgba(240,160,48,.05);border:1px solid rgba(240,160,48,.2);">
-  <div class="bt" style="color:var(--tmg-fat)">Calcul lipides selon ton profil</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin:12px 0">
-    <div>
-      <label style="font-size:9px;color:var(--tmg-muted);letter-spacing:1px;text-transform:uppercase">Poids (kg)</label>
-      <input id="tmg-f-poids" type="number" value="80" min="40" max="180" style="width:100%;margin-top:4px;background:var(--tmg-surface2);border:1px solid var(--tmg-border);color:var(--tmg-text);padding:7px 10px;font-family:inherit;font-size:13px">
-    </div>
-    <div>
-      <label style="font-size:9px;color:var(--tmg-muted);letter-spacing:1px;text-transform:uppercase">Objectif</label>
-      <select id="tmg-f-obj" style="width:100%;margin-top:4px;background:var(--tmg-surface2);border:1px solid var(--tmg-border);color:var(--tmg-text);padding:7px 10px;font-family:inherit;font-size:13px">
-        <option value="masse">Prise de masse</option>
-        <option value="recomp">Recomposition</option>
-        <option value="seche">Sèche</option>
-      </select>
-    </div>
-    <div>
-      <label style="font-size:9px;color:var(--tmg-muted);letter-spacing:1px;text-transform:uppercase">Calories / jour</label>
-      <input id="tmg-f-kcal" type="number" value="2800" min="1500" max="5000" style="width:100%;margin-top:4px;background:var(--tmg-surface2);border:1px solid var(--tmg-border);color:var(--tmg-text);padding:7px 10px;font-family:inherit;font-size:13px">
-    </div>
-    <div style="display:flex;align-items:flex-end">
-      <button onclick="tmgCalcFat()" style="width:100%;padding:8px;background:var(--tmg-fat);color:#000;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;border:none;cursor:pointer;letter-spacing:1px">CALCULER</button>
-    </div>
-  </div>
-  <div id="tmg-fat-result" style="display:none;margin-top:10px;padding:12px;background:rgba(240,160,48,.07);border:1px solid rgba(240,160,48,.2);font-size:13px;line-height:1.7"></div>
-</div>
-
-<!-- Rôle anabolique -->
-<div class="h2">Rôle Anabolique des Lipides</div>
-<div class="diagram-grid">
-<div class="block fat" style="margin-bottom:0"><div class="bt">Production Hormonale</div>
-<p>Les hormones stéroïdiennes (testostérone, estrogènes, cortisol, IGF-1) sont toutes synthétisées à partir du cholestérol. <strong>Pas de lipides = pas de testostérone</strong>. C'est une relation dose-dépendante documentée.</p>
-<ul style="margin-top:8px">
-  <li>Régime &lt;15% lipides → testostérone libre −12% (Hamalainen 1984)</li>
-  <li>Lipides mono-insaturés (olive, avocat) : corrélés positivement avec taux T</li>
-  <li>Acides gras saturés (œufs, viandes) : précurseurs directs du cholestérol → stéroïdes</li>
-  <li>Vitamine D (soluble dans les lipides) : cofacteur de la production de testostérone</li>
-</ul></div>
-<div class="block fat" style="margin-bottom:0"><div class="bt">Oméga-3 & Muscle</div>
-<p>Les EPA/DHA (oméga-3 à chaîne longue) ont des effets anaboliques directs indépendants des hormones :</p>
-<ul style="margin-top:8px">
-  <li><strong>MPS +50% en réponse à l'insuline/AA</strong> (Smith 2011, J Clin Invest) via activation mTOR</li>
-  <li>Réduction NF-κB → moins d'inflammation → MPB réduite</li>
-  <li>Amélioration sensibilité insulinique → meilleure captation glucose musculaire</li>
-  <li>Fluidité membranaire → signalisation GLUT-4 et mTOR optimisée</li>
-  <li>Dose efficace : <strong>2–4g EPA+DHA/jour</strong></li>
-</ul></div>
-</div>
-
-<div class="diagram-grid" style="margin-top:14px">
-<div class="block fat" style="margin-bottom:0"><div class="bt">Absorption des Vitamines Liposolubles</div>
-<p>Les vitamines A, D, E, K nécessitent des lipides pour être absorbées. Sans lipides dans le repas, leur absorption chute à moins de 30%. La vitamine D est particulièrement critique en musculation.</p>
-<ul style="margin-top:8px">
-  <li><strong>Vitamine D</strong> : récepteurs musculaires → déficit = force réduite, récupération lente</li>
-  <li><strong>Vitamine K2</strong> : dirige le calcium vers les os, cofacteur IGF-1</li>
-  <li><strong>Vitamine E</strong> : antioxydant musculaire, réduit les dommages membranaires post-effort</li>
-</ul></div>
-<div class="block fat" style="margin-bottom:0"><div class="bt">Énergie & Endurance</div>
-<p>À basse/moyenne intensité (&lt;65% VO2max), les lipides fournissent 50–70% de l'énergie. Réserves quasi-illimitées vs glycogène limité. Bien que non prioritaires en musculation explosive, ils économisent le glycogène sur les séances longues.</p>
-<ul style="margin-top:8px">
-  <li>Adaptation cétogène → meilleure oxydation des graisses à l'effort (mais force réduite)</li>
-  <li>Lipides péri-workout → ralentissent la digestion : <strong>à éviter ±90 min autour de la séance</strong></li>
-</ul></div>
-</div>
-
-<!-- Comment optimiser -->
-<div class="h2" style="margin-top:24px">Comment Optimiser</div>
-<div class="block" style="background:rgba(240,160,48,.06);border:1px solid rgba(240,160,48,.2)"><div class="bt" style="color:var(--tmg-fat)">Les 5 règles d'or</div>
-<ul>
-  <li><strong>Ne jamais descendre sous 0.8g/kg/j</strong> — minimum fonctionnel pour la production hormonale. En sèche stricte, c'est la ligne rouge.</li>
-  <li><strong>Prioriser EPA/DHA (oméga-3)</strong> — 2–4g/jour via saumon, sardines ou supplémentation. C'est le lipide le plus anabolique gramme pour gramme.</li>
-  <li><strong>Ratio oméga-6/oméga-3 &lt;4:1</strong> — l'alimentation moderne est à 15:1. Trop d'oméga-6 = inflammation → MPB augmentée.</li>
-  <li><strong>Lipides absents autour de la séance</strong> — zéro lipides dans les 90 min avant et 60 min après : ralentissent la vidange gastrique et l'absorption des AA et glucides.</li>
-  <li><strong>Varier les types</strong> — saturés (hormones), mono-insaturés (cardio + T), oméga-3 (anti-inflammation + MPS). Aucune catégorie à supprimer totalement.</li>
-</ul></div>
-
-<div class="block warn"><div class="bt" style="color:#e83838">Erreurs fréquentes</div>
-<ul>
-  <li><strong>Régime 0% graisse</strong> — testostérone s'effondre en 4–6 semaines, récupération dégradée.</li>
-  <li><strong>Trop d'oméga-6 (huiles végétales industrielles)</strong> — huile de tournesol, maïs, soja en excès → inflammation chronique.</li>
-  <li><strong>Graisses trans (margarines, plats industriels)</strong> — réduisent la fluidité membranaire, dégradent la signalisation insulinique.</li>
-  <li><strong>Lipides post-WO</strong> — retardent l'absorption de la whey et des glucides de recharge.</li>
-</ul></div>
-
-<!-- Sources -->
-<div class="h2">Sources</div>
-<div class="block tip"><table>
-<tr><th>Source</th><th>Type</th><th>g/portion</th><th>Bénéfice clé</th></tr>
-<tr><td><strong>Saumon (150g)</strong></td><td>Oméga-3 EPA/DHA</td><td>12–18g</td><td>Anti-inflammatoire, MPS ↑, sensibilité insulinique ↑. Priorité absolue.</td></tr>
-<tr><td><strong>Sardines (1 boîte)</strong></td><td>Oméga-3 EPA/DHA</td><td>10–12g</td><td>Alternative économique au saumon. Vitamine D + calcium.</td></tr>
-<tr><td><strong>Œufs entiers (3)</strong></td><td>Saturés + Mono + Cholestérol</td><td>14g</td><td>Testostérone, vitamine D, phospholipides.</td></tr>
-<tr><td><strong>Huile d'olive (1 cs)</strong></td><td>Mono-insaturés</td><td>14g</td><td>Corrélé positivement avec la testostérone. Absorption vitamines.</td></tr>
-<tr><td><strong>Avocat (½)</strong></td><td>Mono-insaturés</td><td>10–12g</td><td>Potassium + fibres + absorption caroténoïdes.</td></tr>
-<tr><td><strong>Noix (30g)</strong></td><td>Oméga-3 ALA + Oméga-6</td><td>18g</td><td>Magnésium (récupération) + oméga-3 végétal.</td></tr>
-<tr><td><strong>Beurre de cacahuète (2cs)</strong></td><td>Mono + Oméga-6</td><td>16g</td><td>Dense, pratique. Vérifier : 100% cacahuètes.</td></tr>
-</table>
-<p style="margin-top:12px;color:var(--tmg-muted)">Ratio cible : <strong style="color:var(--tmg-accent)">Saturés ≤30%</strong> · Mono ~40% · Poly ~30% · Oméga-6/Oméga-3 &lt;4:1.</p></div>
-</div>
-<!-- NA/K page unchanged -->
-<div class="tmg-page" id="tmg-page-nak">
-<p class="section-intro">Le levier le plus sous-estimé pour la sécheresse musculaire. Na retient l'eau sous la peau (extracellulaire), K l'attire dans le muscle (intracellulaire). Optimiser ce ratio = muscles plus durs, moins de flou sous-cutané.</p>
-<div class="h2">Cibles journalières</div>
-<div class="block nak"><table>
-<tr><th>Minéral</th><th>Cible/jour</th><th>Note</th></tr>
-<tr><td><strong>Sodium</strong></td><td>1 500–2 500 mg</td><td>Plus élevé les jours d'entraînement. Réduire les jours OFF si rétention visible.</td></tr>
-<tr><td><strong>Potassium</strong></td><td>3 500–5 000 mg</td><td>La plupart des Occidentaux sont à ~2 000 mg. C'est ici que se gagne la sécheresse.</td></tr>
-<tr><td><strong>Ratio K/Na</strong></td><td>&gt; 2:1</td><td>Le ratio prime sur les valeurs absolues pour la régulation hydrique.</td></tr>
-</table></div>
-<div class="h2">Meilleures sources de potassium</div>
-<div class="block nak"><table>
-<tr><th>Aliment</th><th>K / 100g</th><th>Bonus</th></tr>
-<tr><td><strong>Épinards cuits</strong></td><td>840 mg</td><td>Fer, magnésium, nitrates (performance vasculaire).</td></tr>
-<tr><td><strong>Saumon</strong></td><td>628 mg</td><td>Triple bénéfice : protéines + oméga-3 + potassium.</td></tr>
-<tr><td><strong>Patate douce</strong></td><td>542 mg</td><td>Glucides IG modéré + bêta-carotène.</td></tr>
-<tr><td><strong>Avocat (½)</strong></td><td>485 mg</td><td>Lipides de qualité + fibres.</td></tr>
-<tr><td><strong>Banane</strong></td><td>358 mg/unité</td><td>Portable, tryptophane, glucides.</td></tr>
-<tr><td><strong>Pomme de terre cuite</strong></td><td>340 mg</td><td>Glucides rapides post-WO en bonus.</td></tr>
-<tr><td><strong>Yaourt nature</strong></td><td>235 mg</td><td>Protéines lentes + probiotiques.</td></tr>
-</table></div>
-<div class="h2">Stratégies</div>
-<div class="block nak"><div class="bt">Semaine normale</div>
-<ul><li><strong>Jours d'entraînement</strong> : sodium modéré acceptable. Sel normal sur les repas.</li>
-<li><strong>Jours de repos</strong> : réduire sodium, augmenter légumes riches en K. Éviter charcuteries et plats industriels.</li>
-<li>Boire <strong>2.5–3.5 L d'eau/jour</strong> : bonne hydratation = meilleure régulation que restriction.</li></ul></div>
-<div class="block nak"><div class="bt">Sèche express — J-4 avant événement</div>
-<ul><li><strong>J-4 à J-2</strong> : charge potassium maximale. Réduction progressive sodium. Maintenir glucides.</li>
-<li><strong>J-1 soir</strong> : légère réduction glucides au dîner uniquement.</li>
-<li>Résultat attendu : vidange compartiment extracellulaire visible en 48–72h.</li></ul></div>
-<div class="block warn"><div class="bt" style="color:#e83838">Erreurs fréquentes</div>
-<ul><li>Restaurant / plats préparés : +2 000–3 000 mg sodium invisible par repas.</li>
-<li>Sauces soja, ketchup, bouillons : bombes sodiques.</li>
-<li>Restriction hydrique brutale : contre-productif.</li>
-<li>Créatine : retient 1–2 L d'eau intracellulaire. Positif pour la force, neutre sur l'apparence si K correct.</li></ul></div>
-</div>
-
-<!-- ══════ CIRCUITS ANABOLIQUES ══════ -->
-<div class="tmg-page" id="tmg-page-anab">
-<p class="section-intro">Les décisions de timing ne sont pas arbitraires — elles activent des cascades moléculaires spécifiques. Clique sur chaque circuit pour le déployer.</p>
-
-<!-- ── CSS accordéon (injecté ici pour isolation) ── -->
-
-
-<!-- ══ 1. mTOR ══ -->
-<div class="acc-item">
-<div class="acc-header" onclick="tmgToggleAcc(this)">
-  <span class="acc-title">1. Voie mTOR &mdash; Synthèse Protéique (MPS)</span>
-  <span class="acc-arrow">▼</span>
-</div>
-<div class="acc-body">
-<div class="block anab"><div class="bt">Ce que c'est</div>
-<p><strong>mTOR (mammalian Target Of Rapamycin)</strong> est la "tour de controle" de la synthese proteique. Il integre trois signaux simultanes : <strong>leucine</strong> (acides amines), <strong>insuline</strong> (glucides) et <strong>contraction musculaire</strong> (entrainement). Quand les trois sont presents, la fabrication de muscle est maximale.</p></div>
+    <div class="card" style="margin-top:0.9rem">
+      <div class="card-title">Comprendre les mécanismes (timing nutritionnel)</div>
+      <p style="font-size:0.72rem;color:var(--muted2);margin-bottom:1rem;line-height:1.6">Les 7 circuits qui expliquent pourquoi le timing des macros compte pour la prise de muscle.</p>
+      <details class="chart-details">
+        <summary>1. Voie mTOR — Synthèse Protéique (MPS)</summary>
+        <div class="chart-details-body">
 <div class="schema-wrap">
 <svg viewBox="0 0 700 320" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">
 <defs>
@@ -3974,17 +3532,11 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 </svg>
 <div class="schema-cap">Les 3 signaux doivent etre presents simultanement — post-WO avec whey + glucides = activation maximale</div>
 </div>
-</div></div>
-
-<!-- ══ 2. GLUT-4 ══ -->
-<div class="acc-item">
-<div class="acc-header" onclick="tmgToggleAcc(this)">
-  <span class="acc-title">2. Translocation GLUT-4 &mdash; Captation du Glucose</span>
-  <span class="acc-arrow">▼</span>
-</div>
-<div class="acc-body">
-<div class="block anab"><div class="bt">Ce que c'est</div>
-<p><strong>GLUT-4</strong> est le transporteur de glucose du muscle squelettique. Au repos, il est stocke a l'interieur de la cellule. L'entrainement ET l'insuline le font migrer en surface par deux voies independantes. Post-workout, les deux voies sont actives simultanement : <strong>captation de glucose 2-3x superieure au repos</strong>.</p></div>
+        </div>
+      </details>
+      <details class="chart-details">
+        <summary>2. Translocation GLUT-4 — Captation du Glucose</summary>
+        <div class="chart-details-body">
 <div class="schema-wrap">
 <svg viewBox="0 0 700 290" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">
 <defs>
@@ -4025,17 +3577,11 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 </svg>
 <div class="schema-cap">Post-workout : AMPK (exercice) + Akt (insuline) activent GLUT-4 simultanement — ne pas gacher cette fenetre avec des lipides</div>
 </div>
-</div></div>
-
-<!-- ══ 3. GH / IGF-1 ══ -->
-<div class="acc-item">
-<div class="acc-header" onclick="tmgToggleAcc(this)">
-  <span class="acc-title">3. Axe GH / IGF-1</span>
-  <span class="acc-arrow">▼</span>
-</div>
-<div class="acc-body">
-<div class="block anab"><div class="bt">Ce que c'est</div>
-<p><strong>GH (Growth Hormone)</strong> est secretee principalement la nuit (pic dans les 2h post-endormissement) et pendant l'effort intense. Elle stimule le foie et les muscles pour produire <strong>IGF-1</strong>, qui active directement la croissance musculaire via mTOR et la proliferation des cellules satellites.</p></div>
+        </div>
+      </details>
+      <details class="chart-details">
+        <summary>3. Axe GH / IGF-1</summary>
+        <div class="chart-details-body">
 <div class="schema-wrap">
 <svg viewBox="0 0 700 248" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">
 <defs>
@@ -4076,21 +3622,11 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 </svg>
 <div class="schema-cap">Eviter glucides rapides avant coucher — le pic insulinique inhibe partiellement la GH nocturne</div>
 </div>
-</div></div>
-
-<!-- ══ 4. Balance Cortisol / Testostérone ══ -->
-<div class="acc-item">
-<div class="acc-header" onclick="tmgToggleAcc(this)">
-  <span class="acc-title">4. Balance Cortisol / Testostérone</span>
-  <span class="acc-arrow">▼</span>
-</div>
-<div class="acc-body">
-<div class="diagram-grid">
-<div class="block warn" style="margin-bottom:0"><div class="bt" style="color:#e83838">Cortisol — facteurs qui l'augmentent</div>
-<ul><li>Seances &gt;75-90 min</li><li>Deficit calorique marque</li><li>Sommeil &lt;7h</li><li>Stress chronique eleve</li><li>Seance a jeun prolonge</li><li>Absence de glucides peri-WO</li></ul></div>
-<div class="block anab" style="margin-bottom:0"><div class="bt">Testosterone — ce qui ameliore le ratio T/C</div>
-<ul><li>Glucides peri-WO (reduit cortisol)</li><li>Lipides adequats 60g/j (maintien T)</li><li>Seances &lt;75 min</li><li>Sommeil 8h+ (pic T matinal)</li><li>Zinc + Magnesium (cofacteurs)</li><li>Surplus calorique modere</li></ul></div>
-</div>
+        </div>
+      </details>
+      <details class="chart-details">
+        <summary>4. Balance Cortisol / Testostérone</summary>
+        <div class="chart-details-body">
 <div class="schema-wrap" style="margin-top:20px">
 <svg viewBox="0 0 700 180" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">
 <defs>
@@ -4132,18 +3668,11 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 </svg>
 <div class="schema-cap">Optimiser le ratio T/C est plus important que le volume brut de séance</div>
 </div>
-</div></div>
-
-<!-- ══ 5. Glycémie & Insuline ══ -->
-<div class="acc-item">
-<div class="acc-header" onclick="tmgToggleAcc(this)">
-  <span class="acc-title">5. Glycémie, Insuline &amp; Résistance Insulinique</span>
-  <span class="acc-arrow">▼</span>
-</div>
-<div class="acc-body">
-<div class="block anab"><div class="bt">Pourquoi c'est le levier central</div>
-<p>La glycémie pilote l'insuline, qui pilote GLUT-4, qui pilote la recharge en glycogène et l'entrée des acides aminés dans le muscle. <strong>Le bon pic au bon moment = anabolisme. Le même pic au mauvais moment = résistance insulinique progressive.</strong></p></div>
-
+        </div>
+      </details>
+      <details class="chart-details">
+        <summary>5. Glycémie, Insuline & Résistance Insulinique</summary>
+        <div class="chart-details-body">
 <div class="schema-wrap">
 <svg viewBox="0 0 700 390" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">
 <defs>
@@ -4194,8 +3723,6 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 </svg>
 <div class="schema-cap">Seul le pic post-WO est anabolique — les autres pics élèvent l'insuline sans bénéfice musculaire</div>
 </div>
-
-<div class="h2" style="margin-top:24px">Cascade Glycémie → Insuline → Muscle</div>
 <div class="schema-wrap">
 <svg viewBox="0 0 700 310" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">
 <defs>
@@ -4261,8 +3788,6 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 </svg>
 <div class="schema-cap">Le timing de l'insuline est tout — anabolique post-WO, délétère en chronique</div>
 </div>
-
-<div class="h2" style="margin-top:24px">Résistance Insulinique — Mécanisme Cellulaire</div>
 <div class="schema-wrap">
 <svg viewBox="0 0 700 280" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">
 <defs>
@@ -4342,17 +3867,11 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 </svg>
 <div class="schema-cap">L'entraînement en résistance est l'outil le plus puissant pour restaurer la sensibilité insulinique (+60% GLUT-4)</div>
 </div>
-</div></div>
-
-<!-- ══ 6. Sommeil & Récupération ══ -->
-<div class="acc-item">
-<div class="acc-header" onclick="tmgToggleAcc(this)">
-  <span class="acc-title">6. Sommeil &amp; Architecture de la Récupération</span>
-  <span class="acc-arrow">▼</span>
-</div>
-<div class="acc-body">
-<div class="block anab"><div class="bt">Pourquoi le sommeil est un levier anabolique</div>
-<p>80% de la sécrétion journalière de GH se produit pendant le sommeil profond (onde lente, cycles 1 et 2). La testostérone atteint son pic au réveil après une nuit complète. La privation de sommeil réduit la synthèse protéique, augmente le cortisol et dégrade la sensibilité insulinique en moins d'une semaine.</p></div>
+        </div>
+      </details>
+      <details class="chart-details">
+        <summary>6. Sommeil & Architecture de la Récupération</summary>
+        <div class="chart-details-body">
 <div class="schema-wrap">
 <svg viewBox="0 0 700 260" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">
 <!-- Axe temps -->
@@ -4400,35 +3919,11 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 </svg>
 <div class="schema-cap">Les 2 premiers cycles contiennent le plus de sommeil profond et le plus gros pic de GH — perdre ces cycles = perte anabolique majeure</div>
 </div>
-<div class="diagram-grid" style="margin-top:16px">
-<div class="block warn" style="margin-bottom:0"><div class="bt" style="color:#e83838">Destructeurs du sommeil anabolique</div>
-<ul>
-  <li><strong>Glucides rapides avant coucher</strong> : pic insuline → bloque GH nocturne</li>
-  <li><strong>Alcool</strong> : fragmente le sommeil profond, supprime cycle REM</li>
-  <li><strong>Écrans &lt;1h avant coucher</strong> : lumière bleue → mélatonine -50%</li>
-  <li><strong>Caféine après 14h</strong> : demi-vie 6h → perturbe endormissement</li>
-  <li><strong>Température &gt;19°C</strong> : empêche la thermorégulation nécessaire au sommeil profond</li>
-</ul></div>
-<div class="block hl-anab" style="margin-bottom:0"><div class="bt" style="color:var(--tmg-anab)">Optimisateurs anaboliques</div>
-<ul>
-  <li><strong>Caséine 30–40g</strong> : libération lente AA toute la nuit → MPS +22%</li>
-  <li><strong>Magnésium glycinate 300mg</strong> : améliore profondeur sommeil profond</li>
-  <li><strong>Chambre &lt;18°C</strong> : favorise les ondes delta (sommeil profond)</li>
-  <li><strong>Heure fixe coucher/réveil</strong> : synchronise le pic GH sur les premiers cycles</li>
-  <li><strong>Obscurité totale</strong> : mélatonine maximale → induction sommeil profond</li>
-</ul></div>
-</div>
-</div></div>
-
-<!-- ══ 7. Balance MPS/MPB ══ -->
-<div class="acc-item">
-<div class="acc-header" onclick="tmgToggleAcc(this)">
-  <span class="acc-title">7. Balance MPS / MPB &mdash; Bilan Protéique Net</span>
-  <span class="acc-arrow">▼</span>
-</div>
-<div class="acc-body">
-<div class="block anab"><div class="bt">Le vrai moteur de la prise de muscle</div>
-<p>La masse musculaire ne progresse que si la <strong>synthèse protéique (MPS)</strong> est durablement supérieure à la <strong>dégradation protéique (MPB)</strong>. L'objectif n'est pas seulement de maximiser MPS, mais de <strong>minimiser MPB simultanément</strong>. C'est la somme de toutes les fenêtres de la journée qui compte.</p></div>
+        </div>
+      </details>
+      <details class="chart-details">
+        <summary>7. Balance MPS / MPB — Bilan Protéique Net</summary>
+        <div class="chart-details-body">
 <div class="schema-wrap">
 <svg viewBox="0 0 700 240" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">
 <defs>
@@ -4461,1022 +3956,11 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 </svg>
 <div class="schema-cap">La prise de muscle est l'aire sous MPS moins l'aire sous MPB sur 24h — chaque repas, chaque nuit compte</div>
 </div>
-<div class="diagram-grid" style="margin-top:14px">
-<div class="block hl-anab" style="margin-bottom:0"><div class="bt" style="color:var(--tmg-anab)">Maximiser MPS</div>
-<ul>
-  <li><strong>Leucine &gt;2.5g par prise</strong> — seuil d'activation mTOR</li>
-  <li><strong>Whey post-WO dans les 60 min</strong> — fenêtre GLUT-4 + insuline</li>
-  <li><strong>4-5 prises protéinées/jour</strong> — stimulation MPS répétée</li>
-  <li><strong>Caséine nocturne</strong> — MPS nocturne +22% (Van Loon 2012)</li>
-  <li><strong>Créatine 3-5g/j</strong> — augmente MPS via phosphocréatine + eau intramusculaire</li>
-</ul></div>
-<div class="block warn" style="margin-bottom:0"><div class="bt" style="color:#e83838">Minimiser MPB</div>
-<ul>
-  <li><strong>Ne jamais être à jeun &gt;5h</strong> — MPB monte dès 4h sans AA</li>
-  <li><strong>Glucides peri-WO</strong> — insuline = frein puissant de MPB</li>
-  <li><strong>Surplus calorique</strong> — déficit &gt;500 kcal → MPB × 1.5</li>
-  <li><strong>Séances &lt;75 min</strong> — cortisol = activateur MPB</li>
-  <li><strong>Oméga-3 EPA/DHA</strong> — réduisent dégradation protéique (NF-κB)</li>
-</ul></div>
-</div>
-</div></div>
+        </div>
+      </details>
+    </div>
+  </div><!-- fin panel tendances -->
 
-<!-- ══ Synthèse ══ -->
-<div class="acc-item">
-<div class="acc-header open" onclick="tmgToggleAcc(this)">
-  <span class="acc-title">Synthèse &mdash; Les 7 leviers prioritaires</span>
-  <span class="acc-arrow">▼</span>
-</div>
-<div class="acc-body open">
-<div class="block hl-anab"><div class="bt" style="color:var(--tmg-anab)">A retenir absolument</div>
-<ul>
-  <li><strong>1. Leucine &gt;2.5g par prise</strong> : sans ça, mTOR ne s'active pas. Whey isolate = option la plus fiable.</li>
-  <li><strong>2. Glucides post-WO dans les 60 min</strong> : GLUT-4 en surface + insuline = double captation glucose + AA.</li>
-  <li><strong>3. Glycémie chronique maîtrisée</strong> : IG élevé uniquement post-WO. Reste du temps → IG bas/modéré.</li>
-  <li><strong>4. Séance &lt;75 min</strong> : ratio T/C optimal. Au-delà = catabolisme net.</li>
-  <li><strong>5. Caséine avant coucher</strong> : MPS nocturne +22%, GH non bloquée.</li>
-  <li><strong>6. Lipides ≥60 g/j</strong> : testostérone, GH et IGF-1 productibles. Ne jamais les supprimer.</li>
-  <li><strong>7. Sommeil 8h+ à heure fixe</strong> : pic GH cycles 1-2, pic testostérone au réveil, sensibilité insulinique restaurée.</li>
-  <li><strong>8. MPS &gt; MPB sur 24h</strong> : 4-5 prises protéinées, jamais plus de 5h à jeun, glucides anti-cataboliques peri-WO.</li>
-</ul></div>
-</div></div>
-
-</div>
-
-
-<div class="tmg-page" id="tmg-page-liste">
-<p class="section-intro">Coche les aliments qui t'interessent &mdash; ils s'ajoutent automatiquement a ta liste de courses a droite. Filtre par categorie ou recherche un aliment. Tu peux copier la liste ou la vider. <strong style="color:var(--tmg-carb)">42 sources de glucides</strong> repertoriees, classees par fenetre d'ingestion (pre-WO, intra, post-WO, matin, diner).</p>
-
-<div class="liste-layout">
-  <div class="liste-main">
-    <div class="search-bar">
-      <span class="search-icon">&#128269;</span>
-      <input type="text" id="tmg-food-search" placeholder="Rechercher un aliment..." oninput="tmgFilterFoods()">
-    </div>
-    <div class="liste-filters">
-      <button class="filter-btn active" onclick="tmgSetFilter('all',this)">Tout</button>
-      <button class="filter-btn fg" onclick="tmgSetFilter('glucides',this)">Glucides</button>
-      <button class="filter-btn fp" onclick="tmgSetFilter('proteines',this)">Proteines</button>
-      <button class="filter-btn ff" onclick="tmgSetFilter('lipides',this)">Lipides</button>
-    </div>
-    <div class="liste-filters" id="tmg-timing-filters" style="display:none;border-top:1px solid var(--tmg-border);padding-top:8px;margin-top:-4px;">
-      <button class="filter-btn" style="font-size:9px;color:var(--tmg-carb);border-color:rgba(47,214,180,.3)" onclick="tmgSetTimingFilter('',this)">Tous timings</button>
-      <button class="filter-btn" style="font-size:9px" onclick="tmgSetTimingFilter('Matin',this)">Matin</button>
-      <button class="filter-btn" style="font-size:9px" onclick="tmgSetTimingFilter('Pré-WO',this)">Pré-WO</button>
-      <button class="filter-btn" style="font-size:9px" onclick="tmgSetTimingFilter('Intra',this)">Intra-WO</button>
-      <button class="filter-btn" style="font-size:9px" onclick="tmgSetTimingFilter('Post-WO',this)">Post-WO</button>
-      <button class="filter-btn" style="font-size:9px" onclick="tmgSetTimingFilter('Dîner',this)">Dîner</button>
-      <button class="filter-btn" style="font-size:9px" onclick="tmgSetTimingFilter('Coucher',this)">Coucher</button>
-    </div>
-    <div class="food-list" id="tmg-food-list">
-      <span class="cat-label cg" data-cat="glucides">&#9632; Glucides</span>
-      <label class="food-item" data-id="g1" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g1" onchange="tmgToggleFood(this,'g1','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Riz blanc / basmati</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#2fd6b4;border:1px solid #2fd6b440;">pré/post</span>
-        <span class="food-meta">IG 58–72</span>
-      </div>
-      <div class="food-timing">&#9201; Pré-WO + Post-WO</div>
-      <div class="food-desc">La référence musculation. Digestion rapide, zéro fibres gênantes, charge glycémique correcte. Polyvalent, économique, facile à doser.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g2" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g2" onchange="tmgToggleFood(this,'g2','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Flocons d'avoine</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#c9a0e0;border:1px solid #c9a0e040;">matin/coucher</span>
-        <span class="food-meta">IG 55</span>
-      </div>
-      <div class="food-timing">&#9201; Matin + Avant coucher</div>
-      <div class="food-desc">Bêta-glucanes (cholestérol), libération progressive, satiété durable. Base idéale du petit-déj et de la collation soir.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g3" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g3" onchange="tmgToggleFood(this,'g3','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Banane (mûre)</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#35c9a0;border:1px solid #35c9a040;">multi</span>
-        <span class="food-meta">IG 51–65</span>
-      </div>
-      <div class="food-timing">&#9201; Pré-WO / Post-WO / Coucher</div>
-      <div class="food-desc">Potassium + fructose (glycogène hépatique) + tryptophane (sommeil). L'aliment le plus polyvalent du guide.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g4" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g4" onchange="tmgToggleFood(this,'g4','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Patate douce</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#2fd6b4;border:1px solid #2fd6b440;">pré-WO</span>
-        <span class="food-meta">IG 44–61</span>
-      </div>
-      <div class="food-timing">&#9201; Pré-WO + Dîner</div>
-      <div class="food-desc">Meilleure glucide globale : potassium élevé (542 mg/100g), bêta-carotène, IG modéré. Préparer en batch.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g5" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g5" onchange="tmgToggleFood(this,'g5','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Pomme de terre cuite</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#2fd6b4;border:1px solid #2fd6b440;">post-WO</span>
-        <span class="food-meta">IG 70–90</span>
-      </div>
-      <div class="food-timing">&#9201; Post-WO prioritaire</div>
-      <div class="food-desc">IG très élevé une fois cuite. Recharge glycogène rapide + potassium. Purée sans beurre = parfait post-WO.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g6" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g6" onchange="tmgToggleFood(this,'g6','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Pâtes blanches al dente</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#f0a030;border:1px solid #f0a03040;">dîner</span>
-        <span class="food-meta">IG 40–55</span>
-      </div>
-      <div class="food-timing">&#9201; Dîner</div>
-      <div class="food-desc">IG plus bas que le riz quand al dente (amidon moins gélatinisé). Pratique en grande quantité, bonne densité.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g7" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g7" onchange="tmgToggleFood(this,'g7','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Riz complet</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#f0a030;border:1px solid #f0a03040;">dîner</span>
-        <span class="food-meta">IG 50–60</span>
-      </div>
-      <div class="food-timing">&#9201; Dîner uniquement</div>
-      <div class="food-desc">Fibres + magnésium + libération lente. Pas adapté peri-workout (fibres ralentissent absorption).</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g8" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g8" onchange="tmgToggleFood(this,'g8','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Lentilles corail</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#f0a030;border:1px solid #f0a03040;">dîner</span>
-        <span class="food-meta">IG 21–30</span>
-      </div>
-      <div class="food-timing">&#9201; Dîner uniquement</div>
-      <div class="food-desc">IG très bas, protéines végétales, fer. Incompatible avec les fenêtres peri-workout. Cuisson 15 min.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g9" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g9" onchange="tmgToggleFood(this,'g9','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Quinoa</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#f0a030;border:1px solid #f0a03040;">dîner</span>
-        <span class="food-meta">IG 53</span>
-      </div>
-      <div class="food-timing">&#9201; Dîner</div>
-      <div class="food-desc">Protéine complète (tous les AA essentiels) + glucides + fibres. Dense nutritionnellement, plus cher.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g10" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g10" onchange="tmgToggleFood(this,'g10','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Pain complet</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#b8e030;border:1px solid #b8e03040;">matin</span>
-        <span class="food-meta">IG 50–60</span>
-      </div>
-      <div class="food-timing">&#9201; Matin / Pré-WO</div>
-      <div class="food-desc">IG modéré, pratique, accessible partout. Avec beurre de cacahuète + banane = repas pré-WO complet.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g11" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g11" onchange="tmgToggleFood(this,'g11','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Maltodextrine (poudre)</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#2fd6b4;border:1px solid #2fd6b440;">post-WO</span>
-        <span class="food-meta">IG 85–110</span>
-      </div>
-      <div class="food-timing">&#9201; Post-WO dans shaker</div>
-      <div class="food-desc">IG maximal, sans goût, se mélange à la whey. Recharge glycogène la plus rapide possible. 20–30g/dose.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g12" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g12" onchange="tmgToggleFood(this,'g12','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Dextrose (glucose pur)</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#2fd6b4;border:1px solid #2fd6b440;">intra/post</span>
-        <span class="food-meta">IG 100</span>
-      </div>
-      <div class="food-timing">&#9201; Intra-WO / Post-WO</div>
-      <div class="food-desc">Pic insulinique maximal, absorption instantanée. Synergie whey + dextrose = captation AA maximale.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g13" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g13" onchange="tmgToggleFood(this,'g13','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Fruits rouges (myrtilles…)</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#b8e030;border:1px solid #b8e03040;">matin</span>
-        <span class="food-meta">IG 25–40</span>
-      </div>
-      <div class="food-timing">&#9201; Matin / Collations</div>
-      <div class="food-desc">Antioxydants polyphénols (réduction DOMS), IG bas, fibres. Faible apport glucidique (~10g/100g).</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g14" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g14" onchange="tmgToggleFood(this,'g14','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Galettes de maïs</span>
-        <span class="food-badge" style="background:rgba(255,255,255,0.08);color:#9aa3b8;border:1px solid #4a4e60;">go</span>
-        <span class="food-meta">IG 70–85</span>
-      </div>
-      <div class="food-timing">&#9201; Post-WO · on-the-go</div>
-      <div class="food-desc">IG élevé, ultra-léger, se glisse dans le sac de sport. Bon avec du poulet ou du thon en boîte.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g15" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g15" onchange="tmgToggleFood(this,'g15','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Galettes de riz soufflé</span>
-        <span class="food-badge" style="background:rgba(255,255,255,0.08);color:#9aa3b8;border:1px solid #4a4e60;">go</span>
-        <span class="food-meta">IG 82</span>
-      </div>
-      <div class="food-timing">&#9201; Post-WO / Collation · on-the-go</div>
-      <div class="food-desc">4–6 galettes + shaker whey = post-WO rapide. Ultra-portable, zéro préparation.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g16" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g16" onchange="tmgToggleFood(this,'g16','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Wrap blé complet</span>
-        <span class="food-badge" style="background:rgba(255,255,255,0.08);color:#9aa3b8;border:1px solid #4a4e60;">go</span>
-        <span class="food-meta">IG 40–55</span>
-      </div>
-      <div class="food-timing">&#9201; Pré-WO · on-the-go</div>
-      <div class="food-desc">IG modéré. Garnir la veille (thon, poulet, légumes). Repas pré-WO idéal à emporter.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g17" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g17" onchange="tmgToggleFood(this,'g17','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Dattes Medjool</span>
-        <span class="food-badge" style="background:rgba(255,255,255,0.08);color:#9aa3b8;border:1px solid #4a4e60;">go</span>
-        <span class="food-meta">IG 42–55</span>
-      </div>
-      <div class="food-timing">&#9201; Intra-WO / Pré-WO · on-the-go</div>
-      <div class="food-desc">3–4 dattes = ~55g glucides. Potassium + magnésium + sucre naturel (fructose+glucose). Énergie soutenue.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g18" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g18" onchange="tmgToggleFood(this,'g18','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Barre avoine-miel</span>
-        <span class="food-badge" style="background:rgba(255,255,255,0.08);color:#9aa3b8;border:1px solid #4a4e60;">go</span>
-        <span class="food-meta">IG 55–65</span>
-      </div>
-      <div class="food-timing">&#9201; Intra-WO · on-the-go</div>
-      <div class="food-desc">OatBar, Trek, Nakd. Viser >70% avoine, peu de graisses. Pratique en séance.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g19" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g19" onchange="tmgToggleFood(this,'g19','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Compote pommes (gourde)</span>
-        <span class="food-badge" style="background:rgba(255,255,255,0.08);color:#9aa3b8;border:1px solid #4a4e60;">go</span>
-        <span class="food-meta">IG 35–45</span>
-      </div>
-      <div class="food-timing">&#9201; Collation · on-the-go</div>
-      <div class="food-desc">2 gourdes = ~30g glucides. Digestion facile, fructose vers glycogène hépatique. Idéal entre deux repas.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g20" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g20" onchange="tmgToggleFood(this,'g20','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Jus de raisin pur</span>
-        <span class="food-badge" style="background:rgba(255,255,255,0.08);color:#9aa3b8;border:1px solid #4a4e60;">go</span>
-        <span class="food-meta">IG 45–65</span>
-      </div>
-      <div class="food-timing">&#9201; Post-WO / Intra · on-the-go</div>
-      <div class="food-desc">Glucose dominant (pas fructose), absorption rapide. Sans pulpe = plus rapide. Très efficace pour glycogène musculaire.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g21" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g21" onchange="tmgToggleFood(this,'g21','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Farine d'avoine</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#b8e030;border:1px solid #b8e03040;">matin</span>
-        <span class="food-meta">IG 55–65</span>
-      </div>
-      <div class="food-timing">&#9201; Matin + Pré-WO</div>
-      <div class="food-desc">Version moulue des flocons — dissolution rapide dans les pancakes ou porridge. Même profil bêta-glucanes que l'avoine. Idéale en pancakes pré-WO avec œufs : résultat moelleux, dense en glucides complexes.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g22" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g22" onchange="tmgToggleFood(this,'g22','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Crème de riz</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#2fd6b4;border:1px solid #2fd6b440;">post-WO</span>
-        <span class="food-meta">IG 70–80</span>
-      </div>
-      <div class="food-timing">&#9201; Post-WO + Matin</div>
-      <div class="food-desc">Riz finement broyé, cuisson 3 min. Texture crémeuse ultra-facile à ingérer. IG élevé = recharge glycogène rapide. Sans fibres gênantes. Associée à whey post-WO : le duo le plus efficace. ~80g glucides/100g sec.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g23" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g23" onchange="tmgToggleFood(this,'g23','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Crème de maïs (polenta fine)</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#2fd6b4;border:1px solid #2fd6b440;">post-WO</span>
-        <span class="food-meta">IG 68–75</span>
-      </div>
-      <div class="food-timing">&#9201; Post-WO + Matin</div>
-      <div class="food-desc">Alternative à la crème de riz. Maïs finement moulu, texture lisse. IG élevé, digestion rapide. Dense en glucides (~75g/100g sec). Bon goût neutre. Utilisée par powerlifters pour les repas post-WO volumineux sans inconfort digestif.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g24" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g24" onchange="tmgToggleFood(this,'g24','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Flocons d'avoine instantanés (fine cut)</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#b8e030;border:1px solid #b8e03040;">matin</span>
-        <span class="food-meta">IG 65–70</span>
-      </div>
-      <div class="food-timing">&#9201; Matin (repas rapide)</div>
-      <div class="food-desc">Plus précuit que les flocons classiques = IG légèrement supérieur. Prêt en 2 min micro-ondes. Pratique quand le temps manque. ~60g glucides/100g. Goût plus doux, texture fine. Ajouter whey + banane pour repas complet.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g25" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g25" onchange="tmgToggleFood(this,'g25','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Tapioca (perles / fécule de manioc)</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#2fd6b4;border:1px solid #2fd6b440;">post-WO</span>
-        <span class="food-meta">IG 70–85</span>
-      </div>
-      <div class="food-timing">&#9201; Post-WO</div>
-      <div class="food-desc">Fécule de manioc pure : zéro fibre, zéro protéine, zéro graisse. IG très élevé. Texture gélatineuse agréable en pudding sucré. ~88g glucides/100g sec. Apprécié par les athlètes cherchant à ingérer beaucoup de glucides sans inconfort intestinal.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g26" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g26" onchange="tmgToggleFood(this,'g26','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Pancakes farine d'avoine + œuf</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#b8e030;border:1px solid #b8e03040;">matin</span>
-        <span class="food-meta">IG 50–60</span>
-      </div>
-      <div class="food-timing">&#9201; Matin / Pré-WO</div>
-      <div class="food-desc">80g farine avoine + 2 œufs + 100ml lait = 4 pancakes. ~45g glucides + 20g protéines. IG modéré, repas macro-équilibré. Cuire en batch la veille, réchauffer le matin. Le petit-déj optimal en prise de masse.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g27" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g27" onchange="tmgToggleFood(this,'g27','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Pain de mie blanc (brioche)</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#2fd6b4;border:1px solid #2fd6b440;">post-WO</span>
-        <span class="food-meta">IG 75–85</span>
-      </div>
-      <div class="food-timing">&#9201; Post-WO</div>
-      <div class="food-desc">IG très élevé, digestion flash. 3 tranches = ~45g glucides. Combiné avec confiture + whey = post-WO ultrarapide. Idéal si peu d'appétit après séance. Ne pas utiliser hors contexte post-WO : densité glucidique trop élevée.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g28" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g28" onchange="tmgToggleFood(this,'g28','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Miel pur</span>
-        <span class="food-badge" style="background:rgba(255,255,255,0.08);color:#9aa3b8;border:1px solid #4a4e60;">go</span>
-        <span class="food-meta">IG 55–70</span>
-      </div>
-      <div class="food-timing">&#9201; Pré-WO / Post-WO / Intra</div>
-      <div class="food-desc">Mix fructose + glucose = double action (glycogène hépatique + musculaire). 1 cs = ~17g glucides. Sur pain de mie, dans le shaker ou sur galettes. Antioxydants + enzymes digestives en bonus. Version brute / rayon > version chauffée industrielle.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g29" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g29" onchange="tmgToggleFood(this,'g29','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Granola maison (avoine + miel)</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#b8e030;border:1px solid #b8e03040;">matin</span>
-        <span class="food-meta">IG 50–60</span>
-      </div>
-      <div class="food-timing">&#9201; Matin</div>
-      <div class="food-desc">Flocons avoine + miel + noix torréfiés. ~65g glucides/100g. IG modéré grâce aux lipides des noix. Très dense en calories. Idéal prise de masse. Préparer un grand batch hebdomadaire. Éviter granolas industriels (sucre caché, huile de palme).</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g30" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g30" onchange="tmgToggleFood(this,'g30','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Raisin sec / abricots secs</span>
-        <span class="food-badge" style="background:rgba(255,255,255,0.08);color:#9aa3b8;border:1px solid #4a4e60;">go</span>
-        <span class="food-meta">IG 64–70</span>
-      </div>
-      <div class="food-timing">&#9201; Pré-WO / Intra-WO · on-the-go</div>
-      <div class="food-desc">~75g glucides/100g. Ultra-dense et portable. 40–50g avant séance = carburant solide. Potassium + fer (abricots). Alternative naturelle aux gels. Idéal dans la poche de sport à côté des dattes.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g31" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g31" onchange="tmgToggleFood(this,'g31','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Gel énergétique sport (malto+fructose)</span>
-        <span class="food-badge" style="background:rgba(255,255,255,0.08);color:#9aa3b8;border:1px solid #4a4e60;">go</span>
-        <span class="food-meta">IG 80–95</span>
-      </div>
-      <div class="food-timing">&#9201; Intra-WO · on-the-go</div>
-      <div class="food-desc">~20–25g glucides par sachet. Absorption maximale (~90g/h avec ratio 2:1 malto/fructose). Idéal séances >90 min. Maurten, SiS, Decathlon. Pas de mastication, zéro inconfort digestif pendant l'effort. Solution la plus efficace en intra.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g32" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g32" onchange="tmgToggleFood(this,'g32','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Boisson intra-WO maison (malto + sel)</span>
-        <span class="food-badge" style="background:rgba(255,255,255,0.08);color:#9aa3b8;border:1px solid #4a4e60;">go</span>
-        <span class="food-meta">IG 85–100</span>
-      </div>
-      <div class="food-timing">&#9201; Intra-WO / Post-WO</div>
-      <div class="food-desc">40–60g maltodextrine + pincée de sel + EAA dans 500ml eau = cocktail anabolique complet. Recharge glycogène + hydratation + acides aminés simultanés. Coût 3x inférieur aux boissons sportives commerciales.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g33" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g33" onchange="tmgToggleFood(this,'g33','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Semoule blé dur (couscous)</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#f0a030;border:1px solid #f0a03040;">dîner</span>
-        <span class="food-meta">IG 55–65</span>
-      </div>
-      <div class="food-timing">&#9201; Dîner / Pré-WO</div>
-      <div class="food-desc">Cuisson 5 min — aucune autre céréale aussi rapide. ~72g glucides/100g sec. IG modéré, bien toléré digestivement. Batch facile : rehydrater à chaud dans 1h. Associer poulet + légumes pour repas pré-WO complet.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g34" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g34" onchange="tmgToggleFood(this,'g34','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Pâtes lentilles / pois chiches</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#f0a030;border:1px solid #f0a03040;">dîner</span>
-        <span class="food-meta">IG 38–50</span>
-      </div>
-      <div class="food-timing">&#9201; Dîner</div>
-      <div class="food-desc">IG bas + bonus protéique (~13g/100g sec). Fibres + glucides complexes pour glycémie nocturne stable. Alternative nutritive aux pâtes blanches. Cuisson al dente obligatoire. Profil complet quand associé à viande.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g35" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g35" onchange="tmgToggleFood(this,'g35','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Igname / Taro</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#2fd6b4;border:1px solid #2fd6b440;">pré-WO</span>
-        <span class="food-meta">IG 35–51</span>
-      </div>
-      <div class="food-timing">&#9201; Pré-WO + Dîner</div>
-      <div class="food-desc">Alternative exotique à la patate douce avec IG encore plus bas. Digestion très progressive = énergie longue durée. Riche en potassium, vitamine B6, fibres. Excellent à 90 min avant une séance longue ou un entraînement du soir.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g36" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g36" onchange="tmgToggleFood(this,'g36','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Pain aux céréales / épeautre</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#f0a030;border:1px solid #f0a03040;">dîner</span>
-        <span class="food-meta">IG 40–50</span>
-      </div>
-      <div class="food-timing">&#9201; Dîner / Matin</div>
-      <div class="food-desc">IG nettement plus bas que le pain blanc grâce aux grains entiers + fibres. Digestion lente, satiété prolongée. Magnesium + zinc + vitamines B en bonus. Idéal pour le repas du soir sans pic insulinique nocturne.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g37" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g37" onchange="tmgToggleFood(this,'g37','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Flocons de riz soufflé (type Rice Krispies)</span>
-        <span class="food-badge" style="background:rgba(255,255,255,0.08);color:#9aa3b8;border:1px solid #4a4e60;">go</span>
-        <span class="food-meta">IG 82–88</span>
-      </div>
-      <div class="food-timing">&#9201; Post-WO · on-the-go</div>
-      <div class="food-desc">IG très élevé, ultra-léger. 50g + lait écrémé = ~40g glucides. Portable en sachet, se mange sec en dépannage. Alternative aux galettes de riz classiques. Plus pratique à doser précisément.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g38" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g38" onchange="tmgToggleFood(this,'g38','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Confiture pur fruit</span>
-        <span class="food-badge" style="background:rgba(255,255,255,0.08);color:#9aa3b8;border:1px solid #4a4e60;">go</span>
-        <span class="food-meta">IG 55–65</span>
-      </div>
-      <div class="food-timing">&#9201; Post-WO / Pré-WO rapide</div>
-      <div class="food-desc">1–2 cs = ~25–30g glucides. Rapide sur pain de mie ou galettes de riz. Favoriser pur fruit sans gélifiant ni sucre ajouté. Éviter versions allégées (fructose artificiel). Combo pain blanc + confiture + whey = post-WO express complet.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g39" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g39" onchange="tmgToggleFood(this,'g39','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Pomme / Poire</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#b8e030;border:1px solid #b8e03040;">matin</span>
-        <span class="food-meta">IG 36–42</span>
-      </div>
-      <div class="food-timing">&#9201; Matin / Collation</div>
-      <div class="food-desc">IG bas grâce à la pectine (fibre soluble). ~25g glucides. Parfaite collation anti-catabolique entre repas. Polyphénols (quercétine) avec effet anti-inflammatoire musculaire. Fructose → glycogène hépatique uniquement.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g40" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g40" onchange="tmgToggleFood(this,'g40','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Mangue fraîche</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#b8e030;border:1px solid #b8e03040;">matin</span>
-        <span class="food-meta">IG 51–56</span>
-      </div>
-      <div class="food-timing">&#9201; Matin / Post-WO léger</div>
-      <div class="food-desc">~35g glucides pour une demi-mangue. Mix glucose + fructose. Riche en bêta-carotène, vitamine C (synthèse collagène). Excellent dans le porridge ou smoothie post-WO. Goût premium qui rend le meal-prep plus agréable.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g41" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g41" onchange="tmgToggleFood(this,'g41','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Waffle / Gaufre nature (batch)</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#2fd6b4;border:1px solid #2fd6b440;">post-WO</span>
-        <span class="food-meta">IG 70–80</span>
-      </div>
-      <div class="food-timing">&#9201; Post-WO (batch cooking)</div>
-      <div class="food-desc">Farine blanche + œuf + lait, peu de beurre : IG élevé, post-WO viable. Préparer en batch, congeler, réchauffer 30 sec. 2 grandes gaufres = ~60g glucides. Format appétissant qui facilite l'ingestion post-séance sans appétit.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="g42" data-cat="glucides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-g42" onchange="tmgToggleFood(this,'g42','glucides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Pois cassés / haricots blancs</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#f0a030;border:1px solid #f0a03040;">dîner</span>
-        <span class="food-meta">IG 22–38</span>
-      </div>
-      <div class="food-timing">&#9201; Dîner</div>
-      <div class="food-desc">IG très bas, amidon résistant. Digestion ultra-lente, glycémie nocturne stable. ~8g protéines végétales/100g cuits. Fibres solubles avec effet prébiotique. Associer à riz ou céréales pour profil en acides aminés complet.</div>
-    </div>
-  </div>
-</label>
-      <span class="cat-label cp" data-cat="proteines">&#9632; Proteines</span>
-      <label class="food-item" data-id="p1" data-cat="proteines">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-p1" onchange="tmgToggleFood(this,'p1','proteines')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Whey Isolate</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#b8e030;border:1px solid #b8e03040;">réveil/post</span>
-        <span class="food-meta">Leucine ~3g/30g prot</span>
-      </div>
-      <div class="food-timing">&#9201; Réveil + Post-WO</div>
-      <div class="food-desc">Digestion 60–90 min, pic leucine rapide, active mTOR immédiatement. >90% protéines, <1g lactose. La whey de choix.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="p2" data-cat="proteines">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-p2" onchange="tmgToggleFood(this,'p2','proteines')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Whey Concentrate</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#2fd6b4;border:1px solid #2fd6b440;">post-WO</span>
-        <span class="food-meta">Leucine ~2.7g/30g prot</span>
-      </div>
-      <div class="food-timing">&#9201; Post-WO</div>
-      <div class="food-desc">70–80% protéines. Bon post-WO, moins optimal au réveil. Plus économique que l'isolate.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="p3" data-cat="proteines">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-p3" onchange="tmgToggleFood(this,'p3','proteines')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Caséine micellaire</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#c9a0e0;border:1px solid #c9a0e040;">coucher</span>
-        <span class="food-meta">Leucine ~2.6g/30g prot</span>
-      </div>
-      <div class="food-timing">&#9201; Avant coucher uniquement</div>
-      <div class="food-desc">Digestion 6–8h. +22% MPS nocturne (Snijders 2015). Ne pas utiliser le matin ou post-WO : trop lente.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="p4" data-cat="proteines">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-p4" onchange="tmgToggleFood(this,'p4','proteines')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Fromage blanc 0%</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#c9a0e0;border:1px solid #c9a0e040;">coucher</span>
-        <span class="food-meta">Leucine ~2.8g/30g prot</span>
-      </div>
-      <div class="food-timing">&#9201; Avant coucher + Dîner</div>
-      <div class="food-desc">Alternative économique à la caséine. Protéines coagulant lentement, flux d'AA prolongé. 250g = 25–30g prot.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="p5" data-cat="proteines">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-p5" onchange="tmgToggleFood(this,'p5','proteines')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Oeufs entiers</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#b8e030;border:1px solid #b8e03040;">matin</span>
-        <span class="food-meta">Leucine ~2.4g/30g prot</span>
-      </div>
-      <div class="food-timing">&#9201; Matin + Pré-WO</div>
-      <div class="food-desc">Cholestérol (testostérone) + vitamine D + phospholipides. 3 oeufs = ~18g protéines + 15g lipides de qualité.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="p6" data-cat="proteines">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-p6" onchange="tmgToggleFood(this,'p6','proteines')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Blancs d'oeufs</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#2fd6b4;border:1px solid #2fd6b440;">pré-WO</span>
-        <span class="food-meta">Leucine ~2.4g/30g prot</span>
-      </div>
-      <div class="food-timing">&#9201; Pré-WO / Complément</div>
-      <div class="food-desc">Zéro lipides, digestibles. À combiner avec oeufs entiers pour augmenter l'apport protéique sans lipides.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="p7" data-cat="proteines">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-p7" onchange="tmgToggleFood(this,'p7','proteines')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Poulet / Dinde</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#f0a030;border:1px solid #f0a03040;">all-day</span>
-        <span class="food-meta">Leucine ~2.3g/30g prot</span>
-      </div>
-      <div class="food-timing">&#9201; Toute la journée</div>
-      <div class="food-desc">Source polyvalente et économique. Cuire en batch pour la semaine. 200g cuit = 45–50g protéines.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="p8" data-cat="proteines">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-p8" onchange="tmgToggleFood(this,'p8','proteines')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Thon en conserve</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#2fd6b4;border:1px solid #2fd6b440;">pré-WO</span>
-        <span class="food-meta">Leucine ~2.3g/30g prot</span>
-      </div>
-      <div class="food-timing">&#9201; Midi + Pré-WO</div>
-      <div class="food-desc">Pratique, rapide, économique. Boîte de 130g = ~25g protéines. Attention mercure : max 2–3 boîtes/semaine.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="p9" data-cat="proteines">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-p9" onchange="tmgToggleFood(this,'p9','proteines')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Saumon</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#f0a030;border:1px solid #f0a03040;">dîner</span>
-        <span class="food-meta">Leucine ~2.2g/30g prot</span>
-      </div>
-      <div class="food-timing">&#9201; Dîner</div>
-      <div class="food-desc">Triple bénéfice : protéines + oméga-3 (3–4g EPA/DHA/150g) + potassium (628mg/100g). Meilleure source animale globale.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="p10" data-cat="proteines">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-p10" onchange="tmgToggleFood(this,'p10','proteines')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Steak haché 5%</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#2fd6b4;border:1px solid #2fd6b440;">post/dîner</span>
-        <span class="food-meta">Leucine ~2.4g/30g prot</span>
-      </div>
-      <div class="food-timing">&#9201; Post-WO + Dîner</div>
-      <div class="food-desc">Protéines rapides + créatine naturelle + zinc (testostérone). Idéal en repas post-WO solide avec riz blanc.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="p11" data-cat="proteines">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-p11" onchange="tmgToggleFood(this,'p11','proteines')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Sardines (boîte)</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#f0a030;border:1px solid #f0a03040;">dîner</span>
-        <span class="food-meta">Leucine ~2.3g/30g prot</span>
-      </div>
-      <div class="food-timing">&#9201; Dîner / Midi</div>
-      <div class="food-desc">Alternative économique au saumon. Oméga-3 + potassium + vitamine D. Boîte = ~20–25g protéines.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="p12" data-cat="proteines">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-p12" onchange="tmgToggleFood(this,'p12','proteines')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Cottage cheese</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#c9a0e0;border:1px solid #c9a0e040;">coucher</span>
-        <span class="food-meta">Leucine ~2.7g/30g prot</span>
-      </div>
-      <div class="food-timing">&#9201; Avant coucher</div>
-      <div class="food-desc">Riche en caséine naturelle, texture agréable. Alternative au fromage blanc. 200g = 25g protéines.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="p13" data-cat="proteines">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-p13" onchange="tmgToggleFood(this,'p13','proteines')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">EAA (acides aminés essentiels)</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#2fd6b4;border:1px solid #2fd6b440;">intra-WO</span>
-        <span class="food-meta">Leucine selon produit</span>
-      </div>
-      <div class="food-timing">&#9201; Intra-WO si séance >75 min</div>
-      <div class="food-desc">Utiles si séance longue et dernier repas >3h. 6–10g dans l'eau. Pas nécessaire si repas pré-WO récent.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="p14" data-cat="proteines">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-p14" onchange="tmgToggleFood(this,'p14','proteines')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Lentilles / Pois chiches</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#f0a030;border:1px solid #f0a03040;">dîner</span>
-        <span class="food-meta">Leucine ~1.4g/30g prot</span>
-      </div>
-      <div class="food-timing">&#9201; Dîner (complément)</div>
-      <div class="food-desc">Protéines végétales incomplètes (manque méthionine). Associer à céréales pour compléter le profil. Fer + fibres.</div>
-    </div>
-  </div>
-</label>
-      <span class="cat-label cf" data-cat="lipides">&#9632; Lipides</span>
-      <label class="food-item" data-id="f1" data-cat="lipides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-f1" onchange="tmgToggleFood(this,'f1','lipides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Huile d'olive extra vierge</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#f0a030;border:1px solid #f0a03040;">dîner</span>
-        <span class="food-meta">Mono-insaturés</span>
-      </div>
-      <div class="food-timing">&#9201; Dîner + Matin</div>
-      <div class="food-desc">14g lipides/cs. Santé cardio, absorption vitamines liposolubles. Utiliser cru (assaisonnement) ou cuisson douce.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="f2" data-cat="lipides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-f2" onchange="tmgToggleFood(this,'f2','lipides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Saumon (150–200g)</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#f0a030;border:1px solid #f0a03040;">dîner</span>
-        <span class="food-meta">Oméga-3 EPA/DHA</span>
-      </div>
-      <div class="food-timing">&#9201; Dîner</div>
-      <div class="food-desc">12–18g lipides dont 3–4g oméga-3. Anti-inflammatoire, MPS via mTOR, sensibilité insulinique. Priorité absolue.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="f3" data-cat="lipides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-f3" onchange="tmgToggleFood(this,'f3','lipides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Oeufs entiers</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#b8e030;border:1px solid #b8e03040;">matin</span>
-        <span class="food-meta">Saturés + Mono + Cholestérol</span>
-      </div>
-      <div class="food-timing">&#9201; Matin</div>
-      <div class="food-desc">14g lipides pour 3 oeufs. Cholestérol précurseur testostérone + vitamine D + phospholipides membranaires.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="f4" data-cat="lipides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-f4" onchange="tmgToggleFood(this,'f4','lipides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Noix (mélange)</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#c9a0e0;border:1px solid #c9a0e040;">coucher</span>
-        <span class="food-meta">Oméga-3 ALA + Oméga-6</span>
-      </div>
-      <div class="food-timing">&#9201; Avant coucher + Dîner</div>
-      <div class="food-desc">18g lipides/30g. Magnésium (récupération) + oméga-3 ALA. Ralentit digestion caséine. Idéal collation soir.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="f5" data-cat="lipides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-f5" onchange="tmgToggleFood(this,'f5','lipides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Avocat (½ fruit)</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#f0a030;border:1px solid #f0a03040;">dîner</span>
-        <span class="food-meta">Mono-insaturés</span>
-      </div>
-      <div class="food-timing">&#9201; Dîner</div>
-      <div class="food-desc">10–12g lipides de qualité + 485mg potassium + fibres + améliore absorption caroténoïdes des légumes.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="f6" data-cat="lipides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-f6" onchange="tmgToggleFood(this,'f6','lipides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Beurre de cacahuète naturel</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#c9a0e0;border:1px solid #c9a0e040;">matin/coucher</span>
-        <span class="food-meta">Mono + Oméga-6</span>
-      </div>
-      <div class="food-timing">&#9201; Matin + Avant coucher</div>
-      <div class="food-desc">16g lipides/2cs. Dense en calories, pratique. Vérifier : 100% cacahuètes, sans huile de palme ni sucre.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="f7" data-cat="lipides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-f7" onchange="tmgToggleFood(this,'f7','lipides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Sardines en boîte</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#f0a030;border:1px solid #f0a03040;">dîner</span>
-        <span class="food-meta">Oméga-3 EPA/DHA</span>
-      </div>
-      <div class="food-timing">&#9201; Dîner / Midi</div>
-      <div class="food-desc">10–12g lipides. Alternative économique au saumon. Vitamine D + potassium + protéines. 2–3 boîtes/semaine.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="f8" data-cat="lipides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-f8" onchange="tmgToggleFood(this,'f8','lipides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Huile de colza</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#f0a030;border:1px solid #f0a03040;">dîner</span>
-        <span class="food-meta">Oméga-3 ALA + Mono</span>
-      </div>
-      <div class="food-timing">&#9201; Cuisson / Assaisonnement</div>
-      <div class="food-desc">Meilleur ratio oméga-6/oméga-3 des huiles végétales courantes. Cuisson douce ou vinaigrette.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="f9" data-cat="lipides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-f9" onchange="tmgToggleFood(this,'f9','lipides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Amandes (30g)</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#c9a0e0;border:1px solid #c9a0e040;">coucher</span>
-        <span class="food-meta">Mono-insaturés + Vit E</span>
-      </div>
-      <div class="food-timing">&#9201; Collation / Avant coucher</div>
-      <div class="food-desc">15g lipides + vitamine E (antioxydant musculaire) + magnésium. Satiété prolongée, pratiques à emporter.</div>
-    </div>
-  </div>
-</label>
-<label class="food-item" data-id="f10" data-cat="lipides">
-  <div class="food-check-wrap">
-    <input type="checkbox" id="tmg-cb-f10" onchange="tmgToggleFood(this,'f10','lipides')">
-    <div class="food-info">
-      <div class="food-top">
-        <span class="food-name">Graines de chia (2cs)</span>
-        <span class="food-badge" style="background:var(--tmg-surface2);color:#b8e030;border:1px solid #b8e03040;">matin</span>
-        <span class="food-meta">Oméga-3 ALA</span>
-      </div>
-      <div class="food-timing">&#9201; Matin / Dîner</div>
-      <div class="food-desc">9g lipides dont 5g oméga-3 ALA. Fibres + calcium. Tremper dans le yaourt ou l'avoine pour la texture.</div>
-    </div>
-  </div>
-</label>
-    </div>
-  </div>
-
-  <div class="cart-panel">
-    <div class="cart-header">
-      <span class="cart-title">&#128722; Ma liste</span>
-      <span class="cart-count" id="tmg-cart-count">0</span>
-    </div>
-    <div id="tmg-cart-empty" class="cart-empty">Aucun aliment selectionne.<br>Coche des aliments a gauche.</div>
-    <div class="cart-items" id="tmg-cart-items"></div>
-    <div class="cart-footer">
-      <button class="cart-btn cart-copy" onclick="tmgCopyList()">Copier la liste</button>
-      <button class="cart-btn cart-clear" onclick="tmgClearAll()">Vider</button>
-    </div>
-    <div class="copied-msg" id="tmg-copied-msg">&#10003; Copie dans le presse-papiers !</div>
-  </div>
-</div>
-</div>
-
-<div class="tmg-footer" style="max-width:1100px;margin:0 auto;padding:18px 32px 40px;border-top:1px solid var(--tmg-border);font-size:11px;color:var(--tmg-muted)">Sources : Snijders 2015, Jager 2017 (ISSN), Burke 2011, Cermak &amp; van Loon 2013, Morton 2018, Phillips &amp; Van Loon 2011, Laplante &amp; Sabatini 2012, Hamalainen 1984, Smith 2011 (J Clin Invest), Ramsden 2016.</div>
-  </div><!-- fin panel timing -->
 
 </div>
 
@@ -6054,7 +4538,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     Objectif :
     <input type="number" id="step-goal-input" value="10000" min="1000" max="50000" step="500"
            style="width:80px;padding:4px 8px;font-size:0.76rem;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif"
-           oninput="loadStepsChart()">
+           oninput="saveStepGoal(this.value)">
     <span style="color:var(--muted2)">pas</span>
   </div>
 
@@ -6096,58 +4580,6 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   </details>
 </div>
 
-<!-- ═══ IMPORT ═══ -->
-<div class="page" id="page-import">
-  <div class="ph"><h2>Import de <em>données</em></h2><p>Samsung Health · Apple Health · CSV · XML</p></div>
-  <div class="grid2">
-    <div class="card">
-      <div class="card-title">Importer un fichier</div>
-      <p style="font-size:0.78rem;color:var(--muted);margin-bottom:1rem;line-height:1.6">Importez vos données depuis une app fitness (Samsung Health, Apple Health, Garmin, MyFitnessPal…). Les données sont fusionnées sans écraser vos saisies manuelles.</p>
-      <div class="import-zone" id="import-zone"
-           onclick="document.getElementById('file-input').click()"
-           ondragover="event.preventDefault();this.classList.add('drag')"
-           ondragleave="this.classList.remove('drag')"
-           ondrop="handleDrop(event)">
-        <div class="iz-icon">📂</div>
-        <div class="iz-title">Glissez votre fichier ici</div>
-        <div class="iz-sub">ZIP Samsung Health · .csv · .xml</div>
-        <input type="file" id="file-input" accept=".csv,.xml,.zip" onchange="handleFileSelect(event)">
-      </div>
-      <div class="spinner-wrap" id="import-spinner"><div class="spinner"></div>Analyse du fichier…</div>
-      <div class="import-feedback" id="import-feedback">
-        <div id="import-status-msg" style="font-size:0.8rem;margin-bottom:0.7rem"></div>
-        <div class="import-stat-grid" style="grid-template-columns:repeat(4,1fr)">
-          <div class="import-stat"><div class="is-val" id="is-jours">0</div><div class="is-lbl">Jours importés</div></div>
-          <div class="import-stat"><div class="is-val" id="is-poids">0</div><div class="is-lbl">Poids mis à jour</div></div>
-          <div class="import-stat"><div class="is-val" id="is-kcal">0</div><div class="is-lbl">Entrées calories</div></div>
-          <div class="import-stat"><div class="is-val" id="is-food">0</div><div class="is-lbl">Aliments</div></div>
-        </div>
-        <div class="import-log" id="import-log"></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">Formats supportés</div>
-      <div style="display:flex;flex-direction:column;gap:0.9rem">
-        <div style="padding:1rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm)">
-          <div style="font-size:0.73rem;font-weight:500;color:var(--lime);margin-bottom:6px"><span class="ico" style="margin-right:5px"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M2 5l6-3 6 3v8l-6 3-6-3z"/><line x1="8" y1="2" x2="8" y2="14"/><polyline points="2,5 8,8 14,5"/></svg></span> ZIP Samsung Health <span style="background:var(--lime-bg);border:1px solid var(--lime-d);border-radius:10px;padding:1px 7px;font-size:0.62rem">Recommandé</span></div>
-          <div style="font-size:0.71rem;color:var(--muted);line-height:1.7">
-            App Samsung Health → ⋮ → Paramètres → <strong style="color:var(--text)">Télécharger mes données</strong> → importe le fichier <code style="color:var(--lime-d)">.zip</code> directement ici.<br>
-            Extrait automatiquement : <strong style="color:var(--text)">pas, poids, bodyfat, taille, nourriture, exercices</strong> depuis tous les CSV du ZIP.
-          </div>
-        </div>
-        <div style="padding:1rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm)">
-          <div style="font-size:0.73rem;font-weight:500;color:var(--blue);margin-bottom:5px"><span class="ico" style="margin-right:5px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><line x1="3" y1="13" x2="3" y2="7"/><line x1="7" y1="13" x2="7" y2="4.5"/><line x1="11" y1="13" x2="11" y2="8.5"/><line x1="1" y1="13" x2="15" y2="13"/></svg></span> CSV unique / XML Apple Health</div>
-          <div style="font-size:0.71rem;color:var(--muted);line-height:1.6">CSV générique ou fichier export.xml Apple Health. Colonnes auto-détectées : <code style="color:var(--blue-d)">date, weight, steps, calories</code></div>
-        </div>
-        <div style="padding:1rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm)">
-          <div style="font-size:0.73rem;font-weight:500;color:var(--orange);margin-bottom:5px"><span class="ico" style="margin-right:5px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2L1.5 14h13z"/><line x1="8" y1="6.5" x2="8" y2="10"/><circle cx="8" cy="11.8" r="0.7" fill="currentColor" stroke="none"/></svg></span> Filtres de sécurité</div>
-          <div style="font-size:0.71rem;color:var(--muted);line-height:1.6">Ignorés si absurdes : poids &lt;30 ou &gt;300 kg · kcal &gt;8000 · pas &gt;80 000</div>
-        </div>
-        <button class="btn secondary" onclick="clearAllData()" style="font-size:0.73rem;padding:0.55rem"><span class="ico" style="margin-right:5px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="4.5" x2="13" y2="4.5"/><path d="M5.5 4.5V3.5h5v1"/><path d="M5.5 4.5l.5 9h4l.5-9"/></svg></span> Réinitialiser toutes les données</button>
-      </div>
-    </div>
-  </div>
-</div>
 
 
 <!-- ═══ SOMMEIL ═══ -->
@@ -6459,51 +4891,51 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   <div class="sl-tip-card" style="border-left-color:var(--lime)"><div style="font-size:0.78rem;font-weight:600;color:var(--lime);margin-bottom:4px;font-family:Syne,sans-serif">Cycles et reveil</div><div style="font-size:0.75rem;color:var(--muted);line-height:1.6;font-family:Syne,sans-serif">Un cycle dure 90 min. Se reveiller en fin de cycle reduit l'inertie.</div></div>
   <div class="sl-tip-card" style="border-left-color:var(--orange)"><div style="font-size:0.78rem;font-weight:600;color:var(--orange);margin-bottom:4px;font-family:Syne,sans-serif">Alimentation</div><div style="font-size:0.75rem;color:var(--muted);line-height:1.6;font-family:Syne,sans-serif">Evite les repas lourds 3h avant le coucher.</div></div>
   <div class="sl-tip-card" style="border-left-color:var(--teal)"><div style="font-size:0.78rem;font-weight:600;color:var(--teal);margin-bottom:4px;font-family:Syne,sans-serif">Coherence</div><div style="font-size:0.75rem;color:var(--muted);line-height:1.6;font-family:Syne,sans-serif">Se lever a la meme heure chaque jour est le facteur n1 de qualite du sommeil.</div></div>
-</div>
 
-<!-- ═══ SCIENCE : Sommeil & récupération musculaire (condensé du circuit anabolique) ═══ -->
-<div style="margin-top:1rem">
-  <div onclick="var d=this.nextElementSibling;var open=d.style.display!=='none';d.style.display=open?'none':'block';this.querySelector('.sci-arrow').style.transform=open?'rotate(0deg)':'rotate(180deg)'" style="display:flex;align-items:center;justify-content:space-between;padding:0.9rem 1rem;background:var(--s1);border:1px solid var(--border);border-radius:var(--r);cursor:pointer">
-    <div style="font-family:Syne,sans-serif;font-weight:700;font-size:0.85rem;color:var(--text)">🧬 Pourquoi le sommeil est un levier anabolique</div>
-    <span class="sci-arrow" style="font-size:0.75rem;color:var(--muted2);transition:transform .2s;display:inline-block">▼</span>
-  </div>
-  <div style="display:none;padding:1rem;background:var(--s1);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r)">
-    <p style="font-size:0.78rem;color:var(--muted);line-height:1.7;margin-bottom:0.85rem">80% de la secretion journaliere de GH se produit pendant le sommeil profond (cycles 1 et 2). La testosterone atteint son pic au reveil apres une nuit complete. La privation de sommeil reduit la synthese proteique, augmente le cortisol et degrade la sensibilite insulinique en moins d'une semaine.</p>
-    <div style="overflow:hidden">
-      <svg viewBox="0 0 700 260" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">
-      <line x1="40" y1="200" x2="675" y2="200" stroke="#2a2d3a" stroke-width="1.5"/>
-      <text x="357" y="220" fill="#454858" font-size="9" text-anchor="middle">Duree de la nuit (8h)</text>
-      <text x="40"  y="212" fill="#4a4e60" font-size="8" text-anchor="middle">22h</text>
-      <text x="197" y="212" fill="#4a4e60" font-size="8" text-anchor="middle">0h</text>
-      <text x="358" y="212" fill="#4a4e60" font-size="8" text-anchor="middle">2h</text>
-      <text x="515" y="212" fill="#4a4e60" font-size="8" text-anchor="middle">4h</text>
-      <text x="668" y="212" fill="#4a4e60" font-size="8" text-anchor="middle">6h</text>
-      <path d="M40,195 C55,195 70,60 90,50 C110,40 125,140 145,195" fill="rgba(53,201,160,.12)" stroke="#35c9a0" stroke-width="1.5"/>
-      <path d="M145,195 C160,195 175,70 195,62 C215,54 230,145 250,195" fill="rgba(53,201,160,.10)" stroke="#35c9a0" stroke-width="1.3"/>
-      <path d="M250,195 C265,195 278,95 296,88 C314,81 328,150 345,195" fill="rgba(53,201,160,.07)" stroke="#35c9a0" stroke-width="1.2"/>
-      <path d="M345,195 C358,195 370,115 386,108 C402,101 415,158 430,195" fill="rgba(53,201,160,.05)" stroke="#35c9a0" stroke-width="1"/>
-      <path d="M430,195 C442,195 452,130 466,124 C480,118 490,163 504,195" fill="rgba(53,201,160,.04)" stroke="#35c9a0" stroke-width="1"/>
-      <path d="M40,185 C60,185 75,185 90,60 C105,185 145,185 197,185 C210,185 230,185 260,185 C330,185 400,185 668,185" stroke="#c9a0e0" stroke-width="2" fill="none" stroke-dasharray="6,3"/>
-      <text x="112" y="45" fill="#c9a0e0" font-size="9" text-anchor="middle" font-weight="600">Pic GH</text>
-      <text x="112" y="56" fill="#c9a0e0" font-size="8" text-anchor="middle">Cycles 1-2</text>
-      <path d="M40,192 C150,192 300,192 430,185 C500,180 580,170 668,155" stroke="#2fd6b4" stroke-width="2" fill="none" stroke-dasharray="4,4"/>
-      <text x="620" y="145" fill="#2fd6b4" font-size="9" font-weight="600">Pic T</text>
-      <text x="620" y="156" fill="#2fd6b4" font-size="8">au reveil</text>
-      <path d="M40,192 C200,192 380,192 500,190 C560,188 620,175 668,158" stroke="#e83838" stroke-width="1.5" fill="none" stroke-dasharray="3,3" opacity="0.6"/>
-      <rect x="40" y="228" width="630" height="28" fill="rgba(20,20,20,0.85)" rx="2"/>
-      <line x1="55"  y1="242" x2="80"  y2="242" stroke="#35c9a0" stroke-width="2"/><text x="85"  y="246" fill="#35c9a0" font-size="8.5">Profondeur sommeil</text>
-      <line x1="220" y1="242" x2="245" y2="242" stroke="#c9a0e0" stroke-width="2" stroke-dasharray="5,2"/><text x="250" y="246" fill="#c9a0e0" font-size="8.5">GH (cycles 1-2)</text>
-      <line x1="390" y1="242" x2="415" y2="242" stroke="#2fd6b4" stroke-width="2" stroke-dasharray="4,3"/><text x="420" y="246" fill="#2fd6b4" font-size="8.5">Testosterone</text>
-      <line x1="540" y1="242" x2="565" y2="242" stroke="#e83838" stroke-width="1.5" stroke-dasharray="3,2" opacity="0.7"/><text x="570" y="246" fill="#e83838" font-size="8.5">Cortisol</text>
-      <text x="90"  y="185" fill="#2a2d3a" font-size="8" text-anchor="middle">C1</text>
-      <text x="197" y="185" fill="#2a2d3a" font-size="8" text-anchor="middle">C2</text>
-      <text x="297" y="185" fill="#2a2d3a" font-size="8" text-anchor="middle">C3</text>
-      <text x="387" y="185" fill="#2a2d3a" font-size="8" text-anchor="middle">C4</text>
-      <text x="467" y="185" fill="#2a2d3a" font-size="8" text-anchor="middle">C5</text>
-      </svg>
-      <div style="text-align:center;font-size:0.65rem;color:var(--muted2);margin-top:0.5rem">Les 2 premiers cycles contiennent le plus de sommeil profond et le plus gros pic de GH — perdre ces cycles = perte anabolique majeure</div>
+  <!-- ═══ SCIENCE : Sommeil & récupération musculaire (condensé du circuit anabolique) ═══ -->
+  <div style="margin-top:1rem">
+    <div onclick="var d=this.nextElementSibling;var open=d.style.display!=='none';d.style.display=open?'none':'block';this.querySelector('.sci-arrow').style.transform=open?'rotate(0deg)':'rotate(180deg)'" style="display:flex;align-items:center;justify-content:space-between;padding:0.9rem 1rem;background:var(--s1);border:1px solid var(--border);border-radius:var(--r);cursor:pointer">
+      <div style="font-family:Syne,sans-serif;font-weight:700;font-size:0.85rem;color:var(--text)">🧬 Pourquoi le sommeil est un levier anabolique</div>
+      <span class="sci-arrow" style="font-size:0.75rem;color:var(--muted2);transition:transform .2s;display:inline-block">▼</span>
     </div>
-    <div onclick="event.stopPropagation()" style="margin-top:0.85rem;font-size:0.7rem;color:var(--muted2)">Detail complet des circuits anaboliques (mTOR, GLUT-4, cortisol/testosterone...) → <span onclick="switchPage('page-apports');setTimeout(function(){switchApTab('timing');},250)" style="color:var(--teal);cursor:pointer;text-decoration:underline">voir dans Apports → Timing</span></div>
+    <div style="display:none;padding:1rem;background:var(--s1);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r)">
+      <p style="font-size:0.78rem;color:var(--muted);line-height:1.7;margin-bottom:0.85rem">80% de la secretion journaliere de GH se produit pendant le sommeil profond (cycles 1 et 2). La testosterone atteint son pic au reveil apres une nuit complete. La privation de sommeil reduit la synthese proteique, augmente le cortisol et degrade la sensibilite insulinique en moins d'une semaine.</p>
+      <div style="overflow:hidden">
+        <svg viewBox="0 0 700 260" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">
+        <line x1="40" y1="200" x2="675" y2="200" stroke="#2a2d3a" stroke-width="1.5"/>
+        <text x="357" y="220" fill="#454858" font-size="9" text-anchor="middle">Duree de la nuit (8h)</text>
+        <text x="40"  y="212" fill="#4a4e60" font-size="8" text-anchor="middle">22h</text>
+        <text x="197" y="212" fill="#4a4e60" font-size="8" text-anchor="middle">0h</text>
+        <text x="358" y="212" fill="#4a4e60" font-size="8" text-anchor="middle">2h</text>
+        <text x="515" y="212" fill="#4a4e60" font-size="8" text-anchor="middle">4h</text>
+        <text x="668" y="212" fill="#4a4e60" font-size="8" text-anchor="middle">6h</text>
+        <path d="M40,195 C55,195 70,60 90,50 C110,40 125,140 145,195" fill="rgba(53,201,160,.12)" stroke="#35c9a0" stroke-width="1.5"/>
+        <path d="M145,195 C160,195 175,70 195,62 C215,54 230,145 250,195" fill="rgba(53,201,160,.10)" stroke="#35c9a0" stroke-width="1.3"/>
+        <path d="M250,195 C265,195 278,95 296,88 C314,81 328,150 345,195" fill="rgba(53,201,160,.07)" stroke="#35c9a0" stroke-width="1.2"/>
+        <path d="M345,195 C358,195 370,115 386,108 C402,101 415,158 430,195" fill="rgba(53,201,160,.05)" stroke="#35c9a0" stroke-width="1"/>
+        <path d="M430,195 C442,195 452,130 466,124 C480,118 490,163 504,195" fill="rgba(53,201,160,.04)" stroke="#35c9a0" stroke-width="1"/>
+        <path d="M40,185 C60,185 75,185 90,60 C105,185 145,185 197,185 C210,185 230,185 260,185 C330,185 400,185 668,185" stroke="#c9a0e0" stroke-width="2" fill="none" stroke-dasharray="6,3"/>
+        <text x="112" y="45" fill="#c9a0e0" font-size="9" text-anchor="middle" font-weight="600">Pic GH</text>
+        <text x="112" y="56" fill="#c9a0e0" font-size="8" text-anchor="middle">Cycles 1-2</text>
+        <path d="M40,192 C150,192 300,192 430,185 C500,180 580,170 668,155" stroke="#2fd6b4" stroke-width="2" fill="none" stroke-dasharray="4,4"/>
+        <text x="620" y="145" fill="#2fd6b4" font-size="9" font-weight="600">Pic T</text>
+        <text x="620" y="156" fill="#2fd6b4" font-size="8">au reveil</text>
+        <path d="M40,192 C200,192 380,192 500,190 C560,188 620,175 668,158" stroke="#e83838" stroke-width="1.5" fill="none" stroke-dasharray="3,3" opacity="0.6"/>
+        <rect x="40" y="228" width="630" height="28" fill="rgba(20,20,20,0.85)" rx="2"/>
+        <line x1="55"  y1="242" x2="80"  y2="242" stroke="#35c9a0" stroke-width="2"/><text x="85"  y="246" fill="#35c9a0" font-size="8.5">Profondeur sommeil</text>
+        <line x1="220" y1="242" x2="245" y2="242" stroke="#c9a0e0" stroke-width="2" stroke-dasharray="5,2"/><text x="250" y="246" fill="#c9a0e0" font-size="8.5">GH (cycles 1-2)</text>
+        <line x1="390" y1="242" x2="415" y2="242" stroke="#2fd6b4" stroke-width="2" stroke-dasharray="4,3"/><text x="420" y="246" fill="#2fd6b4" font-size="8.5">Testosterone</text>
+        <line x1="540" y1="242" x2="565" y2="242" stroke="#e83838" stroke-width="1.5" stroke-dasharray="3,2" opacity="0.7"/><text x="570" y="246" fill="#e83838" font-size="8.5">Cortisol</text>
+        <text x="90"  y="185" fill="#2a2d3a" font-size="8" text-anchor="middle">C1</text>
+        <text x="197" y="185" fill="#2a2d3a" font-size="8" text-anchor="middle">C2</text>
+        <text x="297" y="185" fill="#2a2d3a" font-size="8" text-anchor="middle">C3</text>
+        <text x="387" y="185" fill="#2a2d3a" font-size="8" text-anchor="middle">C4</text>
+        <text x="467" y="185" fill="#2a2d3a" font-size="8" text-anchor="middle">C5</text>
+        </svg>
+        <div style="text-align:center;font-size:0.65rem;color:var(--muted2);margin-top:0.5rem">Les 2 premiers cycles contiennent le plus de sommeil profond et le plus gros pic de GH — perdre ces cycles = perte anabolique majeure</div>
+      </div>
+      <div onclick="event.stopPropagation()" style="margin-top:0.85rem;font-size:0.7rem;color:var(--muted2)">Detail complet des circuits anaboliques (mTOR, GLUT-4, cortisol/testosterone...) → <span onclick="switchPage('page-apports');setTimeout(function(){switchApTab('tendances');},250)" style="color:var(--teal);cursor:pointer;text-decoration:underline">voir dans Apports → Tendances</span></div>
+    </div>
   </div>
 </div>
 </div>
@@ -6928,7 +5360,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
           </div>
         </div>
 
-        <div onclick="event.stopPropagation()" style="margin-top:0.85rem;font-size:0.7rem;color:var(--muted2);text-align:center">Détail complet des circuits anaboliques (mTOR, GLUT-4, sommeil...) → <span onclick="switchPage('page-apports');setTimeout(function(){switchApTab('timing');},250)" style="color:var(--teal);cursor:pointer;text-decoration:underline">voir dans Apports → Timing</span></div>
+        <div onclick="event.stopPropagation()" style="margin-top:0.85rem;font-size:0.7rem;color:var(--muted2);text-align:center">Détail complet des circuits anaboliques (mTOR, GLUT-4, sommeil...) → <span onclick="switchPage('page-apports');setTimeout(function(){switchApTab('tendances');},250)" style="color:var(--teal);cursor:pointer;text-decoration:underline">voir dans Apports → Tendances</span></div>
       </div>
     </div>
   </div>
@@ -7598,39 +6030,34 @@ function toast(msg,col='var(--lime)'){
 }
 
 /* ════════════════════════════════════════
-   THEME — Jour / Nuit
+   THEME — Sombre / Clair / Pastel
 ════════════════════════════════════════ */
-const MOON_SVG = `<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>`;
-const SUN_SVG  = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`;
+const THEME_LABELS = {dark:'Mode sombre actif', light:'Mode clair actif', pastel:'Mode pastel actif'};
+const THEME_CLASSES = ['light-mode','pastel-mode'];
 
-function applyTheme(light){
-  document.documentElement.classList.toggle('light-mode', light);
-  document.body.classList.toggle('light-mode', light);
-  // Sidebar icon + label
-  const si = document.getElementById('theme-icon-sidebar');
-  if(si) si.innerHTML = light ? SUN_SVG : MOON_SVG;
-  const lbl = document.querySelector('.theme-toggle-label');
-  if(lbl){
-    const txt = lbl.querySelector('span, .tl-txt') || lbl;
-    // update just the text node after the svg
-    lbl.childNodes.forEach(n=>{ if(n.nodeType===3) n.textContent = light ? ' Mode sombre' : ' Mode clair'; });
+function applyTheme(theme){
+  document.documentElement.classList.remove(...THEME_CLASSES);
+  document.body.classList.remove(...THEME_CLASSES);
+  if(theme === 'light' || theme === 'pastel'){
+    document.documentElement.classList.add(theme + '-mode');
+    document.body.classList.add(theme + '-mode');
   }
-  // Bottom nav icon
-  const bi = document.getElementById('theme-icon-bn');
-  if(bi) bi.innerHTML = light ? SUN_SVG : MOON_SVG;
+  const lbl = document.getElementById('theme-mode-label');
+  if(lbl) lbl.textContent = THEME_LABELS[theme] || THEME_LABELS.dark;
+  document.querySelectorAll('.theme-swatch').forEach(el=>{
+    el.classList.toggle('active', el.dataset.theme === theme);
+  });
 }
 
-function toggleTheme(){
-  const isLight = document.body.classList.contains('light-mode');
-  const newLight = !isLight;
-  localStorage.setItem('kcalos_theme', newLight ? 'light' : 'dark');
-  applyTheme(newLight);
+function setTheme(theme){
+  localStorage.setItem('kcalos_theme', theme);
+  applyTheme(theme);
 }
 
 // Init thème au démarrage
 (function(){
   const saved = localStorage.getItem('kcalos_theme');
-  applyTheme(saved === 'light');
+  applyTheme(saved === 'light' || saved === 'pastel' ? saved : 'dark');
 })();
 
 /* ════════════════════════════════════════
@@ -8285,9 +6712,40 @@ function renderFoodHistory(){
       </div>
       ${macroBars}
     </div>`;
-  }).join('');
+  });
 
-  wrap.innerHTML=`<div>${rows}</div>`;
+  const VISIBLE=3;
+  const visibleRows=rows.slice(0,VISIBLE).join('');
+  const extraRows=rows.slice(VISIBLE);
+
+  if(!extraRows.length){
+    wrap.innerHTML=`<div>${visibleRows}</div>`;
+    return;
+  }
+
+  wrap.innerHTML=`
+    <div>${visibleRows}</div>
+    <div id="food-history-extra" style="display:none">${extraRows.join('')}</div>
+    <button id="food-history-toggle" class="fh-toggle-btn" onclick="toggleFoodHistoryMore()">
+      <span id="food-history-toggle-label">Voir ${extraRows.length} entrée${extraRows.length>1?'s':''} de plus</span>
+      <svg id="food-history-toggle-chevron" width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="transition:transform .2s"><path d="M4 6l4 4 4-4"/></svg>
+    </button>`;
+}
+
+function toggleFoodHistoryMore(){
+  const extra=document.getElementById('food-history-extra');
+  const label=document.getElementById('food-history-toggle-label');
+  const chevron=document.getElementById('food-history-toggle-chevron');
+  if(!extra) return;
+  const isOpen=extra.style.display!=='none';
+  extra.style.display=isOpen?'none':'block';
+  chevron.style.transform=isOpen?'rotate(0deg)':'rotate(180deg)';
+  if(isOpen){
+    const n=extra.children.length;
+    label.textContent=`Voir ${n} entrée${n>1?'s':''} de plus`;
+  }else{
+    label.textContent='Voir moins';
+  }
 }
 
 function clearFoodData(){ if(!confirm('Effacer tout l\'historique ?')) return; DB.setFood([]); renderFoodHistory(); renderWeekChart(); toast('Historique effacé.','var(--red)'); }
@@ -8332,7 +6790,7 @@ function renderWeekChart(){
       responsive:true,maintainAspectRatio:false,
       interaction:{mode:'index',intersect:false},
       plugins:{
-        legend:{display:true,labels:{color:'#6b7a90',font:{family:'Syne',size:10},boxWidth:8,boxHeight:8}},
+        legend:{display:false},
         tooltip:{backgroundColor:'#1a2030',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,titleColor:'#f0ede6',bodyColor:'#6b7a90',padding:10,
           callbacks:{label:c=>c.raw!==null?`  ${c.dataset.label} : ${fmt(c.raw)} kcal`:null}}
       },
@@ -8763,83 +7221,6 @@ function parseXML(text){
   return {rows,log};
 }
 
-function applyImport(rows){
-  let j=0,p=0,k=0; const logLines=[];
-  rows.forEach(row=>{
-    if(!row.date) return; j++;
-    // Always upsert fitness entry with all available fields
-    const fe={date:row.date};
-    if(row.poids){fe.poids=row.poids;p++;}
-    if(row.steps) fe.steps=row.steps;
-    // Samsung "calorie" = active kcal BURNED (activity), not food intake → store on fitness
-    if(row.kcal){fe.active_kcal=Math.round(row.kcal);k++;}
-    DB.upsertFitness(fe);
-    const parts=[];
-    if(row.poids) parts.push(`${row.poids} kg`);
-    if(row.steps) parts.push(`${row.steps.toLocaleString('fr-FR')} pas`);
-    if(row.kcal)  parts.push(`${Math.round(row.kcal)} kcal actives`);
-    logLines.push(`✅ ${fmtDL(row.date)} · ${parts.join(' · ')||'(vide)'}`);
-  });
-  return {j,p,k,logLines};
-}
-
-function handleDrop(e){ e.preventDefault(); document.getElementById('import-zone').classList.remove('drag'); const f=e.dataTransfer.files[0]; if(f) processFile(f); }
-function handleFileSelect(e){ const f=e.target.files[0]; if(f) processFile(f); e.target.value=''; }
-
-function processFile(file){
-  const sp=document.getElementById('import-spinner');
-  const fb=document.getElementById('import-feedback');
-  fb.classList.remove('show'); sp.classList.add('show');
-  const ext=file.name.split('.').pop().toLowerCase();
-
-  if(ext==='zip'){
-    // Samsung Health ZIP — use JSZip
-    if(typeof JSZip==='undefined'){
-      sp.classList.remove('show');
-      showImportResult(false,'JSZip non chargé. Vérifiez votre connexion internet.',[],0,0,0);
-      return;
-    }
-    file.arrayBuffer().then(buf=>JSZip.loadAsync(buf)).then(zip=>{
-      return parseSamsungZIP(zip);
-    }).then(({rows,foodRows,log})=>{
-      sp.classList.remove('show');
-      if(!rows.length&&!foodRows.length){
-        showImportResult(false,'Aucune donnée exploitable dans le ZIP.',log,0,0,0); return;
-      }
-      const {j,p,k,logLines}=applyImportFull(rows,foodRows);
-      // Recalcule le TDEE de tous les jours avec données Samsung
-      const recomp=recomputeAllTDEE();
-      const extraLog=recomp>0?[`🔄 TDEE recalculé pour ${recomp} jours (graphique dépense mis à jour)`]:[];
-      showImportResult(true,`ZIP Samsung Health importé · ${file.name}`,[...log,...logLines,...extraLog],j,p,k);
-      toast(`${j} jours importés depuis Samsung Health ✓`);
-    }).catch(err=>{
-      sp.classList.remove('show');
-      showImportResult(false,'Erreur ZIP : '+err.message,[],0,0,0);
-    });
-    return;
-  }
-
-  // CSV / XML — read as text
-  const reader=new FileReader();
-  reader.onload=e=>{
-    setTimeout(()=>{
-      sp.classList.remove('show');
-      const text=e.target.result;
-      let parsed;
-      try{
-        if(ext==='csv') parsed=parseCSV(text);
-        else if(ext==='xml') parsed=parseXML(text);
-        else{ showImportResult(false,'Format non reconnu. Utilisez .zip, .csv ou .xml',[],0,0,0); return; }
-      } catch(err){ showImportResult(false,'Erreur : '+err.message,[],0,0,0); return; }
-      if(!parsed.rows.length){ showImportResult(false,'Aucune donnée exploitable.',parsed.log,0,0,0); return; }
-      const {j,p,k,logLines}=applyImport(parsed.rows);
-      showImportResult(true,`Import réussi · ${file.name}`,[...parsed.log,...logLines],j,p,k);
-      toast(`${j} jours importés ✓`);
-    },300);
-  };
-  reader.readAsText(file,'UTF-8');
-}
-
 /* ════════════════════════════════════════
    SAMSUNG HEALTH ZIP PARSER
    Lit tous les CSV pertinents du ZIP et
@@ -9081,47 +7462,6 @@ async function parseSamsungZIP(zip){
 
   return {rows,foodRows,log};
 }
-
-/* Apply full import — fitness + food merged */
-function applyImportFull(rows, foodRows){
-  let j=0,p=0,k=0; const logLines=[];
-
-  rows.forEach(row=>{
-    if(!row.date) return; j++;
-    DB.upsertFitness(row);
-    const parts=[];
-    if(row.poids){parts.push(`${row.poids} kg`);p++;}
-    if(row.steps) parts.push(`${row.steps.toLocaleString('fr-FR')} pas`);
-    if(row.active_kcal) parts.push(`${row.active_kcal} kcal actives`);
-    if(row.exercise_kcal) parts.push(`${row.exercise_kcal} kcal sport`);
-    logLines.push(`✅ ${fmtDL(row.date)} · ${parts.join(' · ')||'(sans données)'}`);
-  });
-
-  foodRows.forEach(row=>{
-    if(!row.date||!row.kcal) return; k++;
-    DB.upsertFood({date:row.date, kcal:row.kcal, prot:row.prot||0, gluc:row.gluc||0, lip:row.lip||0, source:'samsung'});
-    logLines.push(`${fmtDL(row.date)} · ${row.kcal} kcal ingérées (P:${row.prot}g G:${row.gluc}g L:${row.lip}g)`);
-  });
-
-  return {j,p,k,logLines};
-}
-
-function showImportResult(ok,msg,log,j,p,k,f){
-  const fb=document.getElementById('import-feedback');
-  document.getElementById('import-status-msg').innerHTML=`<span style="color:${ok?'var(--lime)':'var(--red)'}">${ok?'✓':'✗'} ${msg}</span>`;
-  document.getElementById('is-jours').textContent=j;
-  document.getElementById('is-poids').textContent=p;
-  document.getElementById('is-kcal').textContent=k;
-  const foodEl=document.getElementById('is-food'); if(foodEl) foodEl.textContent=f||0;
-  document.getElementById('import-log').innerHTML=log.slice(-60).map(l=>{
-    const c=l.startsWith('✅')?'log-ok':l.startsWith('⚠️')?'log-warn':l.startsWith('❌')?'log-err':'';
-    return `<div class="log-line ${c}">${l}</div>`;
-  }).join('');
-  fb.classList.add('show');
-  if(ok){ recomputeAllTDEE?.(); setTimeout(()=>renderDashboard?.(), 100); }
-}
-
-function clearAllData(){ if(!confirm('Réinitialiser TOUTES les données ?')) return; ['kcalos_fitness','kcalos_food','kcalos_meals','kcalos_profile','kcalos_ai_hist','kcalos_kcal_goal','kcalos_macro_goal'].forEach(k=>localStorage.removeItem(k)); toast('Données effacées.','var(--red)'); }
 
 /* ── Import compact sur la page Steps (mêmes parseurs que la page Import,
    IDs dédiés pour ne pas entrer en conflit avec les zones d'import existantes) ── */
@@ -9377,8 +7717,19 @@ function loadStepsPage(){
   const f=DB.getFitness().find(d=>d.date===today());
   SC.savedToday=f?.steps||0;
   scUpdateUI();
+  // Précharger l\'objectif de pas sauvegardé (seule source de vérité désormais)
+  const goalInput = document.getElementById('step-goal-input');
+  if(goalInput) goalInput.value = localStorage.getItem('kcalos_step_goal')||'10000';
   loadStepsChart();
   renderStepsMonthly();
+}
+
+// Sauvegarde l\'objectif de pas dès la saisie sur la page Steps (remplace l\'ancienne
+// dépendance à la bulle compte, qui ne gère plus ce champ)
+function saveStepGoal(v){
+  const goal = parseInt(v)||10000;
+  localStorage.setItem('kcalos_step_goal', goal);
+  loadStepsChart();
 }
 
 function setStepsRange(r,el){
@@ -16587,13 +14938,7 @@ function openAccountPanel(tab){
   const lastFit = DB.getLastFitness();
   if(p.taille) document.getElementById('ap-taille').value = p.taille;
   if(p.age)    document.getElementById('ap-age').value    = p.age;
-  if(p.bf)     document.getElementById('ap-bf').value     = p.bf;
   if(p.sexe)   document.getElementById(p.sexe==='homme'?'ap-h':'ap-f').checked = true;
-  if(lastFit?.poids) document.getElementById('ap-poids').value = lastFit.poids;
-  const stepGoal = localStorage.getItem('kcalos_step_goal')||'10000';
-  const kcalGoal = localStorage.getItem('kcalos_kcal_goal')||'';
-  document.getElementById('ap-step-goal').value = stepGoal;
-  if(kcalGoal) document.getElementById('ap-kcal-goal').value = kcalGoal;
   const act = p.activity||'7';
   const actEl = document.querySelector(`input[name="ap-act"][value="${act}"]`);
   if(actEl) actEl.checked = true;
@@ -16650,29 +14995,23 @@ function switchAccountTab(tab){
 }
 
 function saveAccountProfile(){
-  const poids   = parseFloat(document.getElementById('ap-poids').value)||null;
   const taille  = parseFloat(document.getElementById('ap-taille').value)||null;
   const age     = parseFloat(document.getElementById('ap-age').value)||null;
-  const bf      = parseFloat(document.getElementById('ap-bf').value)||null;
   const sexe    = document.querySelector('input[name="ap-sexe"]:checked')?.value||'homme';
   const activity= document.querySelector('input[name="ap-act"]:checked')?.value||'7';
   const sessions= parseFloat(document.getElementById('ap-sessions')?.value)||null;
   const duree   = parseFloat(document.getElementById('ap-duree')?.value)||null;
-  const stepGoal= parseInt(document.getElementById('ap-step-goal').value)||10000;
-  const kcalGoal= parseInt(document.getElementById('ap-kcal-goal').value)||null;
 
-  // Save profile — préserver poids_objectif et autres champs non affichés ici
+  // Poids et bodyfat ne sont plus saisis ici : on reprend les dernières valeurs connues
+  // (renseignées via le modal "Poids rapide" / l\'onglet Estimer) pour le recalcul du BMR.
   const existingProf = JSON.parse(localStorage.getItem('kcalos_profile')||'{}');
-  const profile = { ...existingProf, taille, age, bf, sexe, activity, sessions, duree };
-  localStorage.setItem('kcalos_profile', JSON.stringify(profile));
-  localStorage.setItem('kcalos_step_goal', stepGoal);
-  if(kcalGoal) localStorage.setItem('kcalos_kcal_goal', kcalGoal);
-  else localStorage.removeItem('kcalos_kcal_goal');
+  const lastFit = DB.getLastFitness();
+  const bf    = parseFloat(existingProf.bf)||null;
+  const poids = parseFloat(lastFit?.poids)||null;
 
-  // Save today\'s weight if provided
-  if(poids){
-    DB.upsertFitness({ date: today(), poids });
-  }
+  // Save profile — préserver poids_objectif, bf et autres champs non affichés ici
+  const profile = { ...existingProf, taille, age, sexe, activity, sessions, duree };
+  localStorage.setItem('kcalos_profile', JSON.stringify(profile));
 
   // Sync BMR page fields from profile
   if(taille){ const el=document.getElementById('c-taille'); if(el) el.value=taille; }
@@ -16696,11 +15035,6 @@ function saveAccountProfile(){
     liveCalc?.();
     recomputeAllTDEE?.();
   }
-
-  // Update step goal UI
-  const goalInput = document.getElementById('step-goal-input');
-  if(goalInput) goalInput.value = stepGoal;
-  localStorage.setItem('kcalos_step_goal', stepGoal);
 
   // Update account bubble initials
   updateAccountBubble();
@@ -17551,8 +15885,6 @@ function savePoidsQuick(){
   if(isToday){
     const cPoids = document.getElementById('c-poids');
     if(cPoids) cPoids.value = val;
-    const apPoids = document.getElementById('ap-poids');
-    if(apPoids) apPoids.value = val;
   }
   closePoidsQuickEdit();
   renderDashboard();
@@ -18278,8 +16610,9 @@ function renderGlycemiaChart(dateOverride) {
   }
 
   const curve = computeGlycemiaCurve(date);
-  const { labels, data, maxGlyc, minGlyc, timeHigh, timeNorm, glucTotal, kcalTotal, events,
+  const { labels, data, maxGlyc, minGlyc, timeHigh, timeNorm, glucTotal, kcalTotal, events, peaks,
           poids, sexe, age, taille, imc, lbm, vd, insSens, T_HALF_adj } = curve;
+  const profile = JSON.parse(localStorage.getItem('kcalos_profile') || '{}');
 
   // Sauvegarder pour modal
   _glycemiaLastStats = { poids, sexe, age, taille, imc, lbm, vd, insSens, T_HALF_adj,
@@ -21543,14 +19876,14 @@ function closeKcalGoalModal() {
 ══════════════════════════════════════════════ */
 (function() {
   var _nakChart = null;
-  var _nakMode  = 'week'; // 'week' | 'day'
+  var _nakMode  = 'day'; // 'week' | 'day'
 
   window.nakSwitchView = function(mode) {
     _nakMode = mode;
     var btnW = document.getElementById('nak-tab-week');
     var btnD = document.getElementById('nak-tab-day');
-    if (btnW) { btnW.style.background = mode==='week' ? 'var(--lime)' : 'transparent'; btnW.style.color = mode==='week' ? '#111' : 'var(--muted)'; }
-    if (btnD) { btnD.style.background = mode==='day'  ? 'var(--lime)' : 'transparent'; btnD.style.color = mode==='day'  ? '#111' : 'var(--muted)'; }
+    if (btnW) btnW.classList.toggle('active', mode==='week');
+    if (btnD) btnD.classList.toggle('active', mode==='day');
     window.loadNaKChart();
   };
 
