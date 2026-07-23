@@ -2597,80 +2597,6 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <button class="account-close-btn" onclick="closeAccountPanel()">✕</button>
     </div>
 
-    <!-- ══ FIREBASE AUTH ZONE ══ -->
-    <div id="fb-auth-zone">
-      <div id="fb-loading-view" class="fb-loading">⏳ Connexion au compte…</div>
-
-      <!-- Pas connecté -->
-      <div id="fb-login-view" class="fb-zone-inner" style="display:none">
-        <div class="fb-label">☁️ Compte Cloud</div>
-        <div id="fb-auth-title" class="fb-title">Se connecter</div>
-        <input type="text" id="fb-prenom" placeholder="Ton prénom" autocomplete="given-name" style="display:none">
-        <input type="email" id="fb-email" placeholder="email@exemple.com" autocomplete="email">
-        <input type="password" id="fb-password" placeholder="Mot de passe" autocomplete="current-password"
-          onkeydown="if(event.key==='Enter') document.getElementById('fb-action-btn').click()">
-        <div id="fb-auth-error" class="fb-err"></div>
-        <button id="fb-action-btn" class="fb-btn-main" onclick="fbDoAction()">Se connecter</button>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px">
-          <button class="fb-toggle" id="fb-toggle-link" onclick="fbToggleMode()">Pas encore de compte ? Créer un</button>
-          <button id="fb-forgot-link" class="fb-toggle" onclick="fbForgotPassword()" style="color:var(--muted2);font-size:0.68rem">Mot de passe oublié ?</button>
-        </div>
-        <div id="fb-reset-msg" style="display:none;font-size:0.7rem;color:var(--teal);padding:6px 10px;background:rgba(47,214,180,0.08);border-radius:var(--r-sm);margin-top:6px;border:1px solid var(--teal-d);line-height:1.5"></div>
-      </div>
-
-      <!-- Connecté -->
-      <div id="fb-user-view" class="fb-zone-inner" style="display:none">
-        <div class="fb-label">☁️ Compte Cloud</div>
-        <div class="fb-user-card">
-          <div class="fb-user-info">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:1px">
-              <div id="fb-user-name" style="font-size:0.9rem;font-weight:600;color:var(--text)">—</div>
-              <button onclick="fbEditName()" title="Modifier le prénom" style="background:none;border:none;color:var(--muted2);cursor:pointer;font-size:0.65rem;padding:0 2px">✏️</button>
-            </div>
-            <div id="fb-name-edit" style="display:none;margin-bottom:5px">
-              <div style="display:flex;gap:5px;align-items:center">
-                <input type="text" id="fb-name-input" placeholder="Ton prénom"
-                  style="flex:1;background:var(--s2);border:1.5px solid var(--border2);border-radius:var(--r-sm);padding:4px 8px;font-size:0.75rem;color:var(--text);font-family:Syne,sans-serif;outline:none"
-                  onkeydown="if(event.key==='Enter') fbSaveName()">
-                <button onclick="fbSaveName()" style="background:var(--teal-bg);border:1.5px solid var(--teal-d);color:var(--teal);border-radius:var(--r-sm);padding:4px 9px;font-size:0.72rem;cursor:pointer;font-family:Syne,sans-serif">✓</button>
-                <button onclick="document.getElementById('fb-name-edit').style.display='none'" style="background:var(--s2);border:1.5px solid var(--border2);color:var(--muted);border-radius:var(--r-sm);padding:4px 8px;font-size:0.72rem;cursor:pointer;font-family:Syne,sans-serif">✕</button>
-              </div>
-            </div>
-            <div class="fb-user-lbl">Connecté en tant que</div>
-            <div class="fb-user-email" id="fb-user-email"></div>
-            <div class="fb-sync-status" id="fb-sync-status" style="color:var(--teal)">✅ Synchronisé</div>
-            <div id="fb-version-display" style="font-size:0.6rem;color:var(--muted2);margin-top:2px">v.—</div>
-          </div>
-        </div>
-
-        <!-- Actions cloud avec descriptions -->
-        <div style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.5rem">
-
-          <!-- Envoyer au cloud -->
-          <div style="display:flex;align-items:center;gap:10px;background:var(--teal-bg);border:1.5px solid var(--teal-d);border-radius:var(--r-sm);padding:8px 12px">
-            <div style="flex:1">
-              <div style="font-size:0.75rem;font-weight:600;color:var(--teal)">☁️ Envoyer au cloud</div>
-              <div style="font-size:0.65rem;color:var(--muted2);margin-top:1px">Force l'envoi de TES données vers le cloud. Se fait automatiquement à chaque sauvegarde.</div>
-            </div>
-            <button onclick="fbSyncNow()" style="background:var(--teal-d);border:none;color:#111;border-radius:var(--r-sm);padding:6px 12px;font-size:0.72rem;font-weight:600;cursor:pointer;font-family:Syne,sans-serif;white-space:nowrap">⬆️ Envoyer</button>
-          </div>
-
-          <!-- Charger depuis le cloud -->
-          <div style="display:flex;align-items:center;gap:10px;background:var(--s2);border:1.5px solid var(--border2);border-radius:var(--r-sm);padding:8px 12px">
-            <div style="flex:1">
-              <div style="font-size:0.75rem;font-weight:600;color:var(--text)">📲 Charger depuis le cloud</div>
-              <div style="font-size:0.65rem;color:var(--muted2);margin-top:1px">⚠️ Remplace tes données locales par celles du cloud. À utiliser sur un nouvel appareil ou en cas de problème.</div>
-            </div>
-            <button onclick="fbRestoreFromCloud()" style="background:var(--s3);border:1.5px solid var(--border2);color:var(--muted);border-radius:var(--r-sm);padding:6px 12px;font-size:0.72rem;font-weight:600;cursor:pointer;font-family:Syne,sans-serif;white-space:nowrap">⬇️ Charger</button>
-          </div>
-
-          <!-- Déconnexion -->
-          <button onclick="fbSignOut()" style="background:none;border:none;color:var(--muted2);font-size:0.7rem;cursor:pointer;font-family:Syne,sans-serif;padding:4px 0;text-align:center">Déconnexion</button>
-        </div>
-      </div>
-    </div>
-    <!-- ══ FIN AUTH ZONE ══ -->
-
     <div class="account-tabs">
       <button class="account-tab active" onclick="switchAccountTab('profil')"><span class="ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="8" cy="5.5" r="3"/><path d="M2.5 14c0-3 2.4-5 5.5-5s5.5 2 5.5 5"/></svg></span> Profil</button>
       <button class="account-tab" onclick="switchAccountTab('estimer')"><span class="ico"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 14c-3.3 0-5.2-2-5.2-4.3 0-2 1.4-3 1.4-5.2C5.3 6 5.5 7 6.3 7.7c-.1-2.2 1-4.5 3-6 0 2 1 3.8 1.5 5 .5-.8.4-2 .4-3.2 1.8 1.7 2.5 3.8 2.5 5.2C13.7 11 12 14 8 14z"/></svg></span> Estimer</button>
@@ -2680,6 +2606,80 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 
     <!-- TAB PROFIL -->
     <div class="account-tab-panel active" id="acct-panel-profil">
+      <!-- ══ FIREBASE AUTH ZONE (uniquement sur cet onglet, pour ne pas rogner l'espace des autres) ══ -->
+      <div id="fb-auth-zone" style="margin:-1rem -1.25rem 0.9rem;">
+        <div id="fb-loading-view" class="fb-loading">⏳ Connexion au compte…</div>
+
+        <!-- Pas connecté -->
+        <div id="fb-login-view" class="fb-zone-inner" style="display:none">
+          <div class="fb-label">☁️ Compte Cloud</div>
+          <div id="fb-auth-title" class="fb-title">Se connecter</div>
+          <input type="text" id="fb-prenom" placeholder="Ton prénom" autocomplete="given-name" style="display:none">
+          <input type="email" id="fb-email" placeholder="email@exemple.com" autocomplete="email">
+          <input type="password" id="fb-password" placeholder="Mot de passe" autocomplete="current-password"
+            onkeydown="if(event.key==='Enter') document.getElementById('fb-action-btn').click()">
+          <div id="fb-auth-error" class="fb-err"></div>
+          <button id="fb-action-btn" class="fb-btn-main" onclick="fbDoAction()">Se connecter</button>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px">
+            <button class="fb-toggle" id="fb-toggle-link" onclick="fbToggleMode()">Pas encore de compte ? Créer un</button>
+            <button id="fb-forgot-link" class="fb-toggle" onclick="fbForgotPassword()" style="color:var(--muted2);font-size:0.68rem">Mot de passe oublié ?</button>
+          </div>
+          <div id="fb-reset-msg" style="display:none;font-size:0.7rem;color:var(--teal);padding:6px 10px;background:rgba(47,214,180,0.08);border-radius:var(--r-sm);margin-top:6px;border:1px solid var(--teal-d);line-height:1.5"></div>
+        </div>
+
+        <!-- Connecté -->
+        <div id="fb-user-view" class="fb-zone-inner" style="display:none">
+          <div class="fb-label">☁️ Compte Cloud</div>
+          <div class="fb-user-card">
+            <div class="fb-user-info">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:1px">
+                <div id="fb-user-name" style="font-size:0.9rem;font-weight:600;color:var(--text)">—</div>
+                <button onclick="fbEditName()" title="Modifier le prénom" style="background:none;border:none;color:var(--muted2);cursor:pointer;font-size:0.65rem;padding:0 2px">✏️</button>
+              </div>
+              <div id="fb-name-edit" style="display:none;margin-bottom:5px">
+                <div style="display:flex;gap:5px;align-items:center">
+                  <input type="text" id="fb-name-input" placeholder="Ton prénom"
+                    style="flex:1;background:var(--s2);border:1.5px solid var(--border2);border-radius:var(--r-sm);padding:4px 8px;font-size:0.75rem;color:var(--text);font-family:Syne,sans-serif;outline:none"
+                    onkeydown="if(event.key==='Enter') fbSaveName()">
+                  <button onclick="fbSaveName()" style="background:var(--teal-bg);border:1.5px solid var(--teal-d);color:var(--teal);border-radius:var(--r-sm);padding:4px 9px;font-size:0.72rem;cursor:pointer;font-family:Syne,sans-serif">✓</button>
+                  <button onclick="document.getElementById('fb-name-edit').style.display='none'" style="background:var(--s2);border:1.5px solid var(--border2);color:var(--muted);border-radius:var(--r-sm);padding:4px 8px;font-size:0.72rem;cursor:pointer;font-family:Syne,sans-serif">✕</button>
+                </div>
+              </div>
+              <div class="fb-user-lbl">Connecté en tant que</div>
+              <div class="fb-user-email" id="fb-user-email"></div>
+              <div class="fb-sync-status" id="fb-sync-status" style="color:var(--teal)">✅ Synchronisé</div>
+              <div id="fb-version-display" style="font-size:0.6rem;color:var(--muted2);margin-top:2px">v.—</div>
+            </div>
+          </div>
+
+          <!-- Actions cloud avec descriptions -->
+          <div style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.5rem">
+
+            <!-- Envoyer au cloud -->
+            <div style="display:flex;align-items:center;gap:10px;background:var(--teal-bg);border:1.5px solid var(--teal-d);border-radius:var(--r-sm);padding:8px 12px">
+              <div style="flex:1">
+                <div style="font-size:0.75rem;font-weight:600;color:var(--teal)">☁️ Envoyer au cloud</div>
+                <div style="font-size:0.65rem;color:var(--muted2);margin-top:1px">Force l'envoi de TES données vers le cloud. Se fait automatiquement à chaque sauvegarde.</div>
+              </div>
+              <button onclick="fbSyncNow()" style="background:var(--teal-d);border:none;color:#111;border-radius:var(--r-sm);padding:6px 12px;font-size:0.72rem;font-weight:600;cursor:pointer;font-family:Syne,sans-serif;white-space:nowrap">⬆️ Envoyer</button>
+            </div>
+
+            <!-- Charger depuis le cloud -->
+            <div style="display:flex;align-items:center;gap:10px;background:var(--s2);border:1.5px solid var(--border2);border-radius:var(--r-sm);padding:8px 12px">
+              <div style="flex:1">
+                <div style="font-size:0.75rem;font-weight:600;color:var(--text)">📲 Charger depuis le cloud</div>
+                <div style="font-size:0.65rem;color:var(--muted2);margin-top:1px">⚠️ Remplace tes données locales par celles du cloud. À utiliser sur un nouvel appareil ou en cas de problème.</div>
+              </div>
+              <button onclick="fbRestoreFromCloud()" style="background:var(--s3);border:1.5px solid var(--border2);color:var(--muted);border-radius:var(--r-sm);padding:6px 12px;font-size:0.72rem;font-weight:600;cursor:pointer;font-family:Syne,sans-serif;white-space:nowrap">⬇️ Charger</button>
+            </div>
+
+            <!-- Déconnexion -->
+            <button onclick="fbSignOut()" style="background:none;border:none;color:var(--muted2);font-size:0.7rem;cursor:pointer;font-family:Syne,sans-serif;padding:4px 0;text-align:center">Déconnexion</button>
+          </div>
+        </div>
+      </div>
+      <!-- ══ FIN AUTH ZONE ══ -->
+
       <div class="row2">
         <div class="field"><label>Taille</label><div class="inp-wrap"><input type="number" id="ap-taille" placeholder="175" min="100" max="250"><span class="unit">cm</span></div></div>
         <div class="field"><label>Âge</label><div class="inp-wrap"><input type="number" id="ap-age" placeholder="28" min="10" max="100"><span class="unit">ans</span></div></div>
@@ -22620,10 +22620,33 @@ else setTimeout(slInit,200);
         // emailIndex/{hash} -> uid : ne permet de retrouver un compte qu'en connaissant l'email exact
         await db().collection('emailIndex').doc(hash).set({ uid: user.uid }, {merge:true});
       }
-    }catch(e){ console.warn('[Amis] ensureUserProfile', e.message); }
+      console.log('[Amis] Profil OK pour', emailLower, '- uid:', user.uid);
+    }catch(e){ console.warn('[Amis] ensureUserProfile ERREUR :', e.code||'', e.message); }
   }
 
+  /* ── DEBUG (à utiliser depuis la console du navigateur, F12) ──
+     window.frDebugForceProfile()      : recrée mon profil + mon index email maintenant
+     window.frDebugCheckEmail('x@y.z') : vérifie si un compte existe pour cet email */
+  window.frDebugForceProfile = async function(){
+    const user = me();
+    if(!user){ console.log('[Amis][debug] Pas connecté.'); return; }
+    if(!db()){ console.log('[Amis][debug] Firestore pas encore prêt (db() = null).'); return; }
+    console.log('[Amis][debug] Tentative de création du profil pour', user.email);
+    await ensureUserProfile(user);
+  };
+  window.frDebugCheckEmail = async function(email){
+    if(!db()){ console.log('[Amis][debug] Firestore pas encore prêt (db() = null).'); return; }
+    const clean = (email||'').trim().toLowerCase();
+    const hash = await frHashEmail(clean);
+    console.log('[Amis][debug] email:', clean, '-> hash:', hash);
+    try{
+      const doc = await db().collection('emailIndex').doc(hash).get();
+      console.log('[Amis][debug] emailIndex/'+hash, doc.exists ? ('trouvé -> uid '+doc.data().uid) : 'INTROUVABLE');
+    }catch(e){ console.log('[Amis][debug] ERREUR lecture emailIndex :', e.code||'', e.message); }
+  };
+
   /* ══ CALCUL DES STATS PARTAGÉES ══ */
+
   function frCalcStepsToday(){
     const fitToday = DB.getFitness().find(d=>d.date===today());
     return (window.SC ? (SC.savedToday+SC.count) : 0) || fitToday?.steps || 0;
