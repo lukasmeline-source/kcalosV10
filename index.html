@@ -22870,11 +22870,21 @@ else setTimeout(slInit,200);
   setInterval(()=>{ if(me()) frPublishMyStats(); }, 3*60*1000);
 
   // À la connexion : profil public + première publication des stats
-  if(typeof firebase!=='undefined'){
+  // (on attend que l'app Firebase principale ait fini son initializeApp() —
+  //  sinon firebase.auth() lève une erreur "no-app" silencieuse et le profil
+  //  + l'index email ne sont jamais créés automatiquement pour l'utilisateur)
+  function frWaitForFirebaseReady(cb){
+    if(typeof firebase!=='undefined' && firebase.apps && firebase.apps.length){
+      cb();
+    } else {
+      setTimeout(()=>frWaitForFirebaseReady(cb), 300);
+    }
+  }
+  frWaitForFirebaseReady(()=>{
     firebase.auth().onAuthStateChanged(user=>{
       if(user){ ensureUserProfile(user); setTimeout(frPublishMyStats, 2000); }
     });
-  }
+  });
 })();
 </script>
 
