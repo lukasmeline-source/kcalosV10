@@ -1616,6 +1616,21 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 .ap-sub-title{font-size:1rem;font-weight:600;color:var(--text);flex:1;text-align:center}
 .ap-sub-body{padding:0.85rem 1rem;padding-bottom:calc(80px + env(safe-area-inset-bottom,0))}
 
+/* AI Photo panel — boîtes de capture */
+.aiph-photo-box{
+  position:relative;aspect-ratio:1/1;border-radius:var(--r-sm);
+  border:1.5px dashed var(--border2);background:var(--s2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.68rem;color:var(--muted2);text-align:center;cursor:pointer;
+  overflow:hidden;-webkit-tap-highlight-color:transparent;
+}
+.aiph-photo-box img{width:100%;height:100%;object-fit:cover}
+.aiph-photo-clear{
+  position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;
+  border:none;background:rgba(0,0,0,0.55);color:#fff;font-size:0.7rem;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+
 /* Meal summary strip (SH style : macros en ligne) */
 .meal-summary-strip{
   display:flex;gap:0;border-radius:var(--r);overflow:hidden;
@@ -4147,7 +4162,10 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   <div class="ap-sub-header">
     <button class="ap-back-btn" onclick="closeMealDetail()">‹</button>
     <div class="ap-sub-title" id="meal-detail-title">Repas</div>
-    <div style="width:38px"></div>
+    <button class="ap-back-btn" id="meal-ai-photo-btn" onclick="openAiPhotoPanel()" title="Estimer les macros avec une photo (IA)" aria-label="Estimer les macros avec une photo (IA)" style="background:var(--teal-bg);border:1.5px solid var(--teal-d);color:var(--teal);position:relative">
+      <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.3c0-.55.45-1 1-1h1.25l.55-1c.18-.32.52-.52.9-.52h4.6c.38 0 .72.2.9.52l.55 1H13c.55 0 1 .45 1 1V12c0 .55-.45 1-1 1H3c-.55 0-1-.45-1-1V5.3z"/><circle cx="8" cy="8.2" r="2.3"/></svg>
+      <span style="position:absolute;bottom:-3px;right:-3px;background:var(--teal-d);color:#0a0a0a;font-size:0.5rem;font-weight:800;line-height:1;padding:1.5px 3px;border-radius:5px;letter-spacing:0.2px">IA</span>
+    </button>
   </div>
   <div class="ap-sub-body">
     <div class="meal-summary-strip" id="meal-summary-strip">
@@ -4163,6 +4181,71 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     <button onclick="closeMealDetail()" style="flex:1;padding:0.9rem;border-radius:30px;border:1.5px solid var(--border2);background:var(--s2);color:var(--text);font-family:Syne,sans-serif;font-size:0.88rem;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all var(--trans)">Fin de saisie ✓</button>
   </div>
 </div>
+
+<!-- ═══ AI PHOTO PANEL — estimation macros par photo ═══ -->
+<div class="ap-sub-panel" id="ai-photo-panel" style="z-index:305">
+  <div class="ap-sub-header">
+    <button class="ap-back-btn" onclick="closeAiPhotoPanel()">‹</button>
+    <div class="ap-sub-title">📷 Analyse IA du plat</div>
+    <div style="width:38px"></div>
+  </div>
+  <div class="ap-sub-body">
+
+    <!-- Clé API (affichée seulement si absente) -->
+    <div id="aiph-key-zone" style="display:none;margin-bottom:1rem;padding:0.85rem 1rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm)">
+      <div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px">🔑 Clé API Anthropic requise (stockée uniquement sur cet appareil, jamais envoyée ailleurs qu'à api.anthropic.com)</div>
+      <input type="password" id="aiph-api-key" placeholder="sk-ant-api03-…" style="width:100%;background:var(--s1);border:1.5px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;font-size:0.8rem;color:var(--text);font-family:Syne,sans-serif;outline:none" oninput="localStorage.setItem('kcalos_apikey',this.value)">
+      <div style="font-size:0.62rem;color:var(--muted2);margin-top:5px">Obtenir une clé → <a href="https://console.anthropic.com" target="_blank" style="color:var(--teal)">console.anthropic.com</a></div>
+    </div>
+
+    <!-- Étape 1 : photos + description -->
+    <div id="aiph-step-photos">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem">
+        <div>
+          <div style="font-size:0.72rem;font-weight:600;color:var(--text);margin-bottom:6px">🍽️ Photo du plat</div>
+          <div class="aiph-photo-box" id="aiph-box-plat" onclick="document.getElementById('aiph-file-plat').click()">
+            <span id="aiph-placeholder-plat">+ Prendre / choisir</span>
+            <img id="aiph-preview-plat" style="display:none">
+            <button type="button" class="aiph-photo-clear" id="aiph-clear-plat" style="display:none" onclick="event.stopPropagation();aiphClearPhoto('plat')">✕</button>
+          </div>
+          <input type="file" accept="image/*" capture="environment" id="aiph-file-plat" style="display:none" onchange="aiphHandleFile(event,'plat')">
+        </div>
+        <div>
+          <div style="font-size:0.72rem;font-weight:600;color:var(--text);margin-bottom:6px">🍴 Restes <span style="color:var(--muted2);font-weight:400">(optionnel)</span></div>
+          <div class="aiph-photo-box" id="aiph-box-restes" onclick="document.getElementById('aiph-file-restes').click()">
+            <span id="aiph-placeholder-restes">+ Prendre / choisir</span>
+            <img id="aiph-preview-restes" style="display:none">
+            <button type="button" class="aiph-photo-clear" id="aiph-clear-restes" style="display:none" onclick="event.stopPropagation();aiphClearPhoto('restes')">✕</button>
+          </div>
+          <input type="file" accept="image/*" capture="environment" id="aiph-file-restes" style="display:none" onchange="aiphHandleFile(event,'restes')">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Description / précisions (optionnel)</label>
+        <textarea id="aiph-description" rows="3" placeholder="Ex: riz basmati, poulet grillé sans peau, un filet d'huile d'olive…" style="width:100%;background:var(--s2);border:1.5px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;font-size:0.8rem;color:var(--text);font-family:Syne,sans-serif;outline:none;resize:vertical"></textarea>
+      </div>
+
+      <div id="aiph-error" style="display:none;font-size:0.72rem;color:var(--red);background:rgba(255,90,90,0.08);border:1px solid var(--red);border-radius:var(--r-sm);padding:8px 10px;margin-top:0.5rem;line-height:1.5"></div>
+
+      <button class="btn teal" id="aiph-analyze-btn" onclick="aiAnalyzeMeal()" style="width:100%;margin-top:1rem">✨ Analyser avec l'IA</button>
+      <div id="aiph-loading" style="display:none;text-align:center;padding:1.2rem 0;font-size:0.78rem;color:var(--muted)">⏳ Analyse en cours…</div>
+    </div>
+
+    <!-- Étape 2 : résultats éditables -->
+    <div id="aiph-step-results" style="display:none">
+      <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.75rem;line-height:1.5">Vérifie et ajuste si besoin avant d'ajouter au repas.</div>
+      <div id="aiph-note" style="display:none;font-size:0.7rem;color:var(--orange);background:rgba(255,170,60,0.08);border:1px solid var(--orange);border-radius:var(--r-sm);padding:7px 10px;margin-bottom:0.75rem;line-height:1.5"></div>
+      <div id="aiph-items-list"></div>
+      <div style="display:flex;gap:8px;margin-top:1rem">
+        <button class="btn-add-food" style="flex:1" onclick="aiphBackToPhotos()">‹ Refaire</button>
+        <button class="btn teal" style="flex:2" onclick="aiphConfirmAdd()">Ajouter au repas →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 
 <!-- ═══ FOOD SEARCH PANEL ═══ -->
 <div class="search-panel" id="food-search-panel">
@@ -8454,6 +8537,262 @@ function updateMealSummaryStrip() {
   if (p) p.textContent = t.prot + 'g';
   if (g) g.textContent = t.gluc + 'g';
   if (l) l.textContent = t.lip + 'g';
+}
+
+/* ══════════ AI PHOTO — estimation macros par photo ══════════ */
+let AIPH = { plateFull:null, plateThumb:null, restesFull:null, items:[] };
+
+function openAiPhotoPanel(){
+  if(!AP.currentMeal){ toast("Ouvre un repas d'abord", 'var(--red)'); return; }
+  AIPH = { plateFull:null, plateThumb:null, restesFull:null, items:[] };
+  aiphResetBox('plat');
+  aiphResetBox('restes');
+  document.getElementById('aiph-description').value = '';
+  document.getElementById('aiph-error').style.display = 'none';
+  document.getElementById('aiph-step-photos').style.display = 'block';
+  document.getElementById('aiph-step-results').style.display = 'none';
+  document.getElementById('aiph-loading').style.display = 'none';
+  const key = localStorage.getItem('kcalos_apikey') || '';
+  document.getElementById('aiph-api-key').value = key;
+  document.getElementById('aiph-key-zone').style.display = key ? 'none' : 'block';
+  document.getElementById('ai-photo-panel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeAiPhotoPanel(){
+  document.getElementById('ai-photo-panel').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function aiphResetBox(kind){
+  const ph = document.getElementById('aiph-placeholder-'+kind);
+  const img = document.getElementById('aiph-preview-'+kind);
+  const clr = document.getElementById('aiph-clear-'+kind);
+  if(ph) ph.style.display = 'block';
+  if(img){ img.style.display = 'none'; img.src = ''; }
+  if(clr) clr.style.display = 'none';
+}
+function aiphClearPhoto(kind){
+  if(kind==='plat'){ AIPH.plateFull = null; AIPH.plateThumb = null; }
+  else { AIPH.restesFull = null; }
+  const input = document.getElementById('aiph-file-'+kind);
+  if(input) input.value = '';
+  aiphResetBox(kind);
+}
+
+// Redimensionne + compresse une image via canvas (limite le poids envoyé à l'API et stocké en local)
+function aiphCompressImage(file, maxDim, quality){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = e=>{
+      const img = new Image();
+      img.onload = ()=>{
+        let w = img.width, h = img.height;
+        if(w > maxDim || h > maxDim){
+          if(w > h){ h = Math.round(h * maxDim / w); w = maxDim; }
+          else { w = Math.round(w * maxDim / h); h = maxDim; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = ()=>reject(new Error('Image illisible'));
+      img.src = e.target.result;
+    };
+    reader.onerror = ()=>reject(new Error('Lecture du fichier impossible'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function aiphHandleFile(evt, kind){
+  const file = evt.target.files && evt.target.files[0];
+  if(!file) return;
+  try{
+    const full = await aiphCompressImage(file, 1024, 0.82); // qualité envoyée à l'API vision
+    document.getElementById('aiph-preview-'+kind).src = full;
+    document.getElementById('aiph-preview-'+kind).style.display = 'block';
+    document.getElementById('aiph-placeholder-'+kind).style.display = 'none';
+    document.getElementById('aiph-clear-'+kind).style.display = 'flex';
+    if(kind==='plat'){
+      AIPH.plateFull = full;
+      AIPH.plateThumb = await aiphCompressImage(file, 220, 0.6); // miniature stockée avec l'aliment
+    } else {
+      AIPH.restesFull = full;
+    }
+  }catch(e){
+    toast('❌ Photo illisible : '+e.message, 'var(--red)');
+  }
+}
+
+function aiphB64Payload(dataUrl){ return dataUrl.split(',')[1]; }
+
+function aiphBuildPrompt(description, hasRestes){
+  return `Tu es un expert en nutrition. Analyse la ou les photos de repas fournies.
+${hasRestes ? "La première photo montre le plat servi initialement. La seconde montre ce qu'il reste APRÈS avoir mangé. Estime uniquement les quantités RÉELLEMENT CONSOMMÉES (portion initiale moins ce qui reste visible sur la seconde photo)." : "La photo montre le plat tel que consommé."}
+${description ? `Précisions données par l'utilisateur : "${description}"` : ''}
+
+Décompose le repas en aliments distincts (ex: source de protéines, féculent, légumes, sauce, boisson...) et donne pour CHAQUE aliment une estimation nutritionnelle réaliste (portions françaises courantes) :
+- name : nom court et clair
+- grams : poids estimé en grammes réellement consommé
+- kcal, prot (g), gluc (g), lip (g), sucres (g), fibres (g), sodium (mg), potassium (mg)
+
+Réponds STRICTEMENT avec un JSON valide, sans aucun texte avant/après, sans balises markdown ni commentaire, exactement dans ce format :
+{"items":[{"name":"...","grams":0,"kcal":0,"prot":0,"gluc":0,"lip":0,"sucres":0,"fibres":0,"sodium":0,"potassium":0}],"note":"remarque courte optionnelle sur l'incertitude, ou chaîne vide"}`;
+}
+
+async function aiAnalyzeMeal(){
+  const errEl = document.getElementById('aiph-error');
+  errEl.style.display = 'none';
+  if(!AIPH.plateFull){ errEl.textContent = 'Ajoute au moins la photo du plat.'; errEl.style.display = 'block'; return; }
+  const apiKey = (document.getElementById('aiph-api-key').value || '').trim();
+  if(!apiKey){ errEl.textContent = 'Renseigne ta clé API Anthropic.'; errEl.style.display = 'block'; return; }
+  localStorage.setItem('kcalos_apikey', apiKey);
+
+  const description = (document.getElementById('aiph-description').value || '').trim();
+  const hasRestes = !!AIPH.restesFull;
+  const prompt = aiphBuildPrompt(description, hasRestes);
+
+  const content = [
+    { type:'image', source:{ type:'base64', media_type:'image/jpeg', data: aiphB64Payload(AIPH.plateFull) } },
+  ];
+  if(hasRestes){
+    content.push({ type:'image', source:{ type:'base64', media_type:'image/jpeg', data: aiphB64Payload(AIPH.restesFull) } });
+  }
+  content.push({ type:'text', text: prompt });
+
+  document.getElementById('aiph-analyze-btn').disabled = true;
+  document.getElementById('aiph-loading').style.display = 'block';
+
+  try{
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true',
+      },
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1500,
+        messages:[{ role:'user', content }],
+      }),
+    });
+    if(!res.ok){
+      const err = await res.json().catch(()=>({}));
+      throw new Error(err?.error?.message || `Erreur API ${res.status}`);
+    }
+    const data = await res.json();
+    const text = data.content.map(b=>b.text || '').join('\n').trim();
+    const cleaned = text.replace(/^```json\s*|^```\s*|```$/gm, '').trim();
+    let parsed;
+    try{ parsed = JSON.parse(cleaned); }
+    catch(e){ throw new Error('Réponse IA illisible, réessaie.'); }
+    if(!parsed.items || !Array.isArray(parsed.items) || !parsed.items.length){
+      throw new Error("L'IA n'a détecté aucun aliment, réessaie avec une photo plus nette.");
+    }
+    AIPH.items = parsed.items.map(it=>({
+      name: it.name || 'Aliment',
+      grams: Math.round(Number(it.grams) || 0),
+      kcal: Math.round(Number(it.kcal) || 0),
+      prot: Math.round((Number(it.prot) || 0) * 10) / 10,
+      gluc: Math.round((Number(it.gluc) || 0) * 10) / 10,
+      lip: Math.round((Number(it.lip) || 0) * 10) / 10,
+      sucres: Math.round((Number(it.sucres) || 0) * 10) / 10,
+      fibres: Math.round((Number(it.fibres) || 0) * 10) / 10,
+      sodium: Math.round((Number(it.sodium) || 0) * 10) / 10,
+      potassium: Math.round((Number(it.potassium) || 0) * 10) / 10,
+    }));
+    aiphRenderResults(parsed.note || '');
+    document.getElementById('aiph-step-photos').style.display = 'none';
+    document.getElementById('aiph-step-results').style.display = 'block';
+  }catch(e){
+    errEl.textContent = '❌ ' + e.message;
+    errEl.style.display = 'block';
+    toast('Erreur IA : ' + e.message, 'var(--red)');
+  }finally{
+    document.getElementById('aiph-analyze-btn').disabled = false;
+    document.getElementById('aiph-loading').style.display = 'none';
+  }
+}
+
+function aiphFieldHtml(field, label, value){
+  return `<div>
+    <div style="font-size:0.58rem;color:var(--muted2);margin-bottom:2px">${label}</div>
+    <input type="number" step="any" data-field="${field}" value="${value}" style="width:100%;background:var(--s1);border:1.5px solid var(--border2);border-radius:6px;padding:5px 6px;font-size:0.75rem;color:var(--text);font-family:Syne,sans-serif;outline:none">
+  </div>`;
+}
+
+function aiphRenderResults(note){
+  const noteEl = document.getElementById('aiph-note');
+  if(note){ noteEl.textContent = '💡 ' + note; noteEl.style.display = 'block'; }
+  else { noteEl.style.display = 'none'; }
+
+  const list = document.getElementById('aiph-items-list');
+  list.innerHTML = AIPH.items.map((it, i)=>`
+    <div class="aiph-item-card" data-idx="${i}" style="background:var(--s2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:0.75rem;margin-bottom:0.6rem">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.5rem">
+        <input type="text" data-field="name" value="${(it.name||'').replace(/"/g,'&quot;')}" style="flex:1;background:var(--s1);border:1.5px solid var(--border2);border-radius:var(--r-sm);padding:6px 8px;font-size:0.82rem;font-weight:600;color:var(--text);font-family:Syne,sans-serif;outline:none">
+        <button type="button" onclick="aiphRemoveItem(${i})" title="Retirer" aria-label="Retirer cet aliment" style="background:none;border:none;color:var(--muted2);font-size:0.9rem;cursor:pointer;padding:2px 4px">✕</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+        ${aiphFieldHtml('grams','g',it.grams)}
+        ${aiphFieldHtml('kcal','kcal',it.kcal)}
+        ${aiphFieldHtml('prot','P g',it.prot)}
+        ${aiphFieldHtml('gluc','G g',it.gluc)}
+        ${aiphFieldHtml('lip','L g',it.lip)}
+        ${aiphFieldHtml('sucres','Sucres g',it.sucres)}
+        ${aiphFieldHtml('fibres','Fibres g',it.fibres)}
+        ${aiphFieldHtml('sodium','Na mg',it.sodium)}
+        ${aiphFieldHtml('potassium','K mg',it.potassium)}
+      </div>
+    </div>
+  `).join('');
+}
+
+function aiphRemoveItem(i){
+  AIPH.items.splice(i, 1);
+  if(!AIPH.items.length){ toast('Plus aucun aliment, refais une photo', 'var(--orange)'); aiphBackToPhotos(); return; }
+  const noteEl = document.getElementById('aiph-note');
+  aiphRenderResults(noteEl.style.display==='block' ? noteEl.textContent.replace(/^💡\s*/, '') : '');
+}
+
+function aiphBackToPhotos(){
+  document.getElementById('aiph-step-results').style.display = 'none';
+  document.getElementById('aiph-step-photos').style.display = 'block';
+}
+
+function aiphConfirmAdd(){
+  // Relit les valeurs (potentiellement corrigées à la main) directement depuis les cartes affichées
+  const cards = document.querySelectorAll('#aiph-items-list .aiph-item-card');
+  const finalItems = [];
+  cards.forEach(card=>{
+    const get = f => card.querySelector(`[data-field="${f}"]`);
+    const name = (get('name')?.value || '').trim() || 'Aliment';
+    const num = f => { const v = parseFloat(get(f)?.value); return isNaN(v) ? 0 : v; };
+    finalItems.push({
+      name, brand: '',
+      grams: Math.round(num('grams')),
+      kcal: Math.round(num('kcal')),
+      prot: Math.round(num('prot') * 10) / 10,
+      gluc: Math.round(num('gluc') * 10) / 10,
+      lip: Math.round(num('lip') * 10) / 10,
+      sucres: Math.round(num('sucres') * 10) / 10,
+      fibres: Math.round(num('fibres') * 10) / 10,
+      sodium: Math.round(num('sodium') * 10) / 10,
+      potassium: Math.round(num('potassium') * 10) / 10,
+      image: AIPH.plateThumb || '',
+      _src: 'ai-photo',
+      ts: Date.now(),
+    });
+  });
+  if(!finalItems.length){ toast('Rien à ajouter', 'var(--red)'); return; }
+  finalItems.forEach(item=>{ saveMealItem(AP.date, AP.currentMeal, item); });
+  closeAiPhotoPanel();
+  renderMealFoodList();
+  updateMealSummaryStrip();
+  renderMealCards();
+  renderApDayBanner();
+  toast(`✅ ${finalItems.length} aliment${finalItems.length>1?'s':''} ajouté${finalItems.length>1?'s':''}`, 'var(--teal)');
 }
 
 /* ── Food search panel ── */
