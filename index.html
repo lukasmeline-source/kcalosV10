@@ -2707,6 +2707,8 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       </div>
 
       <button class="btn" onclick="saveAccountProfile()" style="margin-top:0.5rem">Enregistrer le profil →</button>
+
+      <div id="app-build-version" style="text-align:center;font-size:0.6rem;color:var(--muted2);margin-top:0.6rem;opacity:0.6"></div>
     </div>
 
     <!-- TAB ESTIMER MA DÉPENSE -->
@@ -6018,6 +6020,13 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 </div>
 
 <script>
+
+/* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
+const APP_BUILD_VERSION = '2026-07-24.1';
+document.addEventListener('DOMContentLoaded', () => {
+  const elV = document.getElementById('app-build-version');
+  if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
+});
 
 /* ── ICON MAP ── */
 const ICONS={
