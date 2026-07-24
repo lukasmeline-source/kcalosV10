@@ -4232,17 +4232,6 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <div id="aiph-loading" style="display:none;text-align:center;padding:1.2rem 0;font-size:0.78rem;color:var(--muted)">⏳ Analyse en cours…</div>
     </div>
 
-    <!-- Étape 2 : résultats éditables -->
-    <div id="aiph-step-results" style="display:none">
-      <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.75rem;line-height:1.5">Vérifie et ajuste si besoin avant d'ajouter au repas.</div>
-      <div id="aiph-note" style="display:none;font-size:0.7rem;color:var(--orange);background:rgba(255,170,60,0.08);border:1px solid var(--orange);border-radius:var(--r-sm);padding:7px 10px;margin-bottom:0.75rem;line-height:1.5"></div>
-      <div id="aiph-items-list"></div>
-      <div style="display:flex;gap:8px;margin-top:1rem">
-        <button class="btn-add-food" style="flex:1" onclick="aiphBackToPhotos()">‹ Refaire</button>
-        <button class="btn teal" style="flex:2" onclick="aiphConfirmAdd()">Ajouter au repas →</button>
-      </div>
-    </div>
-
   </div>
 </div>
 
@@ -8549,8 +8538,6 @@ function openAiPhotoPanel(){
   aiphResetBox('restes');
   document.getElementById('aiph-description').value = '';
   document.getElementById('aiph-error').style.display = 'none';
-  document.getElementById('aiph-step-photos').style.display = 'block';
-  document.getElementById('aiph-step-results').style.display = 'none';
   document.getElementById('aiph-loading').style.display = 'none';
   const key = localStorage.getItem('kcalos_apikey') || '';
   document.getElementById('aiph-api-key').value = key;
@@ -8702,9 +8689,7 @@ async function aiAnalyzeMeal(){
       sodium: Math.round((Number(it.sodium) || 0) * 10) / 10,
       potassium: Math.round((Number(it.potassium) || 0) * 10) / 10,
     }));
-    aiphRenderResults(parsed.note || '');
-    document.getElementById('aiph-step-photos').style.display = 'none';
-    document.getElementById('aiph-step-results').style.display = 'block';
+    aiphFinalizeAdd(parsed.note || '');
   }catch(e){
     errEl.textContent = '❌ ' + e.message;
     errEl.style.display = 'block';
@@ -8715,84 +8700,26 @@ async function aiAnalyzeMeal(){
   }
 }
 
-function aiphFieldHtml(field, label, value){
-  return `<div>
-    <div style="font-size:0.58rem;color:var(--muted2);margin-bottom:2px">${label}</div>
-    <input type="number" step="any" data-field="${field}" value="${value}" style="width:100%;background:var(--s1);border:1.5px solid var(--border2);border-radius:6px;padding:5px 6px;font-size:0.75rem;color:var(--text);font-family:Syne,sans-serif;outline:none">
-  </div>`;
-}
-
-function aiphRenderResults(note){
-  const noteEl = document.getElementById('aiph-note');
-  if(note){ noteEl.textContent = '💡 ' + note; noteEl.style.display = 'block'; }
-  else { noteEl.style.display = 'none'; }
-
-  const list = document.getElementById('aiph-items-list');
-  list.innerHTML = AIPH.items.map((it, i)=>`
-    <div class="aiph-item-card" data-idx="${i}" style="background:var(--s2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:0.75rem;margin-bottom:0.6rem">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.5rem">
-        <input type="text" data-field="name" value="${(it.name||'').replace(/"/g,'&quot;')}" style="flex:1;background:var(--s1);border:1.5px solid var(--border2);border-radius:var(--r-sm);padding:6px 8px;font-size:0.82rem;font-weight:600;color:var(--text);font-family:Syne,sans-serif;outline:none">
-        <button type="button" onclick="aiphRemoveItem(${i})" title="Retirer" aria-label="Retirer cet aliment" style="background:none;border:none;color:var(--muted2);font-size:0.9rem;cursor:pointer;padding:2px 4px">✕</button>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
-        ${aiphFieldHtml('grams','g',it.grams)}
-        ${aiphFieldHtml('kcal','kcal',it.kcal)}
-        ${aiphFieldHtml('prot','P g',it.prot)}
-        ${aiphFieldHtml('gluc','G g',it.gluc)}
-        ${aiphFieldHtml('lip','L g',it.lip)}
-        ${aiphFieldHtml('sucres','Sucres g',it.sucres)}
-        ${aiphFieldHtml('fibres','Fibres g',it.fibres)}
-        ${aiphFieldHtml('sodium','Na mg',it.sodium)}
-        ${aiphFieldHtml('potassium','K mg',it.potassium)}
-      </div>
-    </div>
-  `).join('');
-}
-
-function aiphRemoveItem(i){
-  AIPH.items.splice(i, 1);
-  if(!AIPH.items.length){ toast('Plus aucun aliment, refais une photo', 'var(--orange)'); aiphBackToPhotos(); return; }
-  const noteEl = document.getElementById('aiph-note');
-  aiphRenderResults(noteEl.style.display==='block' ? noteEl.textContent.replace(/^💡\s*/, '') : '');
-}
-
-function aiphBackToPhotos(){
-  document.getElementById('aiph-step-results').style.display = 'none';
-  document.getElementById('aiph-step-photos').style.display = 'block';
-}
-
-function aiphConfirmAdd(){
-  // Relit les valeurs (potentiellement corrigées à la main) directement depuis les cartes affichées
-  const cards = document.querySelectorAll('#aiph-items-list .aiph-item-card');
-  const finalItems = [];
-  cards.forEach(card=>{
-    const get = f => card.querySelector(`[data-field="${f}"]`);
-    const name = (get('name')?.value || '').trim() || 'Aliment';
-    const num = f => { const v = parseFloat(get(f)?.value); return isNaN(v) ? 0 : v; };
-    finalItems.push({
-      name, brand: '',
-      grams: Math.round(num('grams')),
-      kcal: Math.round(num('kcal')),
-      prot: Math.round(num('prot') * 10) / 10,
-      gluc: Math.round(num('gluc') * 10) / 10,
-      lip: Math.round(num('lip') * 10) / 10,
-      sucres: Math.round(num('sucres') * 10) / 10,
-      fibres: Math.round(num('fibres') * 10) / 10,
-      sodium: Math.round(num('sodium') * 10) / 10,
-      potassium: Math.round(num('potassium') * 10) / 10,
-      image: AIPH.plateThumb || '',
-      _src: 'ai-photo',
-      ts: Date.now(),
-    });
-  });
-  if(!finalItems.length){ toast('Rien à ajouter', 'var(--red)'); return; }
-  finalItems.forEach(item=>{ saveMealItem(AP.date, AP.currentMeal, item); });
+function aiphFinalizeAdd(note){
+  // Ajoute directement les aliments détectés par l'IA au repas courant, sans écran de validation
+  // (la modification reste possible ensuite depuis le récap du repas, comme pour tout aliment).
+  const items = AIPH.items.map(it=>({
+    name: it.name, brand: '',
+    grams: it.grams, kcal: it.kcal, prot: it.prot, gluc: it.gluc, lip: it.lip,
+    sucres: it.sucres, fibres: it.fibres, sodium: it.sodium, potassium: it.potassium,
+    image: AIPH.plateThumb || '',
+    _src: 'ai-photo',
+    ts: Date.now(),
+  }));
+  if(!items.length){ toast('Rien à ajouter', 'var(--red)'); return; }
+  items.forEach(item=>{ saveMealItem(AP.date, AP.currentMeal, item); });
   closeAiPhotoPanel();
   renderMealFoodList();
   updateMealSummaryStrip();
   renderMealCards();
   renderApDayBanner();
-  toast(`✅ ${finalItems.length} aliment${finalItems.length>1?'s':''} ajouté${finalItems.length>1?'s':''}`, 'var(--teal)');
+  const suffix = items.length>1 ? 's' : '';
+  toast(note ? `✅ ${items.length} aliment${suffix} ajouté${suffix} · 💡 ${note}` : `✅ ${items.length} aliment${suffix} ajouté${suffix}`, 'var(--teal)');
 }
 
 /* ── Food search panel ── */
