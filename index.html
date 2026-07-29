@@ -1503,6 +1503,13 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
   display:block;font-size:1rem;font-weight:600;color:var(--text);line-height:1.2;
 }
 .ap-day-macro span{font-size:0.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em}
+/* Ligne discrète des micronutriments (sucres, fibres, sodium, potassium, sat.) */
+.ap-day-micros{
+  display:flex;flex-wrap:wrap;gap:5px 10px;
+  margin-top:0.55rem;padding-top:0.55rem;border-top:1px solid var(--border);
+}
+.ap-day-micros span{font-size:0.65rem;color:var(--muted2);white-space:nowrap}
+.ap-day-micros b{color:var(--muted);font-weight:600}
 .ap-day-value-wrap{cursor:pointer;min-width:0;flex:1 1 auto}
 .ap-day-view{display:flex;align-items:baseline;flex-wrap:nowrap}
 .ap-day-top-right{display:flex;align-items:center;gap:7px;flex-shrink:0}
@@ -1889,18 +1896,26 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 .qty-product-kcal{font-size:0.86rem;color:#2fd6b4;font-weight:600;margin-top:5px}
 .qty-product-kcal span{color:var(--muted);font-weight:400;font-size:0.72rem}
 /* Slider section */
-/* Qty mode tabs */
-.qty-mode-bar{display:flex;gap:7px;padding:0.85rem 1rem 0.75rem;border-bottom:1px solid var(--border)}
-.qty-mode-btn{
-  flex:1;padding:8px 4px;
-  border:1.5px solid var(--border2);border-radius:11px;
-  background:var(--s2);color:var(--muted);
-  font-size:0.73rem;font-family:Syne,sans-serif;font-weight:500;
-  cursor:pointer;transition:all 0.15s;
-  display:flex;align-items:center;justify-content:center;gap:5px;
-  -webkit-tap-highlight-color:transparent;
+/* Qty unit selector (remplace l'ancienne barre d'onglets) */
+.qty-unit-select-row{text-align:center;padding:0.85rem 1rem 0.6rem;border-bottom:1px solid var(--border)}
+.qty-unit-select-btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:7px 16px;border:1.5px solid var(--border2);border-radius:999px;
+  background:var(--s2);color:var(--text);
+  font-size:0.8rem;font-family:Syne,sans-serif;font-weight:600;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
 }
-.qty-mode-btn.active{background:#2fd6b4;color:#08130f;border-color:#2fd6b4;font-weight:700;box-shadow:0 3px 12px rgba(47,214,180,0.3)}
+.qty-unit-select-btn svg{color:var(--muted);flex-shrink:0}
+.qty-unit-option{
+  display:flex;align-items:center;justify-content:space-between;width:100%;
+  padding:0.95rem 0.75rem;background:none;border:none;border-bottom:1px solid var(--border);
+  font-family:Syne,sans-serif;font-size:0.92rem;font-weight:600;color:var(--text);
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.qty-unit-option:last-child{border-bottom:none}
+.qty-unit-option.active{color:#2fd6b4}
+.qty-unit-option .qty-unit-check{opacity:0;color:#2fd6b4}
+.qty-unit-option.active .qty-unit-check{opacity:1}
 .qty-mode-panel{padding:0}
 /* Portion mode */
 .qty-portions-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:1rem}
@@ -1926,35 +1941,56 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
   padding:1.5rem 1rem 1rem;border-bottom:1px solid var(--border);
 }
 .qty-slider-val{
-  font-size:2.4rem;font-weight:700;color:var(--text);
-  text-align:center;margin-bottom:0.5rem;letter-spacing:-1px;
+  margin-bottom:0.5rem;
+  display:flex;align-items:center;justify-content:center;
 }
-.qty-slider-unit{font-size:1rem;color:var(--muted);margin-left:4px;font-weight:400}
-.qty-slider{
-  -webkit-appearance:none;appearance:none;
-  width:100%;height:6px;border-radius:3px;
-  background:var(--s3);outline:none;cursor:pointer;margin:0.75rem 0;
+/* Alignement du chiffre + du sélecteur d'unité inline, sans encadré */
+.qty-value-box{
+  display:inline-flex;align-items:center;gap:6px;
 }
-.qty-slider::-webkit-slider-thumb{
-  -webkit-appearance:none;appearance:none;
-  width:26px;height:26px;border-radius:50%;
-  background:#2fd6b4;cursor:pointer;
-  box-shadow:0 2px 8px rgba(47,214,180,0.5);
+/* Chiffre éditable au tap — remplace la case de saisie séparée.
+   Largeur fixe généreuse (4 chiffres) pour ne jamais tronquer le montant. */
+.qty-value-input{
+  font-family:Syne,sans-serif;font-size:3rem;font-weight:700;color:var(--text);
+  background:none;border:none;border-bottom:2px solid transparent;outline:none;
+  text-align:center;width:3.4em;padding:0 1px 2px;letter-spacing:-1px;
+  -webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;
 }
-.qty-slider-hints{
-  display:flex;justify-content:space-between;
-  font-size:0.65rem;color:var(--muted2);
+.qty-value-input::-webkit-outer-spin-button,.qty-value-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.qty-value-input:focus{border-bottom-color:#2fd6b4}
+.qty-value-input::placeholder{color:var(--muted2);font-weight:600}
+/* Bouton d'unité collé au chiffre — ouvre le sélecteur d'unité, sans encadré */
+.qty-unit-inline-btn{
+  display:flex;align-items:center;gap:4px;
+  background:none;border:none;padding:6px 2px;
+  font-family:Syne,sans-serif;font-size:1.05rem;font-weight:600;color:var(--muted);
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
 }
-/* Direct input */
-.qty-direct-input{
-  display:flex;align-items:center;gap:8px;margin-top:0.75rem;justify-content:center;
+.qty-unit-inline-btn svg{flex-shrink:0;margin-top:2px}
+/* Règle graduée à glisser (façon Samsung Health) */
+.qty-ruler{
+  position:relative;height:64px;margin:0.9rem 0 0.15rem;
+  overflow:hidden;touch-action:none;cursor:grab;-webkit-tap-highlight-color:transparent;
 }
-.qty-direct-input input{
-  width:90px;text-align:center;font-size:1.1rem;font-weight:600;
-  background:var(--s2);border:1.5px solid var(--border2);border-radius:10px;
-  color:var(--text);padding:8px;
+.qty-ruler.dragging{cursor:grabbing}
+.qty-ruler-track{position:absolute;top:6px;left:0;height:100%;will-change:transform}
+.qty-ruler-tick{position:absolute;top:0;width:1.5px;height:13px;background:var(--border2);border-radius:1px}
+.qty-ruler-tick.major{height:24px;background:var(--muted2)}
+.qty-ruler-tick-label{
+  position:absolute;top:28px;transform:translateX(-50%);
+  font-size:0.62rem;color:var(--muted2);font-variant-numeric:tabular-nums;white-space:nowrap;
 }
-.qty-direct-input span{font-size:0.85rem;color:var(--muted)}
+.qty-ruler-center{
+  position:absolute;left:50%;top:0;bottom:8px;width:2px;background:#2fd6b4;
+  transform:translateX(-50%);border-radius:2px;pointer-events:none;
+  box-shadow:0 0 8px rgba(47,214,180,0.5);
+}
+.qty-ruler-center::after{
+  content:'';position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);
+  width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;
+  border-top:6px solid #2fd6b4;
+}
+.qty-ruler-hint{text-align:center;font-size:0.66rem;color:var(--muted2);margin-top:2px}
 /* Macro bars section — carte groupée façon Samsung Health */
 .qty-macros-section{padding:1rem;margin:0.25rem 1rem 0;background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem}
 .light-mode .qty-macros-section{background:var(--s0);border-color:var(--border2);box-shadow:0 1px 4px rgba(0,0,0,0.06)}
@@ -2281,17 +2317,18 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 /* Tab panel for Mes Repas in Apport page */
 #ap-panel-mesrepas{padding:0}
 
-/* Meal template card — ligne unique : nom + macros + icônes */
+/* Meal template card — 2 lignes : titre + icônes, puis infos nutritionnelles */
 .mr-card{
   background:var(--s1);border:1px solid var(--border);border-radius:var(--r);
   margin-bottom:0.6rem;
   box-shadow:0 1px 12px rgba(0,0,0,0.18),inset 0 1px 0 rgba(255,255,255,0.04);
   transition:transform 0.15s ease,border-color 0.15s,background 0.15s;
-  display:flex;align-items:center;gap:8px;
+  display:flex;flex-direction:column;gap:5px;
   padding:0.65rem 0.7rem 0.65rem 0.85rem;
   cursor:pointer;-webkit-tap-highlight-color:transparent;
 }
 .mr-card:active{transform:scale(0.987);background:var(--s2)}
+.mr-card-row1{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .mr-card-macros-inline{
   flex-shrink:0;display:flex;align-items:baseline;gap:5px;
   font-size:0.68rem;color:var(--muted2);font-variant-numeric:tabular-nums;
@@ -3377,6 +3414,13 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
         <div class="ap-day-macro"><strong id="ap-kcal-rest-l">0g</strong><span>LIPIDES</span></div>
         <div class="ap-day-macro"><strong id="ap-kcal-rest-p">0g</strong><span>PROTÉINES</span></div>
       </div>
+      <div class="ap-day-micros" id="ap-day-micros">
+        <span>Sucres <b id="ap-dm-sucres">0g</b></span>
+        <span>Fibres <b id="ap-dm-fibres">0g</b></span>
+        <span>Sat. <b id="ap-dm-satfat">0g</b></span>
+        <span>Sodium <b id="ap-dm-sodium">0mg</b></span>
+        <span>Potassium <b id="ap-dm-potassium">0mg</b></span>
+      </div>
     </div>
 
     <!-- SCORE NUTRI + STREAK -->
@@ -4099,6 +4143,15 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <label>Nom du repas</label>
       <input type="text" id="mr-edit-name" placeholder="Ex : Bowl riz poulet, Sandwich jambon fromage…" autocomplete="off" maxlength="60">
     </div>
+    <div class="field" style="margin-bottom:1rem">
+      <label>Photo <span class="hint">(optionnel)</span></label>
+      <div id="mr-edit-photo-box" style="position:relative;width:76px;height:76px;border-radius:14px;overflow:hidden;background:var(--s2);border:1.5px dashed var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer" onclick="document.getElementById('mr-edit-photo-input').click()">
+        <span id="mr-edit-photo-placeholder" style="font-size:1.5rem;opacity:0.4">📷</span>
+        <img id="mr-edit-photo-preview" style="display:none;width:100%;height:100%;object-fit:cover" alt="">
+        <button type="button" id="mr-edit-photo-clear" onclick="event.stopPropagation();mrClearEditPhoto()" aria-label="Retirer la photo" style="display:none;position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,0.6);color:#fff;border:none;font-size:0.7rem;cursor:pointer;line-height:1">✕</button>
+      </div>
+      <input type="file" id="mr-edit-photo-input" accept="image/*" style="display:none" onchange="mrHandleEditPhoto(event)">
+    </div>
     <div class="div"></div>
     <!-- Macro preview live -->
     <div class="mr-macro-preview" id="mr-macro-preview">
@@ -4304,18 +4357,10 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <div class="qty-product-kcal" id="qty-product-kcal"></div>
     </div>
   </div>
-  <div class="qty-mode-bar">
-    <button class="qty-mode-btn active" id="qmb-grams" onclick="setQtyMode('grams')">
-      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 13 Q4 6 8 4 Q12 6 13 13"/><line x1="5.5" y1="9" x2="10.5" y2="9"/></svg>
-      Grammes
-    </button>
-    <button class="qty-mode-btn" id="qmb-portion" onclick="setQtyMode('portion')">
-      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8 Q3 4 8 4 Q13 4 13 8"/><path d="M2 8 L14 8"/><path d="M4 8 L4 12 Q4 13 5 13 L11 13 Q12 13 12 12 L12 8"/></svg>
-      Portion
-    </button>
-    <button class="qty-mode-btn" id="qmb-kcal" onclick="setQtyMode('kcal')">
-      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2L5 9h4l-2 5 6-8H9z" fill="currentColor" stroke="none"/></svg>
-      Kcal
+  <div class="qty-unit-select-row" id="qty-unit-select-row" style="display:none">
+    <button class="qty-unit-select-btn" id="qty-unit-select-btn" onclick="openUnitPicker()">
+      <span id="qty-unit-select-label">Portion</span>
+      <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
     </button>
   </div>
 
@@ -4323,14 +4368,20 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   <div class="qty-mode-panel" id="qmp-grams">
     <div class="qty-slider-section">
       <div class="qty-slider-val">
-        <span id="qty-slider-display">100</span><span class="qty-slider-unit">g</span>
+        <div class="qty-value-box">
+          <input type="text" inputmode="decimal" class="qty-value-input" id="qty-slider-display" value="100" onfocus="this.select()" oninput="onQtyGramsDisplayInput(this)" onblur="onQtyGramsDisplayBlur(this)">
+          <button class="qty-unit-inline-btn" onclick="openUnitPicker()">
+            <span>g</span>
+            <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+          </button>
+        </div>
       </div>
-      <input type="range" class="qty-slider" id="qty-slider" min="5" max="1000" step="5" value="100" oninput="onQtySlider(this)">
-      <div class="qty-slider-hints"><span>5g</span><span>500g</span><span>1 kg</span></div>
-      <div class="qty-direct-input">
-        <input type="number" id="qty-grams" value="100" min="1" max="9999" inputmode="decimal" oninput="onQtyInput(this)" placeholder="100">
-        <span>grammes</span>
+      <div class="qty-ruler" id="qty-ruler-grams">
+        <div class="qty-ruler-track" id="qty-ruler-track"></div>
+        <div class="qty-ruler-center"></div>
       </div>
+      <div class="qty-ruler-hint">← glisse pour ajuster →</div>
+      <input type="hidden" id="qty-grams" value="100">
     </div>
   </div>
 
@@ -4355,12 +4406,19 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   <div class="qty-mode-panel" id="qmp-kcal" style="display:none">
     <div class="qty-slider-section">
       <div class="qty-slider-val">
-        <span id="qty-kcal-display">—</span><span class="qty-slider-unit">kcal</span>
+        <div class="qty-value-box">
+          <input type="text" inputmode="decimal" class="qty-value-input" id="qty-kcal-input" value="" placeholder="ex: 300" onfocus="this.select()" oninput="onQtyKcalInput(this)">
+          <button class="qty-unit-inline-btn" onclick="openUnitPicker()">
+            <span>kcal</span>
+            <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+          </button>
+        </div>
       </div>
-      <div class="qty-direct-input" style="margin-top:0.6rem">
-        <input type="number" id="qty-kcal-input" value="" min="1" max="9999" inputmode="decimal" oninput="onQtyKcalInput(this)" placeholder="ex: 300">
-        <span>kcal</span>
+      <div class="qty-ruler" id="qty-ruler-kcal">
+        <div class="qty-ruler-track" id="qty-ruler-track-kcal"></div>
+        <div class="qty-ruler-center"></div>
       </div>
+      <div class="qty-ruler-hint">← glisse pour ajuster →</div>
       <div id="qty-kcal-equiv" style="text-align:center;font-size:0.78rem;color:var(--muted);margin-top:10px;min-height:20px"></div>
     </div>
   </div>
@@ -4430,7 +4488,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <div class="qty-panel" id="custom-food-panel">
   <div class="qty-header">
     <button class="qty-cancel-btn" onclick="closeCustomFoodPanel()">Annuler</button>
-    <div class="qty-header-title">Créer un aliment</div>
+    <div class="qty-header-title" id="cf-panel-title">Créer un aliment</div>
     <button class="qty-ok-btn" onclick="saveCustomFood()">Enregistrer</button>
   </div>
   <div style="padding:1rem 1rem 2rem">
@@ -4440,6 +4498,15 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     <div class="field">
       <label for="cf-name">Nom de l'aliment</label>
       <div class="inp-wrap"><input type="text" id="cf-name" placeholder="Ex : Gratin de courgettes maison" autocomplete="off"></div>
+    </div>
+    <div class="field">
+      <label>Photo <span class="hint">(optionnel)</span></label>
+      <div id="cf-photo-box" style="position:relative;width:76px;height:76px;border-radius:14px;overflow:hidden;background:var(--s2);border:1.5px dashed var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer" onclick="document.getElementById('cf-photo-input').click()">
+        <span id="cf-photo-placeholder" style="font-size:1.5rem;opacity:0.4">📷</span>
+        <img id="cf-photo-preview" style="display:none;width:100%;height:100%;object-fit:cover" alt="">
+        <button type="button" id="cf-photo-clear" onclick="event.stopPropagation();cfClearPhoto()" aria-label="Retirer la photo" style="display:none;position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,0.6);color:#fff;border:none;font-size:0.7rem;cursor:pointer;line-height:1">✕</button>
+      </div>
+      <input type="file" id="cf-photo-input" accept="image/*" style="display:none" onchange="cfHandlePhoto(event)">
     </div>
     <div class="field">
       <label for="cf-kcal">Calories <span class="hint">/ 100g</span></label>
@@ -5991,6 +6058,25 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   </div>
 </div>
 
+<!-- ═══ SÉLECTEUR D'UNITÉ — SAISIE ALIMENT ═══ -->
+<div id="qty-unit-picker-modal" style="display:none;position:fixed;inset:0;z-index:650;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeUnitPicker()">
+  <div style="background:var(--s1);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:540px;padding:0.85rem 1rem calc(1.1rem + env(safe-area-inset-bottom,0));animation:slideUp 0.28s cubic-bezier(0.34,1.2,0.64,1)">
+    <div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 0.9rem"></div>
+    <button class="qty-unit-option" data-mode="grams" onclick="pickUnit('grams')">
+      <span>Grammes</span>
+      <svg class="qty-unit-check" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 4.5"/></svg>
+    </button>
+    <button class="qty-unit-option" data-mode="portion" onclick="pickUnit('portion')">
+      <span>Portion</span>
+      <svg class="qty-unit-check" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 4.5"/></svg>
+    </button>
+    <button class="qty-unit-option" data-mode="kcal" onclick="pickUnit('kcal')">
+      <span>Kcal</span>
+      <svg class="qty-unit-check" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 4.5"/></svg>
+    </button>
+  </div>
+</div>
+
 <!-- ═══ BARCODE SCANNER OVERLAY ═══ -->
 <div id="barcode-scanner-overlay" style="display:none">
   <div class="scanner-status" id="scanner-status">Pointez vers un code-barres…</div>
@@ -6022,7 +6108,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-07-24.1';
+const APP_BUILD_VERSION = '2026-07-29.3';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -8019,7 +8105,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v7';
+    const CACHE_NAME = 'kcalos-v9';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -8336,10 +8422,14 @@ function updateMealItem(date, mealKey, idx, item) {
 /* ── Compute totals for a date ── */
 function getDayTotals(date) {
   const meals = getMealsForDate(date);
-  let kcal=0, prot=0, gluc=0, lip=0, hasMealData=false;
+  let kcal=0, prot=0, gluc=0, lip=0, sucres=0, fibres=0, sodium=0, potassium=0, satfat=0, hasMealData=false;
   Object.values(meals).forEach(items => {
     if(items.length) hasMealData = true;
-    items.forEach(it => { kcal+=it.kcal||0; prot+=it.prot||0; gluc+=it.gluc||0; lip+=it.lip||0; });
+    items.forEach(it => {
+      kcal+=it.kcal||0; prot+=it.prot||0; gluc+=it.gluc||0; lip+=it.lip||0;
+      sucres+=it.sucres||0; fibres+=it.fibres||0; sodium+=it.sodium||0;
+      potassium+=it.potassium||0; satfat+=it.satfat||0;
+    });
   });
   // N\'utiliser le legacy que si AUCUN repas saisi via le nouveau système pour éviter le double-comptage
   if(!hasMealData) {
@@ -8348,7 +8438,11 @@ function getDayTotals(date) {
       kcal+=legacy.kcal||0; prot+=legacy.prot||0; gluc+=legacy.gluc||0; lip+=legacy.lip||0;
     }
   }
-  return { kcal:Math.round(kcal), prot:Math.round(prot), gluc:Math.round(gluc), lip:Math.round(lip) };
+  return {
+    kcal:Math.round(kcal), prot:Math.round(prot), gluc:Math.round(gluc), lip:Math.round(lip),
+    sucres:Math.round(sucres), fibres:Math.round(fibres), sodium:Math.round(sodium),
+    potassium:Math.round(potassium), satfat:Math.round(satfat),
+  };
 }
 
 function getMealTotals(date, mealKey) {
@@ -8419,6 +8513,17 @@ function renderApDayBanner() {
   if (pEl)    pEl.textContent = totals.prot + 'g';
   if (gEl)    gEl.textContent = totals.gluc + 'g';
   if (lEl)    lEl.textContent = totals.lip  + 'g';
+
+  const sucresEl    = document.getElementById('ap-dm-sucres');
+  const fibresEl    = document.getElementById('ap-dm-fibres');
+  const satfatEl    = document.getElementById('ap-dm-satfat');
+  const sodiumEl    = document.getElementById('ap-dm-sodium');
+  const potassiumEl = document.getElementById('ap-dm-potassium');
+  if (sucresEl)    sucresEl.textContent    = totals.sucres    + 'g';
+  if (fibresEl)    fibresEl.textContent    = totals.fibres    + 'g';
+  if (satfatEl)    satfatEl.textContent    = totals.satfat    + 'g';
+  if (sodiumEl)    sodiumEl.textContent    = totals.sodium    + 'mg';
+  if (potassiumEl) potassiumEl.textContent = totals.potassium + 'mg';
 
   // Goal — priorité : objectif manuel > TDEE > dépense du jour
   const savedGoal = parseInt(localStorage.getItem('kcalos_kcal_goal') || '0') || null;
@@ -12547,18 +12652,73 @@ function _searchCustomFoods(query) {
         'fat_100g': x.l, 'fiber-energy_100g': x.f || 0,
         'sodium_100g': (x.s || 0) / 1000, 'potassium_100g': (x.ka || 0) / 1000,
       },
-      serving_size:'', serving_quantity:null, code:'', image:'',
+      serving_size:'', serving_quantity:null, code:'', image: x.img || '',
       _src:'custom', _frScore:15, // priorité légèrement > CIQUAL : c'est exactement ce que l'utilisateur a demandé
     }));
 }
 
+let _cfEditingName = null; // nom d'origine si on édite un aliment perso existant (pour gérer un renommage)
+let _cfImage = null; // dataURL de la photo en cours d'édition (ou null)
+
+function cfUpdatePhotoPreview(){
+  const ph  = document.getElementById('cf-photo-placeholder');
+  const img = document.getElementById('cf-photo-preview');
+  const clr = document.getElementById('cf-photo-clear');
+  if (_cfImage) {
+    if (img) { img.src = _cfImage; img.style.display = 'block'; }
+    if (ph) ph.style.display = 'none';
+    if (clr) clr.style.display = 'block';
+  } else {
+    if (img) { img.style.display = 'none'; img.src = ''; }
+    if (ph) ph.style.display = 'flex';
+    if (clr) clr.style.display = 'none';
+  }
+}
+async function cfHandlePhoto(evt){
+  const file = evt.target.files && evt.target.files[0];
+  if (!file) return;
+  try {
+    _cfImage = await aiphCompressImage(file, 400, 0.72);
+    cfUpdatePhotoPreview();
+  } catch(e) {
+    toast('❌ Photo illisible', 'var(--red)');
+  }
+  evt.target.value = '';
+}
+function cfClearPhoto(){
+  _cfImage = null;
+  cfUpdatePhotoPreview();
+}
+
 function openCustomFoodPanel(prefillName) {
+  const existing = prefillName ? getCustomFoods().find(x => x.n.toLowerCase() === prefillName.toLowerCase()) : null;
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
   ['cf-name','cf-kcal','cf-prot','cf-gluc','cf-lip','cf-sucres','cf-fibres','cf-sodium','cf-potassium'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
+  const titleEl = document.getElementById('cf-panel-title');
+  if (existing) {
+    setVal('cf-name', existing.n);
+    setVal('cf-kcal', existing.k);
+    setVal('cf-prot', existing.p);
+    setVal('cf-gluc', existing.g);
+    setVal('cf-lip', existing.l);
+    setVal('cf-sucres', existing.su || '');
+    setVal('cf-fibres', existing.f || '');
+    setVal('cf-sodium', existing.s || '');
+    setVal('cf-potassium', existing.ka || '');
+    _cfEditingName = existing.n;
+    _cfImage = existing.img || null;
+    if (titleEl) titleEl.textContent = "Modifier l'aliment";
+  } else {
+    setVal('cf-name', prefillName || '');
+    _cfEditingName = null;
+    _cfImage = null;
+    if (titleEl) titleEl.textContent = 'Créer un aliment';
+  }
+  cfUpdatePhotoPreview();
   const nameEl = document.getElementById('cf-name');
-  if (nameEl) nameEl.value = prefillName || '';
   const panel = document.getElementById('custom-food-panel');
   if (panel) { panel.classList.add('show'); panel.scrollTop = 0; }
   setTimeout(() => nameEl?.focus(), 250);
@@ -12577,15 +12737,28 @@ function saveCustomFood() {
   const entry = {
     n: name, k: Math.round(kcal), p: num('cf-prot'), g: num('cf-gluc'), l: num('cf-lip'),
     su: num('cf-sucres'), f: num('cf-fibres'), s: num('cf-sodium'), ka: num('cf-potassium'), ts: Date.now(),
+    img: _cfImage || null,
   };
 
+  const wasEditing = !!_cfEditingName;
   let foods = getCustomFoods();
+  // Si on édite et que le nom a changé, on retire l'ancienne entrée pour éviter un doublon
+  if (wasEditing && _cfEditingName.toLowerCase() !== name.toLowerCase()) {
+    foods = foods.filter(x => x.n.toLowerCase() !== _cfEditingName.toLowerCase());
+  }
   const existing = foods.findIndex(x => x.n.toLowerCase() === name.toLowerCase());
   if (existing >= 0) foods[existing] = entry; else foods.unshift(entry);
   setCustomFoods(foods);
 
-  toast('✅ Aliment créé : ' + name, 'var(--teal)');
+  toast(wasEditing ? '✅ Aliment modifié : ' + name : '✅ Aliment créé : ' + name, 'var(--teal)');
   closeCustomFoodPanel();
+  _cfEditingName = null;
+
+  if (wasEditing) {
+    // Édition depuis la liste "Mes aliments" — on y reste, pas de saut vers la quantité
+    caRenderList();
+    return;
+  }
 
   // Relancer la recherche en cours si une correspond, sinon ouvrir direct la quantité
   const searchInput = document.getElementById('food-search-input');
@@ -12597,7 +12770,7 @@ function saveCustomFood() {
       const prodObj = {
         name: normalized.product_name, brand: '', kcal: entry.k, hasNutrition: true,
         prot: entry.p, gluc: entry.g, sucres: entry.su, lip: entry.l, satfat: 0,
-        fibres: entry.f, sodium: entry.s, potassium: entry.ka, portions: [], image: '', _src: 'custom',
+        fibres: entry.f, sodium: entry.s, potassium: entry.ka, portions: [], image: entry.img || '', _src: 'custom',
       };
       selectProduct(prodObj);
     }
@@ -12609,6 +12782,76 @@ function deleteCustomFood(name) {
   toast('Aliment perso supprimé', 'var(--muted)');
   const searchInput = document.getElementById('food-search-input');
   if (searchInput && searchInput.value.trim()) searchFood(searchInput.value);
+  if (document.getElementById('stab-mesrepas')?.classList.contains('active') && typeof MR !== 'undefined' && MR.subTab === 'aliments') {
+    caRenderList();
+  }
+}
+
+// ── "Mes aliments" — liste des aliments perso dans l'onglet "Mes repas" ──
+function caRenderList(){
+  const el = document.getElementById('mr-list-container');
+  if(!el) return;
+  let foods = getCustomFoods();
+  if(MR.filterText){
+    const q = MR.filterText.toLowerCase();
+    foods = foods.filter(f => f.n.toLowerCase().includes(q));
+  }
+  if(!foods.length){
+    const all = getCustomFoods();
+    if(!all.length){
+      el.innerHTML = `<div class="mr-empty"><div style="font-size:2.5rem;margin-bottom:8px">✏️</div>Aucun aliment personnalisé.<br><span style="font-size:0.75rem;color:var(--muted2)">Crée ton premier aliment perso →</span></div>`;
+    } else {
+      el.innerHTML = `<div class="mr-empty"><span style="font-size:1.5rem">🔍</span><br>Aucun aliment pour ce filtre.</div>`;
+    }
+    return;
+  }
+  el.innerHTML = foods.map(caCardHtml).join('');
+}
+
+function caCardHtml(f){
+  const nmJs = f.n.replace(/'/g,"\\'");
+  return `<div class="mr-card" onclick="caUseFood('${nmJs}')" role="button" tabindex="0" aria-label="Ajouter ${f.n} au repas" style="display:flex;align-items:center;gap:0.7rem">
+    ${f.img
+      ? `<img src="${f.img}" alt="" style="width:42px;height:42px;border-radius:10px;object-fit:cover;flex-shrink:0">`
+      : `<div style="width:42px;height:42px;border-radius:10px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0" aria-hidden="true">✏️</div>`}
+    <div style="flex:1;min-width:0">
+      <div class="mr-card-row1">
+        <div class="mr-card-name">${f.n}</div>
+        <div class="mr-card-icons">
+          <button class="mr-icon-btn edit" onclick="event.stopPropagation();openCustomFoodPanel('${nmJs}')" title="Modifier l'aliment" aria-label="Modifier l'aliment">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2l3 3-8.5 8.5H2v-3z"/><line x1="9" y1="4" x2="12" y2="7"/></svg>
+          </button>
+          <button class="mr-icon-btn del" onclick="event.stopPropagation();caDeleteFromList('${nmJs}')" title="Supprimer" aria-label="Supprimer cet aliment personnalisé">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="4.5" x2="13" y2="4.5"/><path d="M5.5 4.5V3.5h5v1"/><path d="M5.5 4.5l.5 9h4l.5-9"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="mr-card-macros-inline">
+        <b>${f.k}</b><span class="mmi-unit">kcal/100g</span>
+        <span class="mmi-sep">·</span>
+        <span class="mmi-p">${f.p||0}P</span>
+        <span class="mmi-g">${f.g||0}G</span>
+        <span class="mmi-l">${f.l||0}L</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+// Ajoute l'aliment perso au repas en cours (ouvre le sélecteur de quantité),
+// à l'identique d'un clic sur un résultat de recherche.
+function caUseFood(name){
+  const f = getCustomFoods().find(x => x.n === name);
+  if(!f) return;
+  selectProduct({
+    name: f.n, brand: '', kcal: f.k, hasNutrition: true,
+    prot: f.p||0, gluc: f.g||0, sucres: f.su||0, lip: f.l||0, satfat: 0,
+    fibres: f.f||0, sodium: f.s||0, potassium: f.ka||0, portions: [], image: f.img || '', _src: 'custom',
+  });
+}
+
+function caDeleteFromList(name){
+  if(!confirm(`Supprimer "${name}" ?`)) return;
+  deleteCustomFood(name);
 }
 
 /* ════════════════════════════════════════
@@ -13336,7 +13579,6 @@ function selectProduct(productData) {
   const brandEl = document.getElementById('qty-brand');
   const kcalEl  = document.getElementById('qty-product-kcal');
   const thumbEl = document.getElementById('qty-thumb');
-  const slider  = document.getElementById('qty-slider');
   const gramsEl = document.getElementById('qty-grams');
   const dispEl  = document.getElementById('qty-slider-display');
 
@@ -13366,36 +13608,60 @@ function selectProduct(productData) {
   AP._qtyMode = 'grams';
   AP._portionIdx = 0;
   AP._portionCount = 1;
-  if (slider)  slider.value  = Math.min(defaultGrams, parseFloat(slider.max) || 1000);
   if (gramsEl) gramsEl.value = defaultGrams;
-  if (dispEl)  dispEl.textContent = String(defaultGrams);
+  if (dispEl)  dispEl.value = String(defaultGrams);
 
-  // Activer le bon mode par défaut
-  const hasPor = productData.portions && productData.portions.length > 0;
-  setQtyMode(hasPor ? 'portion' : 'grams');
+  // Mode par défaut : Grammes
+  setQtyMode('grams');
 
   updateQtyPanel();
 
   const qtyPanel = document.getElementById('qty-panel');
-  if (qtyPanel) { qtyPanel.classList.add('show'); qtyPanel.scrollTop = 0; }
+  if (qtyPanel) {
+    qtyPanel.classList.add('show'); qtyPanel.scrollTop = 0;
+    requestAnimationFrame(() => syncRulerToValue('grams'));
+  }
 }
 
-/* ── Mode tabs ── */
+/* ── Sélecteur d'unité ── */
 function setQtyMode(mode) {
   AP._qtyMode = mode;
   ['grams','portion','kcal'].forEach(m => {
-    document.getElementById('qmb-'+m)?.classList.toggle('active', m === mode);
     const panel = document.getElementById('qmp-'+m);
     if (panel) panel.style.display = m === mode ? '' : 'none';
   });
+  const labels = { grams: 'Grammes', portion: 'Portion', kcal: 'Kcal' };
+  const labelEl = document.getElementById('qty-unit-select-label');
+  if (labelEl) labelEl.textContent = labels[mode] || 'Grammes';
+  const topRow = document.getElementById('qty-unit-select-row');
+  if (topRow) topRow.style.display = mode === 'portion' ? '' : 'none';
   if (mode === 'portion') renderPortions();
+  if (mode === 'grams') { renderRuler('grams'); }
   if (mode === 'kcal') {
     const kcalInp = document.getElementById('qty-kcal-input');
     if (kcalInp) { kcalInp.value = ''; kcalInp.focus(); }
-    document.getElementById('qty-kcal-equiv').textContent = '';
-    document.getElementById('qty-kcal-display').textContent = '—';
+    const equivEl = document.getElementById('qty-kcal-equiv');
+    if (equivEl) equivEl.textContent = '';
+    renderRuler('kcal');
   }
   updateQtyPanel();
+}
+
+function openUnitPicker() {
+  const modal = document.getElementById('qty-unit-picker-modal');
+  if (!modal) return;
+  document.querySelectorAll('.qty-unit-option').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === AP._qtyMode);
+  });
+  modal.style.display = 'flex';
+}
+function closeUnitPicker() {
+  const modal = document.getElementById('qty-unit-picker-modal');
+  if (modal) modal.style.display = 'none';
+}
+function pickUnit(mode) {
+  closeUnitPicker();
+  setQtyMode(mode);
 }
 
 /* ── Portion mode ── */
@@ -13465,15 +13731,13 @@ function stepPortions(delta) {
 function onQtyKcalInput(input) {
   const f = AP.selectedFood;
   const kcalTarget = parseFloat(input.value);
-  const dispEl  = document.getElementById('qty-kcal-display');
   const equivEl = document.getElementById('qty-kcal-equiv');
+  syncRulerToValue('kcal');
   if (!f || !f.kcal || isNaN(kcalTarget) || kcalTarget <= 0) {
-    if (dispEl)  dispEl.textContent = '—';
     if (equivEl) equivEl.textContent = '';
     return;
   }
   const grams = Math.round(kcalTarget / f.kcal * 100);
-  if (dispEl)  dispEl.textContent = Math.round(kcalTarget);
   if (equivEl) equivEl.textContent = `→ ${grams} grammes`;
   const gramsEl = document.getElementById('qty-grams');
   if (gramsEl) gramsEl.value = grams;
@@ -13524,7 +13788,6 @@ function editMealItem(idx) {
   const brandEl = document.getElementById('qty-brand');
   const kcalEl  = document.getElementById('qty-product-kcal');
   const thumbEl = document.getElementById('qty-thumb');
-  const slider  = document.getElementById('qty-slider');
   const gramsEl = document.getElementById('qty-grams');
   const dispEl  = document.getElementById('qty-slider-display');
 
@@ -13546,9 +13809,8 @@ function editMealItem(idx) {
   AP._qtyMode = 'grams';
   AP._portionIdx = 0;
   AP._portionCount = 1;
-  if (slider)  slider.value  = Math.min(grams, parseFloat(slider.max) || 1000);
   if (gramsEl) gramsEl.value = grams;
-  if (dispEl)  dispEl.textContent = String(grams);
+  if (dispEl)  dispEl.value = String(grams);
 
   setQtyMode('grams');
   updateQtyPanel();
@@ -13560,7 +13822,10 @@ function editMealItem(idx) {
   if (confirmBtn) confirmBtn.textContent = 'Enregistrer les modifications';
 
   const qtyPanel = document.getElementById('qty-panel');
-  if (qtyPanel) { qtyPanel.classList.add('show'); qtyPanel.scrollTop = 0; }
+  if (qtyPanel) {
+    qtyPanel.classList.add('show'); qtyPanel.scrollTop = 0;
+    requestAnimationFrame(() => syncRulerToValue());
+  }
 }
 
 /* ── Ajuster la quantité d'un ingrédient dans l'écran "Adapter ce repas" (copie de travail) ── */
@@ -13588,7 +13853,6 @@ function mrudEditIngredient(idx) {
   const brandEl = document.getElementById('qty-brand');
   const kcalEl  = document.getElementById('qty-product-kcal');
   const thumbEl = document.getElementById('qty-thumb');
-  const slider  = document.getElementById('qty-slider');
   const gramsEl = document.getElementById('qty-grams');
   const dispEl  = document.getElementById('qty-slider-display');
 
@@ -13610,9 +13874,8 @@ function mrudEditIngredient(idx) {
   AP._qtyMode = 'grams';
   AP._portionIdx = 0;
   AP._portionCount = 1;
-  if (slider)  slider.value  = Math.min(grams, parseFloat(slider.max) || 1000);
   if (gramsEl) gramsEl.value = grams;
-  if (dispEl)  dispEl.textContent = String(grams);
+  if (dispEl)  dispEl.value = String(grams);
 
   setQtyMode('grams');
   updateQtyPanel();
@@ -13624,7 +13887,10 @@ function mrudEditIngredient(idx) {
   if (confirmBtn) confirmBtn.textContent = 'Valider pour aujourd\'hui';
 
   const qtyPanel = document.getElementById('qty-panel');
-  if (qtyPanel) { qtyPanel.classList.add('show'); qtyPanel.scrollTop = 0; }
+  if (qtyPanel) {
+    qtyPanel.classList.add('show'); qtyPanel.scrollTop = 0;
+    requestAnimationFrame(() => syncRulerToValue());
+  }
 }
 
 /* ── Ajuster la quantité d'un ingrédient dans l'écran "Modifier le repas" (template sauvegardé) ── */
@@ -13652,7 +13918,6 @@ function mreEditIngredient(idx) {
   const brandEl = document.getElementById('qty-brand');
   const kcalEl  = document.getElementById('qty-product-kcal');
   const thumbEl = document.getElementById('qty-thumb');
-  const slider  = document.getElementById('qty-slider');
   const gramsEl = document.getElementById('qty-grams');
   const dispEl  = document.getElementById('qty-slider-display');
 
@@ -13674,9 +13939,8 @@ function mreEditIngredient(idx) {
   AP._qtyMode = 'grams';
   AP._portionIdx = 0;
   AP._portionCount = 1;
-  if (slider)  slider.value  = Math.min(grams, parseFloat(slider.max) || 1000);
   if (gramsEl) gramsEl.value = grams;
-  if (dispEl)  dispEl.textContent = String(grams);
+  if (dispEl)  dispEl.value = String(grams);
 
   setQtyMode('grams');
   updateQtyPanel();
@@ -13688,25 +13952,149 @@ function mreEditIngredient(idx) {
   if (confirmBtn) confirmBtn.textContent = 'Valider la quantité';
 
   const qtyPanel2 = document.getElementById('qty-panel');
-  if (qtyPanel2) { qtyPanel2.classList.add('show'); qtyPanel2.scrollTop = 0; }
+  if (qtyPanel2) {
+    qtyPanel2.classList.add('show'); qtyPanel2.scrollTop = 0;
+    requestAnimationFrame(() => syncRulerToValue());
+  }
 }
 
-function onQtySlider(slider) {
-  const g = parseInt(slider.value);
+/* ── Chiffre grammes éditable au tap ── */
+function onQtyGramsDisplayInput(input) {
+  const digits = input.value.replace(/[^\d]/g, '');
+  const g = Math.min(9999, Math.max(0, parseInt(digits) || 0));
   const gramsEl = document.getElementById('qty-grams');
-  const dispEl  = document.getElementById('qty-slider-display');
+  if (gramsEl) gramsEl.value = g || 1;
+  syncRulerToValue();
+  updateQtyPanel();
+}
+function onQtyGramsDisplayBlur(input) {
+  let g = Math.min(9999, Math.max(1, parseInt(input.value.replace(/[^\d]/g, '')) || 100));
+  input.value = g;
+  const gramsEl = document.getElementById('qty-grams');
   if (gramsEl) gramsEl.value = g;
-  if (dispEl)  dispEl.textContent = g;
+  syncRulerToValue();
   updateQtyPanel();
 }
 
-function onQtyInput(input) {
-  const g = Math.min(9999, Math.max(1, parseInt(input.value)||100));
-  const slider = document.getElementById('qty-slider');
-  const dispEl = document.getElementById('qty-slider-display');
-  if (slider) slider.value = Math.min(1000, g);
-  if (dispEl) dispEl.textContent = g;
-  updateQtyPanel();
+/* ── Règle graduée à glisser (Grammes & Kcal) ── */
+const RULER_CFG = {
+  grams: {
+    wrap: 'qty-ruler-grams', track: 'qty-ruler-track',
+    pxPerUnit: 6, tickStep: 2, majorEvery: 10, labelEvery: 20, halfWindow: 300,
+    getVal: () => parseFloat(document.getElementById('qty-grams')?.value) || 100,
+    setVal: (v) => {
+      const g = document.getElementById('qty-grams');
+      const d = document.getElementById('qty-slider-display');
+      if (g) g.value = v;
+      if (d) d.value = v;
+    },
+    onChange: () => updateQtyPanel(),
+  },
+  kcal: {
+    wrap: 'qty-ruler-kcal', track: 'qty-ruler-track-kcal',
+    pxPerUnit: 3, tickStep: 5, majorEvery: 25, labelEvery: 50, halfWindow: 600,
+    getVal: () => parseFloat(document.getElementById('qty-kcal-input')?.value) || 0,
+    setVal: (v) => {
+      const k = document.getElementById('qty-kcal-input');
+      if (k) k.value = v;
+    },
+    onChange: () => onQtyKcalInput(document.getElementById('qty-kcal-input')),
+  },
+};
+AP._rulerState = AP._rulerState || {};
+
+function buildRulerWindow(kind, centerVal) {
+  const cfg = RULER_CFG[kind];
+  const min = Math.max(0, Math.round(centerVal) - cfg.halfWindow);
+  const max = Math.round(centerVal) + cfg.halfWindow;
+  AP._rulerState[kind] = { min, max };
+  const track = document.getElementById(cfg.track);
+  if (!track) return;
+  let html = '';
+  for (let v = min; v <= max; v += cfg.tickStep) {
+    const isMajor = v % cfg.majorEvery === 0;
+    const left = (v - min) * cfg.pxPerUnit;
+    html += `<div class="qty-ruler-tick${isMajor ? ' major' : ''}" style="left:${left}px"></div>`;
+    if (v % cfg.labelEvery === 0) {
+      html += `<div class="qty-ruler-tick-label" style="left:${left}px">${v}</div>`;
+    }
+  }
+  track.innerHTML = html;
+  track.style.width = ((max - min) * cfg.pxPerUnit) + 'px';
+}
+
+function positionRulerTrack(kind, value, animate) {
+  const cfg = RULER_CFG[kind];
+  const wrap  = document.getElementById(cfg.wrap);
+  const track = document.getElementById(cfg.track);
+  const state = AP._rulerState[kind];
+  if (!wrap || !track || !state) return;
+  const half = wrap.clientWidth / 2;
+  const x = half - (value - state.min) * cfg.pxPerUnit;
+  track.style.transition = animate ? 'transform 0.15s ease' : 'none';
+  track.style.transform = `translateX(${x}px)`;
+}
+
+function renderRuler(kind) {
+  const cfg = RULER_CFG[kind];
+  const wrap = document.getElementById(cfg.wrap);
+  if (!wrap) return;
+  const v = cfg.getVal() || (kind === 'grams' ? 100 : 0);
+  buildRulerWindow(kind, v);
+  positionRulerTrack(kind, v, false);
+  initRulerDrag(kind);
+}
+
+function syncRulerToValue(kind) {
+  kind = kind || 'grams';
+  const cfg = RULER_CFG[kind];
+  const v = cfg.getVal() || (kind === 'grams' ? 100 : 0);
+  const state = AP._rulerState[kind];
+  if (!state || v < state.min + 40 || v > state.max - 40) {
+    buildRulerWindow(kind, v);
+  }
+  positionRulerTrack(kind, v, true);
+}
+
+const _rulerDrag = {};
+function initRulerDrag(kind) {
+  const cfg = RULER_CFG[kind];
+  const wrap = document.getElementById(cfg.wrap);
+  if (!wrap || wrap._dragInit) return;
+  wrap._dragInit = true;
+
+  wrap.addEventListener('pointerdown', (e) => {
+    const v = cfg.getVal() || (kind === 'grams' ? 100 : 0);
+    _rulerDrag[kind] = { startX: e.clientX, startVal: v };
+    wrap.setPointerCapture(e.pointerId);
+    wrap.classList.add('dragging');
+  });
+
+  wrap.addEventListener('pointermove', (e) => {
+    const drag = _rulerDrag[kind];
+    if (!drag) return;
+    const dx = e.clientX - drag.startX;
+    // glisser à gauche (dx négatif) augmente la valeur, glisser à droite la diminue
+    let val = drag.startVal - dx / cfg.pxPerUnit;
+    val = Math.min(9999, Math.max(kind === 'grams' ? 1 : 0, val));
+    const rounded = Math.round(val);
+    cfg.setVal(rounded);
+    const state = AP._rulerState[kind];
+    if (!state || val < state.min + 20 || val > state.max - 20) buildRulerWindow(kind, rounded);
+    positionRulerTrack(kind, val, false);
+    cfg.onChange();
+  });
+
+  const endDrag = () => {
+    if (!_rulerDrag[kind]) return;
+    _rulerDrag[kind] = null;
+    wrap.classList.remove('dragging');
+    const v = cfg.getVal() || (kind === 'grams' ? 100 : 0);
+    buildRulerWindow(kind, v);
+    positionRulerTrack(kind, v, false);
+  };
+  wrap.addEventListener('pointerup', endDrag);
+  wrap.addEventListener('pointercancel', endDrag);
 }
 
 function updateQtyPanel() {
@@ -13728,7 +14116,7 @@ function updateQtyPanel() {
 
   // Sync grammes display
   const dispEl = document.getElementById('qty-slider-display');
-  if (dispEl) dispEl.textContent = Math.round(g);
+  if (dispEl && document.activeElement !== dispEl) dispEl.value = Math.round(g);
 
   // Update product kcal
   const prodKcal = document.getElementById('qty-product-kcal');
@@ -13839,6 +14227,7 @@ function confirmAddFood() {
       ing.fibres    = f.fibres    > 0 ? Math.round(f.fibres    * ratio * 10) / 10 : 0;
       ing.sodium    = f.sodium    > 0 ? Math.round(f.sodium    * ratio * 10) / 10 : 0;
       ing.potassium = f.potassium > 0 ? Math.round(f.potassium * ratio * 10) / 10 : 0;
+      ing.satfat    = f.satfat    > 0 ? Math.round(f.satfat    * ratio * 10) / 10 : 0;
     }
     closeQtyPanel();
     mrRenderIngList();
@@ -13861,6 +14250,7 @@ function confirmAddFood() {
       ing.fibres    = f.fibres    > 0 ? Math.round(f.fibres    * ratio * 10) / 10 : 0;
       ing.sodium    = f.sodium    > 0 ? Math.round(f.sodium    * ratio * 10) / 10 : 0;
       ing.potassium = f.potassium > 0 ? Math.round(f.potassium * ratio * 10) / 10 : 0;
+      ing.satfat    = f.satfat    > 0 ? Math.round(f.satfat    * ratio * 10) / 10 : 0;
     }
     closeQtyPanel();
     mrRenderUseDetail();
@@ -13882,8 +14272,10 @@ function confirmAddFood() {
       fibres:    f.fibres    > 0 ? Math.round(f.fibres    * ratio * 10) / 10 : 0,
       sodium:    f.sodium    > 0 ? Math.round(f.sodium    * ratio * 10) / 10 : 0,
       potassium: f.potassium > 0 ? Math.round(f.potassium * ratio * 10) / 10 : 0,
+      satfat:    f.satfat    > 0 ? Math.round(f.satfat    * ratio * 10) / 10 : 0,
       kcal100: f.kcal || 0, prot100: f.prot || 0, gluc100: f.gluc || 0, lip100: f.lip || 0,
       sucres100: f.sucres || 0, fibres100: f.fibres || 0, sodium100: f.sodium || 0, potassium100: f.potassium || 0,
+      satfat100: f.satfat || 0,
       image: f.image || '', _src: f._src || '',
     });
     AP.addingIngredientTo = null;
@@ -13909,8 +14301,10 @@ function confirmAddFood() {
       fibres:    f.fibres    > 0 ? Math.round(f.fibres    * ratio * 10) / 10 : 0,
       sodium:    f.sodium    > 0 ? Math.round(f.sodium    * ratio * 10) / 10 : 0,
       potassium: f.potassium > 0 ? Math.round(f.potassium * ratio * 10) / 10 : 0,
+      satfat:    f.satfat    > 0 ? Math.round(f.satfat    * ratio * 10) / 10 : 0,
       kcal100: f.kcal || 0, prot100: f.prot || 0, gluc100: f.gluc || 0, lip100: f.lip || 0,
       sucres100: f.sucres || 0, fibres100: f.fibres || 0, sodium100: f.sodium || 0, potassium100: f.potassium || 0,
+      satfat100: f.satfat || 0,
       image: f.image || '', _src: f._src || '',
     });
     AP.addingIngredientTo = null;
@@ -13933,6 +14327,7 @@ function confirmAddFood() {
     fibres:    (f.fibres    > 0) ? Math.round(f.fibres    * ratio * 10) / 10 : 0,  // g — idem
     sodium:    (f.sodium    > 0) ? Math.round(f.sodium    * ratio * 10) / 10 : 0,  // mg
     potassium: (f.potassium > 0) ? Math.round(f.potassium * ratio * 10) / 10 : 0,  // mg
+    satfat:    (f.satfat    > 0) ? Math.round(f.satfat    * ratio * 10) / 10 : 0,  // g
     image: f.image || '',
     _src:  f._src  || '',
     ts:    Date.now(),
@@ -18768,6 +19163,7 @@ const MR = {
   editId: null,          // id of template being edited (null = new)
   editEmoji: '🍽️',
   editCat: 'autre',
+  editImage: null,       // dataURL de la photo du repas en cours d'édition (ou null)
   editIngredients: [],   // [{name, brand, kcal, prot, gluc, lip, grams, kcal100, prot100, gluc100, lip100}]
   filterText: '',
   filterCat: 'all',
@@ -18778,6 +19174,7 @@ const MR = {
   useDetailId: null,          // id du template en cours d'adaptation ponctuelle
   useDetailIngredients: [],   // copie de travail des ingrédients (modifiable sans jamais toucher le template)
   ingSearchTarget: 'edit',    // 'edit' (template MR.editIngredients) | 'usedetail' (copie de travail MR.useDetailIngredients)
+  subTab: 'repas',            // 'repas' | 'aliments' — switch dans l\'onglet "Mes repas"
 };
 
 // ── Category labels ──
@@ -18823,32 +19220,39 @@ function mrCardHtml(t){
   const prot = Math.round(t.ingredients.reduce((s,i) => s + (i.prot||0), 0) * 10) / 10;
   const gluc = Math.round(t.ingredients.reduce((s,i) => s + (i.gluc||0), 0) * 10) / 10;
   const lip  = Math.round(t.ingredients.reduce((s,i) => s + (i.lip||0),  0) * 10) / 10;
-  return `<div class="mr-card" onclick="mrOpenUseDetail('${t.id}')" role="button" tabindex="0" aria-label="Adapter ${t.name} pour ce repas">
-    <div class="mr-card-name">${t.name}</div>
-    <div class="mr-card-macros-inline">
-      <b>${kcal}</b><span class="mmi-unit">kcal</span>
-      <span class="mmi-sep">·</span>
-      <span class="mmi-p">${prot}P</span>
-      <span class="mmi-g">${gluc}G</span>
-      <span class="mmi-l">${lip}L</span>
-    </div>
-    <div class="mr-card-icons">
-      <button class="mr-icon-btn edit" onclick="event.stopPropagation();mrOpenEdit('${t.id}')" title="Modifier le repas sauvegardé" aria-label="Modifier le repas sauvegardé">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2l3 3-8.5 8.5H2v-3z"/><line x1="9" y1="4" x2="12" y2="7"/></svg>
-      </button>
-      <button class="mr-icon-btn dupe" onclick="event.stopPropagation();mrDuplicate('${t.id}')" title="Dupliquer" aria-label="Dupliquer ce repas">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="9" rx="1.5"/><path d="M2.5 10.5V3.5a1.5 1.5 0 011.5-1.5h7"/></svg>
-      </button>
-      <button class="mr-icon-btn del" onclick="event.stopPropagation();mrDelete('${t.id}')" title="Supprimer" aria-label="Supprimer ce repas">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="4.5" x2="13" y2="4.5"/><path d="M5.5 4.5V3.5h5v1"/><path d="M5.5 4.5l.5 9h4l.5-9"/></svg>
-      </button>
+  return `<div class="mr-card" onclick="mrOpenUseDetail('${t.id}')" role="button" tabindex="0" aria-label="Adapter ${t.name} pour ce repas" style="display:flex;align-items:center;gap:0.7rem">
+    ${t.image
+      ? `<img src="${t.image}" alt="" style="width:42px;height:42px;border-radius:10px;object-fit:cover;flex-shrink:0">`
+      : `<div style="width:42px;height:42px;border-radius:10px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0" aria-hidden="true">${t.emoji||'🍽️'}</div>`}
+    <div style="flex:1;min-width:0">
+      <div class="mr-card-row1">
+        <div class="mr-card-name">${t.name}</div>
+        <div class="mr-card-icons">
+          <button class="mr-icon-btn edit" onclick="event.stopPropagation();mrOpenEdit('${t.id}')" title="Modifier le repas sauvegardé" aria-label="Modifier le repas sauvegardé">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2l3 3-8.5 8.5H2v-3z"/><line x1="9" y1="4" x2="12" y2="7"/></svg>
+          </button>
+          <button class="mr-icon-btn dupe" onclick="event.stopPropagation();mrDuplicate('${t.id}')" title="Dupliquer" aria-label="Dupliquer ce repas">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="9" rx="1.5"/><path d="M2.5 10.5V3.5a1.5 1.5 0 011.5-1.5h7"/></svg>
+          </button>
+          <button class="mr-icon-btn del" onclick="event.stopPropagation();mrDelete('${t.id}')" title="Supprimer" aria-label="Supprimer ce repas">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="4.5" x2="13" y2="4.5"/><path d="M5.5 4.5V3.5h5v1"/><path d="M5.5 4.5l.5 9h4l.5-9"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="mr-card-macros-inline">
+        <b>${kcal}</b><span class="mmi-unit">kcal</span>
+        <span class="mmi-sep">·</span>
+        <span class="mmi-p">${prot}P</span>
+        <span class="mmi-g">${gluc}G</span>
+        <span class="mmi-l">${lip}L</span>
+      </div>
     </div>
   </div>`;
 }
 
 function mrFilterList(val){
   MR.filterText = val;
-  mrRenderList();
+  if(MR.subTab === 'repas') mrRenderList(); else caRenderList();
 }
 function mrSetCatFilter(cat, el){
   MR.filterCat = cat;
@@ -18862,12 +19266,14 @@ function mrOpenCreate(){
   MR.editId = null;
   MR.editEmoji = '🍽️';
   MR.editCat = 'autre';
+  MR.editImage = null;
   MR.editIngredients = [];
   MR.ingSearchTarget = 'edit';
   document.getElementById('mr-edit-title').textContent = 'Nouveau repas';
   document.getElementById('mr-edit-name').value = '';
   mrRenderIngList();
   mrUpdatePreview();
+  mrUpdateEditPhotoPreview();
   document.getElementById('mr-edit-panel').classList.add('open');
   document.body.style.overflow = 'hidden';
   setTimeout(() => document.getElementById('mr-edit-name')?.focus(), 100);
@@ -18879,14 +19285,47 @@ function mrOpenEdit(id){
   MR.editId = id;
   MR.editEmoji = t.emoji || '🍽️';
   MR.editCat = t.cat || 'autre';
+  MR.editImage = t.image || null;
   MR.editIngredients = t.ingredients.map(i => ({...i}));
   MR.ingSearchTarget = 'edit';
   document.getElementById('mr-edit-title').textContent = 'Modifier le repas';
   document.getElementById('mr-edit-name').value = t.name;
   mrRenderIngList();
   mrUpdatePreview();
+  mrUpdateEditPhotoPreview();
   document.getElementById('mr-edit-panel').classList.add('open');
   document.body.style.overflow = 'hidden';
+}
+
+// ── Photo du repas ──
+function mrUpdateEditPhotoPreview(){
+  const ph  = document.getElementById('mr-edit-photo-placeholder');
+  const img = document.getElementById('mr-edit-photo-preview');
+  const clr = document.getElementById('mr-edit-photo-clear');
+  if (MR.editImage) {
+    if (img) { img.src = MR.editImage; img.style.display = 'block'; }
+    if (ph) ph.style.display = 'none';
+    if (clr) clr.style.display = 'block';
+  } else {
+    if (img) { img.style.display = 'none'; img.src = ''; }
+    if (ph) ph.style.display = 'flex';
+    if (clr) clr.style.display = 'none';
+  }
+}
+async function mrHandleEditPhoto(evt){
+  const file = evt.target.files && evt.target.files[0];
+  if (!file) return;
+  try {
+    MR.editImage = await aiphCompressImage(file, 400, 0.72);
+    mrUpdateEditPhotoPreview();
+  } catch(e) {
+    toast('❌ Photo illisible', 'var(--red)');
+  }
+  evt.target.value = '';
+}
+function mrClearEditPhoto(){
+  MR.editImage = null;
+  mrUpdateEditPhotoPreview();
 }
 
 function mrCloseEdit(){
@@ -19120,10 +19559,10 @@ function mrSaveMealTemplate(){
   if(MR.editId){
     const idx = all.findIndex(t => t.id === MR.editId);
     if(idx>=0){
-      all[idx] = { ...all[idx], name, emoji:MR.editEmoji, cat:MR.editCat, ingredients:[...MR.editIngredients], updatedAt:Date.now() };
+      all[idx] = { ...all[idx], name, emoji:MR.editEmoji, cat:MR.editCat, image:MR.editImage, ingredients:[...MR.editIngredients], updatedAt:Date.now() };
     }
   } else {
-    all.unshift({ id:'mr_'+Date.now(), name, emoji:MR.editEmoji, cat:MR.editCat, ingredients:[...MR.editIngredients], createdAt:Date.now(), updatedAt:Date.now() });
+    all.unshift({ id:'mr_'+Date.now(), name, emoji:MR.editEmoji, cat:MR.editCat, image:MR.editImage, ingredients:[...MR.editIngredients], createdAt:Date.now(), updatedAt:Date.now() });
   }
   mrSaveAll(all);
   mrCloseEdit();
@@ -19207,14 +19646,11 @@ function mrConfirmUse(){
   });
   mrCloseUseModal();
   if(fromDetail) mrCloseUseDetail();
-  // If on piste tab, refresh
+  closeSearchPanel();
   renderMealCards();
   renderApDayBanner();
-  // If the meal detail panel is open for that slot, refresh it too
-  if(AP.currentMeal === slot){
-    renderMealFoodList();
-    updateMealSummaryStrip();
-  }
+  // Direction : le récap du repas dans lequel on vient d'ajouter, plutôt que la liste "Mes repas"
+  openMealDetail(slot);
   const mealName = MEAL_LABELS[slot]?.replace(/<[^>]+>/g,'').trim() || slot;
   toast(`✓ ${t.name} → ${mealName} · ${Math.round(totalKcal)} kcal`, 'var(--lime)');
 }
@@ -19304,27 +19740,39 @@ function mrUseDetailChooseMeal(){
 function mrRenderSearchResults(){
   const el = document.getElementById('search-results');
   if(!el) return;
+  const isRepas = MR.subTab === 'repas';
   el.innerHTML = `
     <div style="padding:0.75rem 0 0.6rem;">
-      <div style="font-size:0.65rem;color:var(--muted2);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:0.55rem;">Mes repas personnalisés</div>
+      <div class="mode-switch" style="width:100%">
+        <div class="mode-btn${isRepas?' active':''}" style="flex:1;text-align:center" onclick="mrSetSubTab('repas')">🍽️ Mes repas</div>
+        <div class="mode-btn${isRepas?'':' active'}" style="flex:1;text-align:center" onclick="mrSetSubTab('aliments')">✏️ Mes aliments</div>
+      </div>
       <div style="display:flex;gap:8px">
+        ${isRepas ? `
         <button onclick="mrOpenCreate()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;background:linear-gradient(135deg,#1ab89c,#12957e);color:#fff;border:none;border-radius:30px;padding:0.5rem 0.6rem;font-family:DM Sans,sans-serif;font-size:0.74rem;font-weight:600;cursor:pointer;box-shadow:0 3px 10px rgba(26,184,156,0.3);-webkit-tap-highlight-color:transparent;white-space:nowrap">
           <span style="font-size:1rem;line-height:1">+</span> Nouveau repas
-        </button>
-        <button onclick="openCustomFoodPanel()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;background:var(--s2);color:var(--text);border:1.5px solid var(--border2);border-radius:30px;padding:0.5rem 0.6rem;font-family:DM Sans,sans-serif;font-size:0.74rem;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap">
+        </button>` : `
+        <button onclick="openCustomFoodPanel()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;background:linear-gradient(135deg,#1ab89c,#12957e);color:#fff;border:none;border-radius:30px;padding:0.5rem 0.6rem;font-family:DM Sans,sans-serif;font-size:0.74rem;font-weight:600;cursor:pointer;box-shadow:0 3px 10px rgba(26,184,156,0.3);-webkit-tap-highlight-color:transparent;white-space:nowrap">
           <span style="font-size:1rem;line-height:1">+</span> Nouvel aliment
-        </button>
+        </button>`}
       </div>
     </div>
     <div style="position:relative;margin-bottom:0.75rem">
       <div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--muted2)"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="7" cy="7" r="4.5"/><line x1="10.5" y1="10.5" x2="13.5" y2="13.5"/></svg></div>
-      <input type="text" id="mr-filter-input" placeholder="Filtrer mes repas…" oninput="mrFilterList(this.value)"
+      <input type="text" id="mr-filter-input" placeholder="${isRepas?'Filtrer mes repas…':'Filtrer mes aliments…'}" oninput="mrFilterList(this.value)"
         style="width:100%;padding:0.6rem 0.85rem 0.6rem 2.2rem;background:var(--s2);border:1.5px solid var(--border2);border-radius:12px;color:var(--text);font-family:DM Sans,sans-serif;font-size:0.88rem;outline:none;box-sizing:border-box">
     </div>
     <div id="mr-list-container"></div>
   `;
   MR.filterText = '';
-  mrRenderList();
+  if(isRepas) mrRenderList(); else caRenderList();
+}
+
+function mrSetSubTab(tab){
+  if(MR.subTab === tab) return;
+  MR.subTab = tab;
+  mrRenderSearchResults();
+  setTimeout(() => document.getElementById('mr-filter-input')?.focus(), 50);
 }
 
 function mrUseFromSearch(id){
@@ -19815,7 +20263,8 @@ function _renderKcalRest(totals, goal, macroGoals) {
     return;
   }
 
-  /* ── Macros — toujours visibles dès qu\'il y a de la nourriture ── */
+  /* ── Macros — visibles seulement si le switch est sur "Restant" ── */
+  const currentMode = document.querySelector('.ap-day-mode-switch .mode-btn.active')?.dataset.mode || 'eaten';
   const gEl = document.getElementById('ap-kcal-rest-g');
   const lEl = document.getElementById('ap-kcal-rest-l');
   const pEl = document.getElementById('ap-kcal-rest-p');
@@ -19836,7 +20285,7 @@ function _renderKcalRest(totals, goal, macroGoals) {
       el.style.color = modeRest ? (v < 0 ? 'var(--red)' : v < 10 ? 'var(--orange)' : 'var(--text)') : 'var(--text)';
     };
     setCell(gEl, vG); setCell(lEl, vL); setCell(pEl, vP);
-    macroEl.style.display = 'flex';
+    macroEl.style.display = currentMode === 'rest' ? 'flex' : 'none';
   } else if (macroEl) {
     macroEl.style.display = 'none';
   }
