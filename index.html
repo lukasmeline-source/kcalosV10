@@ -6155,7 +6155,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-07-30.9';
+const APP_BUILD_VERSION = '2026-07-30.10';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -17947,12 +17947,34 @@ function woPeriodPairPct(dCur, dRef){
   return indivPcts.length ? Math.round(indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length) : null;
 }
 
+// Chaîne les % point-à-point de woSessPairPct (déjà robuste : chaque séance est
+// comparée à la dernière occurrence de chacun de ses exos, jamais à une séance
+// fixe) en une courbe CUMULÉE : chaque variation vient composer la précédente,
+// pour obtenir une vraie tendance de progression dans le temps plutôt qu'un nuage
+// de variations isolées séance par séance. Composition multiplicative (comme des
+// variations en %), pas une simple addition.
+function woChainSessPct(sortedAsc, allSorted){
+  let cum = 0, started = false;
+  return sortedAsc.map(s=>{
+    const pct = woSessPairPct(s, allSorted);
+    if(pct !== null){
+      cum = started ? ((1+cum/100)*(1+pct/100)-1)*100 : pct;
+      started = true;
+    }
+    // Séance sans exo comparable (ex: que des exos jamais faits avant) → la
+    // courbe reste plate (valeur cumulée inchangée) plutôt qu'un trou.
+    return started ? Math.round(cum) : null;
+  });
+}
+
 // Construit les séries (une par type de séance) alignées sur un axe X commun
 // NB : chaque point compare une séance/période à la DERNIÈRE occurrence de chacun
 // de ses exos, tous types de séance confondus (pas forcément la séance juste avant,
 // ni forcément le même type) : cohérent avec la bannière live pendant la saisie,
 // et robuste si les exercices pratiqués évoluent au fil du temps ou sont partagés
-// entre plusieurs types de séance (ex : pompes en Push ET en Upper).
+// entre plusieurs types de séance (ex : pompes en Push ET en Upper). Ces variations
+// point-à-point sont ensuite chaînées (woChainSessPct) pour tracer une courbe de
+// tendance cumulée plutôt que des points isolés.
 function woBuildProgSeries(period){
   const allTypes = woGetAllTypes();
   const typesArr = Object.entries(allTypes).filter(([tid])=>woV2GetSessions(tid).length>0);
@@ -17961,7 +17983,7 @@ function woBuildProgSeries(period){
     const allSorted = woAllSessionsSorted();
     const perType = typesArr.map(([tid,t])=>{
       const sortedAsc = [...woV2GetSessions(tid)].sort((a,b)=>a.date.localeCompare(b.date));
-      const data = sortedAsc.map(s=>woSessPairPct(s, allSorted));
+      const data = woChainSessPct(sortedAsc, allSorted);
       return {tid, t, sortedAsc, data};
     });
     const maxLen = perType.reduce((m,p)=>Math.max(m,p.data.length), 0);
