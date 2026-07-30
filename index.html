@@ -17974,25 +17974,36 @@ function woBuildProgSeries(period){
     return {typesArr, labels, datasets};
   }
 
-  // week / month : union des périodes de tous les types, chacune comparée à la
-  // période précédente où ce type de séance a été pratiqué (même principe que
-  // ci-dessus). Une semaine/mois sans séance d'un type n'a simplement pas de clé
-  // dans byPeriod pour ce type → pas de "plat" artificiel, juste un point manquant
-  // (spanGaps trace une ligne directe jusqu'au point suivant, comme le graphique Poids).
-  // Les variations période-à-période sont ensuite chaînées (woChainPct), exactement
-  // comme pour la vue séance, pour obtenir une vraie courbe cumulée plutôt que des
-  // points isolés (sinon le dernier point ne reflète que la dernière variation, pas
-  // le cumul depuis le début — c'était l'incohérence avec le badge "depuis début").
+  // week / month : union des périodes de tous les types. Le point de chaque
+  // semaine/mois est désormais RE-ÉCHANTILLONNÉ depuis le chaînage séance par
+  // séance (woChainSessPct — même source que les badges de l'historique juste
+  // en dessous) : pour chaque période, on garde la valeur cumulée à la date de
+  // la DERNIÈRE séance de ce type dans cette période. Une semaine/mois sans
+  // séance d'un type n'a simplement pas de clé → pas de "plat" artificiel, juste
+  // un point manquant (spanGaps trace une ligne directe jusqu'au point suivant,
+  // comme le graphique Poids).
+  // Avant, ce point était recalculé indépendamment (woAggregate + woPeriodPairPct,
+  // comparaison d'agrégats même-type, bucket-à-bucket) : une méthode différente
+  // de woSessPairPct, qui pouvait diverger du produit des badges de séance
+  // affichés juste en dessous dès qu'un exo était partagé entre plusieurs types
+  // de séance. En ré-échantillonnant la même chaîne cumulée que les badges de
+  // séance, le dernier point (= badge "depuis début") colle maintenant toujours
+  // avec l'historique détaillé, quelle que soit la période choisie.
   const periodFn = period==='week' ? woWeekKey  : woMonthKey;
   const labelFn  = period==='week' ? woWeekLabel : woMonthLabel;
+  const allSorted = woAllSessionsSorted();
   const perType = typesArr.map(([tid,t])=>{
-    const byPeriod = woAggregate(woV2GetSessions(tid), periodFn);
-    const periods  = [...byPeriod.keys()].sort();
-    const rawPcts  = periods.map((k,i)=> i===0 ? null : woPeriodPairPct(byPeriod.get(k), byPeriod.get(periods[i-1])));
-    const chained  = woChainPct(rawPcts);
+    const sortedAsc = [...woV2GetSessions(tid)].sort((a,b)=>a.date.localeCompare(b.date));
+    const chain = woChainSessPct(sortedAsc, allSorted);
     const dataByPeriod = {};
-    periods.forEach((k,i)=>{ dataByPeriod[k] = chained[i]; });
-    return {tid, t, byPeriod, periods, dataByPeriod};
+    const periodsSet = new Set();
+    sortedAsc.forEach((s,i)=>{
+      const k = periodFn(s.date);
+      periodsSet.add(k);
+      dataByPeriod[k] = chain[i]; // la séance la plus récente de la période écrase les précédentes
+    });
+    const periods = [...periodsSet].sort();
+    return {tid, t, periods, dataByPeriod};
   });
   const keySet = new Set();
   perType.forEach(p=>p.periods.forEach(k=>keySet.add(k)));
