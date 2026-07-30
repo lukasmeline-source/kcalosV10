@@ -6155,7 +6155,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-07-30.12';
+const APP_BUILD_VERSION = '2026-07-30.13';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -17921,24 +17921,29 @@ function woPeriodPairPct(dCur, dRef){
   return indivPcts.length ? Math.round(indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length) : null;
 }
 
-// Chaîne les % point-à-point de woSessPairPct (déjà robuste : chaque séance est
-// comparée à la dernière occurrence de chacun de ses exos, jamais à une séance
-// fixe) en une courbe CUMULÉE : chaque variation vient composer la précédente,
-// pour obtenir une vraie tendance de progression dans le temps plutôt qu'un nuage
-// de variations isolées séance par séance. Composition multiplicative (comme des
-// variations en %), pas une simple addition.
-function woChainSessPct(sortedAsc, allSorted){
+// Chaîne une liste de variations % point-à-point (nullable) en une courbe
+// CUMULÉE : chaque variation vient composer la précédente (composition
+// multiplicative, comme des variations en %, pas une simple addition), pour
+// obtenir une vraie tendance de progression dans le temps plutôt qu'un nuage
+// de variations isolées. Un point null (aucune référence comparable à cet
+// instant) laisse le cumul inchangé (courbe plate) plutôt qu'un trou, tant
+// qu'un premier point valide n'a pas démarré le cumul (auquel cas → null).
+function woChainPct(rawPcts){
   let cum = 0, started = false;
-  return sortedAsc.map(s=>{
-    const pct = woSessPairPct(s, allSorted);
+  return rawPcts.map(pct=>{
     if(pct !== null){
       cum = started ? ((1+cum/100)*(1+pct/100)-1)*100 : pct;
       started = true;
     }
-    // Séance sans exo comparable (ex: que des exos jamais faits avant) → la
-    // courbe reste plate (valeur cumulée inchangée) plutôt qu'un trou.
     return started ? Math.round(cum) : null;
   });
+}
+
+// Chaîne les % point-à-point de woSessPairPct (déjà robuste : chaque séance est
+// comparée à la dernière occurrence de chacun de ses exos, jamais à une séance
+// fixe) en une courbe cumulée par séance — voir woChainPct.
+function woChainSessPct(sortedAsc, allSorted){
+  return woChainPct(sortedAsc.map(s=>woSessPairPct(s, allSorted)));
 }
 
 // Construit les séries (une par type de séance) alignées sur un axe X commun
@@ -17974,15 +17979,19 @@ function woBuildProgSeries(period){
   // ci-dessus). Une semaine/mois sans séance d'un type n'a simplement pas de clé
   // dans byPeriod pour ce type → pas de "plat" artificiel, juste un point manquant
   // (spanGaps trace une ligne directe jusqu'au point suivant, comme le graphique Poids).
+  // Les variations période-à-période sont ensuite chaînées (woChainPct), exactement
+  // comme pour la vue séance, pour obtenir une vraie courbe cumulée plutôt que des
+  // points isolés (sinon le dernier point ne reflète que la dernière variation, pas
+  // le cumul depuis le début — c'était l'incohérence avec le badge "depuis début").
   const periodFn = period==='week' ? woWeekKey  : woMonthKey;
   const labelFn  = period==='week' ? woWeekLabel : woMonthLabel;
   const perType = typesArr.map(([tid,t])=>{
     const byPeriod = woAggregate(woV2GetSessions(tid), periodFn);
     const periods  = [...byPeriod.keys()].sort();
+    const rawPcts  = periods.map((k,i)=> i===0 ? null : woPeriodPairPct(byPeriod.get(k), byPeriod.get(periods[i-1])));
+    const chained  = woChainPct(rawPcts);
     const dataByPeriod = {};
-    periods.forEach((k,i)=>{
-      dataByPeriod[k] = i===0 ? null : woPeriodPairPct(byPeriod.get(k), byPeriod.get(periods[i-1]));
-    });
+    periods.forEach((k,i)=>{ dataByPeriod[k] = chained[i]; });
     return {tid, t, byPeriod, periods, dataByPeriod};
   });
   const keySet = new Set();
@@ -18055,7 +18064,7 @@ function woRenderProgAll(period){
   woRenderMainProgChart(labels, datasets);
 
   const histBody = document.getElementById('wo-prog-history-body');
-  if(histBody) histBody.innerHTML = woBuildHistoryHtml(typesArr);
+  if(histBody) histBody.innerHTML = woBuildHistoryHtml(typesArr, datasets);
   const exoBody = document.getElementById('wo-prog-exo-body');
   if(exoBody) exoBody.innerHTML = woBuildExoHtml(typesArr);
 }
@@ -18113,7 +18122,7 @@ function woRenderMainProgChart(labels, datasets){
 }
 
 /* ── Détail repliable : historique séance par séance (regroupé par type) ── */
-function woBuildHistoryHtml(typesArr){
+function woBuildHistoryHtml(typesArr, datasets){
   const allSorted = woAllSessionsSorted(); // pool global (tous types) pour la recherche par exo
   return typesArr.map(([tid,t])=>{
     const sortedAsc = [...woV2GetSessions(tid)].sort((a,b)=>a.date.localeCompare(b.date));
@@ -18160,11 +18169,12 @@ function woBuildHistoryHtml(typesArr){
 
     let trendBadge = '';
     if(sortedAsc.length >= 2){
-      // Même valeur que le point final de la courbe chaînée du graphique
-      // (woChainSessPct), pour que badge et graphique concordent toujours.
-      const chain = woChainSessPct(sortedAsc, allSorted);
+      // Même valeur que le dernier point de la courbe affichée à l'écran pour ce
+      // type (dataset de la période actuellement sélectionnée : Semaine ou Mois),
+      // pour que badge et graphique concordent toujours, quelle que soit la période.
+      const ds = datasets?.find(d=>d.tid===tid);
       let tp = null;
-      for(let i=chain.length-1;i>=0;i--){ if(chain[i]!==null){ tp = chain[i]; break; } }
+      if(ds){ for(let i=ds.data.length-1;i>=0;i--){ if(ds.data[i]!==null){ tp = ds.data[i]; break; } } }
       if(tp !== null){
         const tc = tp>0?'#4ade80':tp<0?'var(--red)':'var(--muted)';
         trendBadge = `<span style="font-size:0.6rem;font-weight:700;color:${tc};background:${tc}18;border:1px solid ${tc}44;border-radius:var(--r-pill);padding:2px 7px">${tp>0?'▲ +':'▼ '}${tp}% depuis début</span>`;
