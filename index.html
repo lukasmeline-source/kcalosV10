@@ -4785,7 +4785,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
           <span class="ico" style="margin-right:4px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M2 5l6-3 6 3v8l-6 3-6-3z"/><line x1="8" y1="2" x2="8" y2="14"/><polyline points="2,5 8,8 14,5"/></svg></span> Importer mes pas
         </button>
         <div id="st-import-panel" style="display:none;background:var(--s2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:0.9rem;margin-top:4px">
-          <p style="font-size:0.68rem;color:var(--muted);margin-bottom:0.7rem;line-height:1.5">Depuis l'app <strong style="color:var(--text)">Santé</strong> de ton iPhone : profil (en haut à droite) → <strong style="color:var(--text)">Exporter toutes les données de santé</strong> → dépose le fichier <code style="color:var(--blue-d)">export.zip</code> ou <code style="color:var(--blue-d)">export.xml</code> ici. Fonctionne aussi avec un export Samsung Health ou un CSV. <strong style="color:var(--lime)">Seuls les pas seront importés ici</strong> (poids/calories/aliments éventuellement présents dans le fichier sont ignorés).</p>
+          <p style="font-size:0.68rem;color:var(--muted);margin-bottom:0.7rem;line-height:1.5">Depuis l'app <strong style="color:var(--text)">Santé</strong> de ton iPhone : profil (en haut à droite) → <strong style="color:var(--text)">Exporter toutes les données de santé</strong> → dépose le fichier <code style="color:var(--blue-d)">export.zip</code> ou <code style="color:var(--blue-d)">export.xml</code> ici. Fonctionne aussi avec un export Samsung Health ou un CSV. <strong style="color:var(--lime)">Seuls les pas seront importés ici</strong> (poids/calories/aliments éventuellement présents dans le fichier sont ignorés). <strong style="color:var(--text)">Import limité aux 12 derniers mois</strong> pour éviter de surcharger l'app sur les gros exports.</p>
           <div class="import-zone" id="st-import-zone"
                onclick="document.getElementById('st-file-input').click()"
                ondragover="event.preventDefault();this.classList.add('drag')"
@@ -4817,6 +4817,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       </div>
     </div>
     <div class="range-tabs" id="steps-range-tabs">
+      <div class="range-tab" onclick="setStepsRange(7,this)">7 j</div>
       <div class="range-tab active" onclick="setStepsRange(30,this)">30 j</div>
       <div class="range-tab" onclick="setStepsRange(90,this)">3 m</div>
       <div class="range-tab" onclick="setStepsRange(180,this)">6 m</div>
@@ -5370,6 +5371,17 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 
     <!-- Panel PROGRESSION -->
     <div id="wo-panel-progression" style="display:none">
+      <!-- En-tête avec bulle info -->
+      <div style="display:flex;align-items:flex-start;justify-content:flex-end;gap:8px;margin-bottom:0.3rem">
+        <button onclick="document.getElementById('wo-prog-info').style.display=document.getElementById('wo-prog-info').style.display==='none'?'':'none'"
+          style="background:var(--s2);border:1px solid var(--border2);color:var(--muted);border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:0.7rem;font-weight:700;flex-shrink:0;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent">ℹ</button>
+      </div>
+      <div id="wo-prog-info" style="display:none;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:0.75rem;margin-bottom:0.85rem;font-size:0.65rem;color:var(--muted);line-height:1.75">
+        <b style="color:var(--text);display:block;margin-bottom:4px">Comment est calculée la progression ?</b>
+        Pour chaque exercice, on estime la force de chaque série avec la <b style="color:var(--text)">formule d'Epley</b> (poids × (1 + reps/30)), qui donne une valeur comparable même si le nombre de répétitions change d'une séance à l'autre.<br>
+        On compare ensuite chaque série à son équivalent de la séance de référence (série 1 vs série 1, série 2 vs série 2…), et on fait la moyenne des variations sur tous les exercices communs.<br>
+        Le <b style="color:var(--text)">1RM estimé</b> affiché par exercice suit la même formule, mais sur la <b style="color:var(--text)">meilleure série unique</b> — c'est l'équivalent du poids que tu pourrais théoriquement soulever une seule fois.
+      </div>
       <!-- Hero : progression moyenne + sélecteur de période -->
       <div class="hero-row">
         <div>
@@ -5381,7 +5393,6 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
         </div>
         <div class="range-tabs">
           <button class="range-tab active" id="wo-prog-tab-session" onclick="woSwitchProgTab('session')">Séance</button>
-          <button class="range-tab" id="wo-prog-tab-week" onclick="woSwitchProgTab('week')">Semaine</button>
           <button class="range-tab" id="wo-prog-tab-month" onclick="woSwitchProgTab('month')">Mois</button>
         </div>
       </div>
@@ -5424,7 +5435,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
           <div style="font-size:0.72rem;font-weight:600;color:var(--text);margin-bottom:2px">Volume hebdo · par groupe musculaire</div>
         </div>
         <button onclick="document.getElementById('wo-vol-info').style.display=document.getElementById('wo-vol-info').style.display==='none'?'':'none'"
-          style="background:var(--s2);border:1px solid var(--border2);color:var(--muted);border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:0.7rem;font-weight:700;flex-shrink:0;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent">ℹ</button>
+          style="background:var(--s2);border:1px solid var(--border2);color:var(--muted);border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:0.7rem;font-weight:700;font-family:inherit;flex-shrink:0;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent">ℹ</button>
       </div>
       <div id="wo-vol-info" style="display:none;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:0.75rem;margin-bottom:0.85rem;font-size:0.65rem;color:var(--muted);line-height:1.75">
         <b style="color:var(--text);display:block;margin-bottom:4px">Comment est calculé le volume ?</b>
@@ -5721,9 +5732,17 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     </div>
 
     <!-- Bandeau progression globale vs séance précédente -->
-    <div id="wo-prog-banner" style="display:none;margin-bottom:0.75rem;padding:0.6rem 0.9rem;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--s2);align-items:center;justify-content:space-between;gap:10px">
-      <div style="font-size:0.72rem;color:var(--muted)">Progression vs séance précédente</div>
-      <div id="wo-prog-banner-val" style="font-size:1rem;font-weight:700"></div>
+    <div id="wo-prog-banner" style="display:none;flex-direction:column;gap:6px;margin-bottom:0.75rem;padding:0.6rem 0.9rem;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--s2)">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:5px;font-size:0.72rem;color:var(--muted);flex:1 1 auto;min-width:0">
+          <span>Progression vs séance précédente</span>
+          <button onclick="woToggleBannerInfo()" style="background:var(--s2);border:1px solid var(--border2);color:var(--muted);border-radius:50%;width:18px;height:18px;cursor:pointer;font-size:0.62rem;font-weight:700;font-family:inherit;flex-shrink:0;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;padding:0">ℹ</button>
+        </div>
+        <div id="wo-prog-banner-val" style="font-size:1rem;font-weight:700;text-align:right;flex-shrink:0"></div>
+      </div>
+      <div id="wo-prog-banner-info" style="display:none;font-size:0.66rem;line-height:1.5;color:var(--muted);border-top:1px solid var(--border2);padding-top:6px">
+        Moyenne des % de progression de chaque exercice par rapport à sa dernière fois — pas une somme. Ex : +11% et −8% → (11 + (−8)) / 2 = +1,5%.
+      </div>
     </div>
 
     <!-- Liste exercices avec historique -->
@@ -6136,7 +6155,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-07-29.8';
+const APP_BUILD_VERSION = '2026-07-30.9';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -7352,9 +7371,35 @@ function parseCSV(text){
   return {rows,log};
 }
 
+/* Retire du texte XML brut, AVANT de le passer au DOMParser, tous les
+   <Record> dont le startDate est antérieur à `monthsBack` mois.
+   But : un export Apple Santé peut contenir plusieurs années de données
+   (parfois des millions d'enregistrements de pas/FC/etc.), ce qui fait
+   planter le DOMParser par manque de mémoire sur mobile. En réduisant le
+   texte AVANT de construire l'arbre DOM, on évite de charger tout
+   l'historique en mémoire — seul le dernier an est réellement parsé. */
+function trimAppleHealthXML(text, monthsBack){
+  const cutoff=new Date();
+  cutoff.setMonth(cutoff.getMonth()-monthsBack);
+  const cutoffStr=cutoff.toISOString().split('T')[0];
+  let kept=0, removed=0;
+  const trimmed=text.replace(/<Record\b[^>]*?(?:\/>|>[\s\S]*?<\/Record>)/g, m=>{
+    const sd=m.match(/\bstartDate="([^"]+)"/);
+    if(!sd) return m; // format non reconnu → on garde par sécurité, pas de perte silencieuse
+    const date=normalizeDate(sd[1]);
+    if(!date || date>=cutoffStr){ kept++; return m; }
+    removed++;
+    return '';
+  });
+  return {trimmed, kept, removed, cutoffStr};
+}
+
 function parseXML(text){
-  const doc=new DOMParser().parseFromString(text,'text/xml');
   const log=[];
+  // Limite l'import à 12 mois en arrière (voir trimAppleHealthXML ci-dessus).
+  const {trimmed, kept, removed, cutoffStr}=trimAppleHealthXML(text, 12);
+  if(removed>0) log.push(`ℹ️ Import limité aux 12 derniers mois (depuis ${cutoffStr}) — ${removed} anciens enregistrements ignorés, ${kept} conservés.`);
+  const doc=new DOMParser().parseFromString(trimmed,'text/xml');
   const byDate={};
   const records=doc.querySelectorAll('Record');
   if(!records.length){log.push('⚠️ Aucun élément <Record>');return {rows:[],log};}
@@ -7866,10 +7911,12 @@ function loadStepsPage(){
   // Init date to today when opening page
   SP.date = today();
   stepsRefreshDateUI();
-  // Ensure 30j is active tab on first load
+  // Ensure 30j is active tab on first load (recherché explicitement, car
+  // l'onglet "7 j" a été ajouté en première position dans le HTML)
   const tabs=document.querySelectorAll('#steps-range-tabs .range-tab');
   tabs.forEach(t=>t.classList.remove('active'));
-  tabs[0]?.classList.add('active'); // 30j is first
+  const default30=[...tabs].find(t=>t.getAttribute('onclick')?.includes('setStepsRange(30'));
+  (default30||tabs[0])?.classList.add('active');
   S.stepsRange=30;
   // Refresh base steps from today\'s stored data (may have changed via import)
   const f=DB.getFitness().find(d=>d.date===today());
@@ -8133,7 +8180,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v11';
+    const CACHE_NAME = 'kcalos-v17';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -12840,7 +12887,7 @@ function caRenderList(){
 
 function caCardHtml(f){
   const nmJs = f.n.replace(/'/g,"\\'");
-  return `<div class="mr-card" onclick="caUseFood('${nmJs}')" role="button" tabindex="0" aria-label="Ajouter ${f.n} au repas" style="display:flex;align-items:center;gap:0.7rem">
+  return `<div class="mr-card" onclick="caUseFood('${nmJs}')" role="button" tabindex="0" aria-label="Ajouter ${f.n} au repas" style="display:flex;flex-direction:row;align-items:center;gap:0.7rem">
     ${f.img
       ? `<img src="${f.img}" alt="" style="width:42px;height:42px;border-radius:10px;object-fit:cover;flex-shrink:0">`
       : `<div style="width:42px;height:42px;border-radius:10px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0" aria-hidden="true">✏️</div>`}
@@ -17645,12 +17692,11 @@ function woSwitchPickerTab(tab){
 }
 
 
-/* ── Sous-onglets période (séance / semaine / mois) ── */
+/* ── Sous-onglets période (séance / mois) ── */
 function woSwitchProgTab(period){
   const btnS = document.getElementById('wo-prog-tab-session');
-  const btnW = document.getElementById('wo-prog-tab-week');
   const btnM = document.getElementById('wo-prog-tab-month');
-  [[btnS,'session'],[btnW,'week'],[btnM,'month']].forEach(([btn,t])=>{
+  [[btnS,'session'],[btnM,'month']].forEach(([btn,t])=>{
     if(!btn) return;
     btn.classList.toggle('active', t===period);
   });
@@ -17704,13 +17750,37 @@ function woMonthLabel(key){
 function woEpley(sets){
   return sets.reduce((total,x)=>{
     const w=parseFloat(x.weight)||0, r=parseFloat(x.reps)||0;
-    return (!w||!r) ? total : total + w*(1+r/30);
+    if(!r) return total;
+    // Exercice au poids du corps (0kg ajouté) → 1kg pour garder un calcul d'évolution
+    // basé sur les seules répétitions, plutôt que d'exclure complètement la série.
+    const effW = w||1;
+    return total + effW*(1+r/30);
   },0);
+}
+
+/* ── Vrai 1RM estimé (formule d'Epley) : le MAXIMUM sur UNE seule série,
+   pas une somme sur toutes les séries (contrairement à woEpley ci-dessus,
+   qui sert à comparer un volume de force total, pas un 1RM).
+   Réutilisé par le badge "PR 1RM" en direct et par le détail par exercice
+   de l'onglet Progression. ── */
+function woEpley1RMBest(sets){
+  return (sets||[]).reduce((best,x)=>{
+    const w=parseFloat(x.weight)||0, r=parseFloat(x.reps)||0;
+    if(!r) return best;
+    const effW = w||1; // exercice au poids du corps → 1kg (voir woEpley)
+    return Math.max(best, effW*(1+r/30));
+  }, 0);
 }
 
 /* ── Helper : progression appariée série par série (série 1 vs série 1, série 2 vs série 2…)
    Les séries sans équivalent (nombre de séries différent d'une fois sur l'autre) sont ignorées.
    Retourne {curSum, prevSum, pct} sur les seules séries appariées. ── */
+function woToggleBannerInfo(){
+  const info = document.getElementById('wo-prog-banner-info');
+  if(!info) return;
+  info.style.display = info.style.display === 'none' ? 'block' : 'none';
+}
+
 function woMatchedProgress(curSets, prevSets){
   const cs = (curSets||[]).filter(s=>!s.skipped);
   const ps = (prevSets||[]).filter(s=>!s.skipped);
@@ -17719,8 +17789,8 @@ function woMatchedProgress(curSets, prevSets){
   for(let i=0;i<n;i++){
     const cw=parseFloat(cs[i].weight)||0, cr=parseFloat(cs[i].reps)||0;
     const pw=parseFloat(ps[i].weight)||0, pr=parseFloat(ps[i].reps)||0;
-    if(cw&&cr) curSum += cw*(1+cr/30);
-    if(pw&&pr) prevSum += pw*(1+pr/30);
+    if(cr) curSum  += (cw||1)*(1+cr/30); // poids du corps (0kg) → 1kg (voir woEpley)
+    if(pr) prevSum += (pw||1)*(1+pr/30);
   }
   const pct = prevSum>0 ? Math.round((curSum-prevSum)/prevSum*100) : null;
   return {curSum, prevSum, pct};
@@ -17800,12 +17870,37 @@ function woRenderEvoChart(canvasId, labels, data, color){
    accordéons repliés par défaut, pour rester lisible sur mobile.
 ════════════════════════════════════════ */
 
-// % entre deux séances : appariement série par série, sur les exos communs
-function woSessPairPct(curSess, refSess){
-  if(!curSess || !refSess) return null;
+// Toutes les séances (tous types confondus), triées par date croissante.
+// Sert de pool de recherche pour retrouver la dernière fois qu'un exo précis a été fait.
+function woAllSessionsSorted(){
+  const allTypes = woGetAllTypes();
+  const all = [];
+  Object.keys(allTypes).forEach(tid=>{ woV2GetSessions(tid).forEach(s=>all.push(s)); });
+  return all.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+}
+
+// Retrouve la dernière occurrence d'un exo (même id ou même nom) STRICTEMENT avant
+// une date donnée, tous types de séance confondus (ex : pompes faites en Push puis
+// en Upper → l'une sert de référence à l'autre). Retourne l'exo trouvé (avec ses sets) ou null.
+function woLastExoOccurrence(allSorted, beforeDate, exo, excludeSess){
+  for(let i=allSorted.length-1;i>=0;i--){
+    const s = allSorted[i];
+    if(s===excludeSess) continue;
+    if(!(s.date < beforeDate)) continue;
+    const match = s.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
+    if(match) return match;
+  }
+  return null;
+}
+
+// % d'une séance : pour chaque exo réalisé, on compare à SA dernière occurrence
+// (tous types de séance confondus, pas forcément la séance juste avant), puis
+// moyenne simple sur tous les exos ayant trouvé une référence.
+function woSessPairPct(curSess, allSorted){
+  if(!curSess) return null;
   const indivPcts = [];
   curSess.exercises?.forEach(exo=>{
-    const refExo = refSess.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
+    const refExo = woLastExoOccurrence(allSorted, curSess.date, exo, curSess);
     if(!refExo) return;
     const mp = woMatchedProgress(exo.sets||[], refExo.sets||[]);
     if(mp.pct !== null) indivPcts.push(mp.pct);
@@ -17813,7 +17908,33 @@ function woSessPairPct(curSess, refSess){
   return indivPcts.length ? Math.round(indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length) : null;
 }
 
-// % entre deux périodes agrégées (semaine|mois) : même principe, sur woAggregate()
+// % "depuis le début" pour un type de séance : pour chaque exo présent dans la
+// DERNIÈRE séance de ce type, on retrouve TOUTE son historique (tous types de
+// séance confondus, cf. décision sur les exos partagés entre types), et on compare
+// sa toute première occurrence jamais enregistrée à cette dernière occurrence.
+// Puis moyenne simple entre tous les exos concernés.
+function woSessTrendPct(sortedAsc, allSorted){
+  if(!sortedAsc || !sortedAsc.length) return null;
+  const lastSess = sortedAsc[sortedAsc.length-1];
+  if(!lastSess.exercises?.length) return null;
+  const pcts = [];
+  lastSess.exercises.forEach(exo=>{
+    // Toutes les occurrences de cet exo (tous types), triées, jusqu'à lastSess incluse
+    const occs = [];
+    allSorted.forEach(s=>{
+      if(s.date > lastSess.date) return;
+      const match = s.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
+      if(match) occs.push({date:s.date, sets:(match.sets||[]).filter(x=>!x.skipped)});
+    });
+    if(occs.length < 2) return; // pas d'historique antérieur pour cet exo
+    const first = occs[0], last = occs[occs.length-1];
+    const mp = woMatchedProgress(last.sets, first.sets);
+    if(mp.pct !== null) pcts.push(mp.pct);
+  });
+  return pcts.length ? Math.round(pcts.reduce((a,b)=>a+b,0)/pcts.length) : null;
+}
+
+// % entre deux mois agrégés : même principe, sur woAggregate()
 function woPeriodPairPct(dCur, dRef){
   if(!dCur || !dRef) return null;
   const indivPcts = [];
@@ -17827,15 +17948,20 @@ function woPeriodPairPct(dCur, dRef){
 }
 
 // Construit les séries (une par type de séance) alignées sur un axe X commun
+// NB : chaque point compare une séance/période à la DERNIÈRE occurrence de chacun
+// de ses exos, tous types de séance confondus (pas forcément la séance juste avant,
+// ni forcément le même type) : cohérent avec la bannière live pendant la saisie,
+// et robuste si les exercices pratiqués évoluent au fil du temps ou sont partagés
+// entre plusieurs types de séance (ex : pompes en Push ET en Upper).
 function woBuildProgSeries(period){
   const allTypes = woGetAllTypes();
   const typesArr = Object.entries(allTypes).filter(([tid])=>woV2GetSessions(tid).length>0);
 
   if(period==='session'){
+    const allSorted = woAllSessionsSorted();
     const perType = typesArr.map(([tid,t])=>{
       const sortedAsc = [...woV2GetSessions(tid)].sort((a,b)=>a.date.localeCompare(b.date));
-      const first = sortedAsc[0];
-      const data = sortedAsc.map((s,i)=> i===0 ? 0 : woSessPairPct(s, first));
+      const data = sortedAsc.map(s=>woSessPairPct(s, allSorted));
       return {tid, t, sortedAsc, data};
     });
     const maxLen = perType.reduce((m,p)=>Math.max(m,p.data.length), 0);
@@ -17847,13 +17973,18 @@ function woBuildProgSeries(period){
     return {typesArr, labels, datasets};
   }
 
-  // week | month : union des périodes de tous les types, chacun avec sa propre référence
-  const periodFn = period==='week' ? woWeekKey : woMonthKey;
-  const labelFn  = period==='week' ? woWeekLabel : woMonthLabel;
+  // month : union des périodes de tous les types, chacune comparée au mois
+  // précédent où ce type de séance a été pratiqué (même principe que ci-dessus)
+  const periodFn = woMonthKey;
+  const labelFn  = woMonthLabel;
   const perType = typesArr.map(([tid,t])=>{
     const byPeriod = woAggregate(woV2GetSessions(tid), periodFn);
     const periods  = [...byPeriod.keys()].sort();
-    return {tid, t, byPeriod, periods, baseline: byPeriod.get(periods[0])};
+    const dataByPeriod = {};
+    periods.forEach((k,i)=>{
+      dataByPeriod[k] = i===0 ? null : woPeriodPairPct(byPeriod.get(k), byPeriod.get(periods[i-1]));
+    });
+    return {tid, t, byPeriod, periods, dataByPeriod};
   });
   const keySet = new Set();
   perType.forEach(p=>p.periods.forEach(k=>keySet.add(k)));
@@ -17861,10 +17992,7 @@ function woBuildProgSeries(period){
   const labels = globalKeys.map(k=>labelFn(k));
   const datasets = perType.map(p=>({
     tid:p.tid, label:p.t.label, color:p.t.color,
-    data: globalKeys.map(k=>{
-      if(!p.byPeriod.has(k)) return null;
-      return k===p.periods[0] ? 0 : woPeriodPairPct(p.byPeriod.get(k), p.baseline);
-    })
+    data: globalKeys.map(k=> p.dataByPeriod.hasOwnProperty(k) ? p.dataByPeriod[k] : null)
   }));
   return {typesArr, labels, datasets};
 }
@@ -17987,6 +18115,7 @@ function woRenderMainProgChart(labels, datasets){
 
 /* ── Détail repliable : historique séance par séance (regroupé par type) ── */
 function woBuildHistoryHtml(typesArr){
+  const allSorted = woAllSessionsSorted(); // pool global (tous types) pour la recherche par exo
   return typesArr.map(([tid,t])=>{
     const sortedAsc = [...woV2GetSessions(tid)].sort((a,b)=>a.date.localeCompare(b.date));
     const sortedDesc = [...sortedAsc].reverse();
@@ -17995,12 +18124,14 @@ function woBuildHistoryHtml(typesArr){
     const hasMore = sortedDesc.length > showLimit;
 
     const rowHtml = (sess, idxAsc)=>{
-      const prev = idxAsc>0 ? sortedAsc[idxAsc-1] : null;
-      const pct = woSessPairPct(sess, prev);
+      const pct = woSessPairPct(sess, allSorted);
       const vol = woSessVol(sess);
       const exoCount = sess.exercises?.filter(e=>e.sets?.length>0).length || 0;
       const dur = sess.duration ? ` · ${sess.duration} min` : '';
       const isFirst = idxAsc === sortedAsc.length-1;
+      // "1ère séance" = aucune séance, d'aucun type, n'existe avant celle-ci (sinon "Nouveau" :
+      // aucun de ses exos n'a de référence antérieure, même si d'autres séances existent avant).
+      const isVeryFirstEver = allSorted.length>0 && allSorted[0]===sess;
       let badge;
       if(pct !== null){
         const up = pct>0, eq = pct===0;
@@ -18008,7 +18139,7 @@ function woBuildHistoryHtml(typesArr){
         const bg  = up?'var(--lime-bg)':eq?'var(--s3)':'var(--red-bg)';
         const bd  = up?'var(--lime-d)':eq?'var(--border2)':'rgba(232,56,56,0.35)';
         badge = `<div style="font-size:0.72rem;font-weight:800;color:${col};background:${bg};border:1.5px solid ${bd};border-radius:50px;padding:4px 10px;flex-shrink:0;min-width:54px;text-align:center">${up?'▲':'▼'} ${up?'+':''}${pct}%</div>`;
-      } else if(idxAsc===0){
+      } else if(isVeryFirstEver){
         badge = `<div style="font-size:0.6rem;color:var(--muted2);background:var(--s3);border:1px solid var(--border);border-radius:50px;padding:4px 10px;flex-shrink:0;white-space:nowrap">1ère séance</div>`;
       } else {
         badge = `<div style="font-size:0.6rem;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-d);border-radius:50px;padding:4px 10px;flex-shrink:0">Nouveau</div>`;
@@ -18030,7 +18161,7 @@ function woBuildHistoryHtml(typesArr){
 
     let trendBadge = '';
     if(sortedAsc.length >= 2){
-      const tp = woSessPairPct(sortedAsc[sortedAsc.length-1], sortedAsc[0]);
+      const tp = woSessTrendPct(sortedAsc, allSorted);
       if(tp !== null){
         const tc = tp>0?'#4ade80':tp<0?'var(--red)':'var(--muted)';
         trendBadge = `<span style="font-size:0.6rem;font-weight:700;color:${tc};background:${tc}18;border:1px solid ${tc}44;border-radius:var(--r-pill);padding:2px 7px">${tp>0?'▲ +':'▼ '}${tp}% depuis début</span>`;
@@ -18060,17 +18191,18 @@ function woHistoryExpand(tid){
   const t = allTypes[tid]; if(!t) return;
   const sortedAsc = [...woV2GetSessions(tid)].sort((a,b)=>a.date.localeCompare(b.date));
   const sortedDesc = [...sortedAsc].reverse();
+  const allSorted = woAllSessionsSorted(); // pool global (tous types)
   const container = document.getElementById('wo-prog-hist-rows-'+tid);
   if(!container) return;
 
   const rows = sortedDesc.map(sess=>{
     const idxAsc = sortedAsc.findIndex(s=>s.date===sess.date);
-    const prev = idxAsc>0 ? sortedAsc[idxAsc-1] : null;
-    const pct = woSessPairPct(sess, prev);
+    const pct = woSessPairPct(sess, allSorted);
     const vol = woSessVol(sess);
     const exoCount = sess.exercises?.filter(e=>e.sets?.length>0).length||0;
     const dur = sess.duration?` · ${sess.duration} min`:'';
     const isFirst = idxAsc===sortedAsc.length-1;
+    const isVeryFirstEver = allSorted.length>0 && allSorted[0]===sess;
     let badge;
     if(pct!==null){
       const up=pct>0,eq=pct===0;
@@ -18078,7 +18210,7 @@ function woHistoryExpand(tid){
       const bg=up?'var(--lime-bg)':eq?'var(--s3)':'var(--red-bg)';
       const bd=up?'var(--lime-d)':eq?'var(--border2)':'rgba(232,56,56,0.35)';
       badge=`<div style="font-size:0.72rem;font-weight:800;color:${col};background:${bg};border:1.5px solid ${bd};border-radius:50px;padding:4px 10px;flex-shrink:0;min-width:54px;text-align:center">${up?'▲':'▼'} ${up?'+':''}${pct}%</div>`;
-    }else if(idxAsc===0){
+    }else if(isVeryFirstEver){
       badge=`<div style="font-size:0.6rem;color:var(--muted2);background:var(--s3);border:1px solid var(--border);border-radius:50px;padding:4px 10px;flex-shrink:0;white-space:nowrap">1ère séance</div>`;
     }else{
       badge=`<div style="font-size:0.6rem;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-d);border-radius:50px;padding:4px 10px;flex-shrink:0">Nouveau</div>`;
@@ -18100,29 +18232,64 @@ function woHistoryExpand(tid){
    l'ouverture (perf + tailles de canvas correctes tant qu'il est masqué). ── */
 window._woExoChartData = window._woExoChartData || {}; // canvasId -> {labels,data,color}
 function woBuildExoHtml(typesArr){
-  const groups = typesArr.map(([tid,t])=>{
-    const sortedAsc = [...woV2GetSessions(tid)].sort((a,b)=>a.date.localeCompare(b.date));
-    if(!sortedAsc.length) return '';
+  // Un exo peut être partagé entre plusieurs types de séance (ex : pompes en Push
+  // ET en Upper) → on fusionne toutes ses occurrences (tous types confondus) et on
+  // regroupe par groupe musculaire plutôt que par type, pour qu'il n'apparaisse qu'une fois.
+  const sortedAsc = typesArr
+    .flatMap(([tid])=>woV2GetSessions(tid))
+    .sort((a,b)=>a.date.localeCompare(b.date));
+  if(!sortedAsc.length) return `<div style="font-size:0.72rem;color:var(--muted2);padding:0.5rem 0">Aucun exercice enregistré.</div>`;
 
-    const exoMap = {}; // key -> {name, occ:[{date,sets}]}
-    sortedAsc.forEach(sess=>{
-      (sess.exercises||[]).forEach(exo=>{
-        const sets = (exo.sets||[]).filter(s=>!s.skipped);
-        if(!sets.length) return;
-        const key = exo.id || exo.name;
-        if(!exoMap[key]) exoMap[key] = {name:exo.name, occ:[]};
-        exoMap[key].occ.push({date:sess.date, sets});
-      });
+  const exoMap = {}; // key -> {name, muscle, occ:[{date,sets}]}
+  sortedAsc.forEach(sess=>{
+    (sess.exercises||[]).forEach(exo=>{
+      const sets = (exo.sets||[]).filter(s=>!s.skipped);
+      if(!sets.length) return;
+      const key = exo.id || exo.name;
+      if(!exoMap[key]) exoMap[key] = {name:exo.name, muscle:woGetMuscle(exo), occ:[]};
+      exoMap[key].occ.push({date:sess.date, sets});
     });
+  });
 
-    const exoList = Object.values(exoMap).sort((a,b)=> b.occ.length - a.occ.length || a.name.localeCompare(b.name));
-    if(!exoList.length) return '';
+  const byMuscle = {};
+  Object.values(exoMap).forEach(exo=>{
+    const m = exo.muscle || 'Autre';
+    if(!byMuscle[m]) byMuscle[m] = [];
+    byMuscle[m].push(exo);
+  });
+  const sortedMuscles = WO_MUSCLE_ORDER.filter(m=>byMuscle[m])
+    .concat(Object.keys(byMuscle).filter(m=>!WO_MUSCLE_ORDER.includes(m)));
+  if(!sortedMuscles.length) return `<div style="font-size:0.72rem;color:var(--muted2);padding:0.5rem 0">Aucun exercice enregistré.</div>`;
+
+  const groups = sortedMuscles.map(muscle=>{
+    const color = WO_MUSCLE_COLORS[muscle] || '#7a8499';
+    const exoList = byMuscle[muscle].sort((a,b)=> b.occ.length - a.occ.length || a.name.localeCompare(b.name));
+    const safeMuscle = muscle.replace(/[^a-zA-Z0-9]/g,'');
 
     const items = exoList.map((exo,idx)=>{
       const n = exo.occ.length;
-      const canvasId = `wo-prog-exo-chart-${tid}-${idx}`;
+      const canvasId = `wo-prog-exo-chart-${safeMuscle}-${idx}`;
       let badge = `<span style="font-size:0.58rem;color:var(--muted2);background:var(--s3);border:1px solid var(--border2);border-radius:var(--r-pill);padding:2px 8px;white-space:nowrap">1 séance</span>`;
       let bodyHtml = `<div style="font-size:0.7rem;color:var(--muted2);padding:0.4rem 0">Pas encore assez de séances pour tracer une courbe.</div>`;
+
+      // ── 1RM estimé (Epley, meilleure série) : dernière valeur connue, avec évolution
+      //    depuis la première occurrence si on a au moins 2 séances. ──
+      const last1RM = Math.round(woEpley1RMBest(exo.occ[n-1].sets));
+      let rm1Html = '';
+      if(last1RM > 0){
+        if(n >= 2){
+          const first1RM = Math.round(woEpley1RMBest(exo.occ[0].sets));
+          const rmUp = last1RM > first1RM, rmEq = last1RM === first1RM;
+          const rmCol = rmUp?'var(--lime)':rmEq?'var(--muted)':'var(--red)';
+          rm1Html = `<div style="display:flex;align-items:baseline;gap:5px;font-size:0.68rem;color:var(--muted);margin:0.35rem 0 0.6rem">
+            <span>1RM estimé</span>
+            ${first1RM>0 && first1RM!==last1RM ? `<span style="color:var(--muted2)">${first1RM}kg →</span>` : ''}
+            <span style="font-weight:700;color:${rmCol}">${last1RM}kg</span>
+          </div>`;
+        } else {
+          rm1Html = `<div style="font-size:0.68rem;color:var(--muted);margin:0.35rem 0 0.6rem">1RM estimé <span style="font-weight:700;color:var(--text)">${last1RM}kg</span></div>`;
+        }
+      }
 
       if(n >= 2){
         const first = exo.occ[0], last = exo.occ[n-1];
@@ -18138,8 +18305,10 @@ function woBuildExoHtml(typesArr){
         }
         const labels = exo.occ.map(o=>{ const [,m,dd]=o.date.split('-'); return `${dd}/${m}`; });
         const data   = exo.occ.map(o => woMatchedProgress(o.sets, first.sets).pct);
-        window._woExoChartData[canvasId] = {labels, data, color:t.color};
-        bodyHtml = `<div class="chart-wrap" style="height:120px;margin-top:0.3rem"><canvas id="${canvasId}"></canvas></div>`;
+        window._woExoChartData[canvasId] = {labels, data, color};
+        bodyHtml = `${rm1Html}<div class="chart-wrap" style="height:120px;margin-top:0.3rem"><canvas id="${canvasId}"></canvas></div>`;
+      } else if(rm1Html){
+        bodyHtml = `${rm1Html}${bodyHtml}`;
       }
 
       return `<details class="chart-details" style="margin-bottom:0.4rem" ontoggle="if(this.open) woRenderProgExoChart('${canvasId}')">
@@ -18156,12 +18325,12 @@ function woBuildExoHtml(typesArr){
 
     return `<div style="margin-bottom:1rem">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.4rem">
-        <div style="width:8px;height:8px;border-radius:50%;background:${t.color};flex-shrink:0"></div>
-        <div style="font-size:0.78rem;font-weight:600;color:${t.color}">${t.label}</div>
+        <div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>
+        <div style="font-size:0.78rem;font-weight:600;color:${color}">${muscle}</div>
       </div>
       ${items}
     </div>`;
-  }).filter(Boolean).join('');
+  }).join('');
 
   return groups || `<div style="font-size:0.72rem;color:var(--muted2);padding:0.5rem 0">Aucun exercice enregistré.</div>`;
 }
@@ -18193,6 +18362,15 @@ function woGetMuscle(exo){
   const match = EXERCISE_DB.find(e=>e.id===exo.id||e.name===exo.name);
   return match?.muscle || 'Autre';
 }
+
+// Ordre/couleurs des groupes musculaires — partagés entre le tableau de volume
+// et le détail par exercice de l'onglet Progression.
+const WO_MUSCLE_ORDER  = ['Pectoraux','Dos','Épaules','Biceps','Triceps','Jambes','Abdos','Cardio','Autre'];
+const WO_MUSCLE_COLORS = {
+  'Pectoraux':'#4db8e8','Dos':'#35c9a0','Épaules':'#f0a030',
+  'Biceps':'#d855c0','Triceps':'#b8e030','Jambes':'#f06030',
+  'Abdos':'#a78bfa','Cardio':'#fb923c','Autre':'#7a8499'
+};
 
 function woRenderVolumeTable(){
   const el = document.getElementById('wo-volume-table');
@@ -18265,14 +18443,8 @@ function woRenderVolumeTable(){
     byMuscle[m].push({ name, avgPerSess, freqPerWeek, weekSets, sessions:d.sessions });
   });
 
-  const MUSCLE_ORDER  = ['Pectoraux','Dos','Épaules','Biceps','Triceps','Jambes','Abdos','Cardio','Autre'];
-  const MUSCLE_COLORS = {
-    'Pectoraux':'#4db8e8','Dos':'#35c9a0','Épaules':'#f0a030',
-    'Biceps':'#d855c0','Triceps':'#b8e030','Jambes':'#f06030',
-    'Abdos':'#a78bfa','Cardio':'#fb923c','Autre':'#7a8499'
-  };
-  const sorted = MUSCLE_ORDER.filter(m=>byMuscle[m])
-    .concat(Object.keys(byMuscle).filter(m=>!MUSCLE_ORDER.includes(m)));
+  const sorted = WO_MUSCLE_ORDER.filter(m=>byMuscle[m])
+    .concat(Object.keys(byMuscle).filter(m=>!WO_MUSCLE_ORDER.includes(m)));
 
   const VOL_REFS = {
     'Pectoraux':{min:10,max:20},'Dos':{min:10,max:20},'Épaules':{min:6,max:16},
@@ -18282,20 +18454,20 @@ function woRenderVolumeTable(){
 
   const grandTotal = Object.values(byMuscle).reduce((s,arr)=>s+arr.reduce((ss,e)=>ss+e.weekSets,0),0);
 
-  el.innerHTML = `<div style="margin-bottom:0.85rem;display:flex;flex-direction:column;gap:5px;align-items:flex-end;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">
-    <div style="display:flex;align-items:baseline;gap:8px">
-      <span style="font-size:0.68rem;color:var(--muted)">Total · toutes zones</span>
+  el.innerHTML = `<div style="margin-bottom:0.85rem;display:flex;flex-direction:column;gap:8px;align-items:flex-end;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px">
       <span style="font-size:0.95rem;font-weight:700;color:var(--lime)">${Math.round(grandTotal*10)/10} <span style="font-size:0.62rem;font-weight:400;color:var(--muted)">sér./sem</span></span>
+      <span style="font-size:0.6rem;color:var(--muted2)"><b style="color:var(--muted)">Moyenne</b> · toutes zones</span>
     </div>
-    <div style="display:flex;align-items:baseline;gap:8px">
-      <span style="font-size:0.68rem;color:var(--muted)">Sem. dernière (réelle)</span>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px">
       <span style="font-size:0.95rem;font-weight:700;color:var(--text)">${prevWeekSets} <span style="font-size:0.62rem;font-weight:400;color:var(--muted)">séries</span></span>
+      <span style="font-size:0.6rem;color:var(--muted2)"><b style="color:var(--muted)">Réel</b> · semaine dernière</span>
     </div>
   </div>`
   + sorted.map(muscle=>{
     const exos  = byMuscle[muscle].sort((a,b)=>b.weekSets-a.weekSets);
     const total = exos.reduce((s,e)=>s+e.weekSets,0);
-    const col   = MUSCLE_COLORS[muscle]||'#7a8499';
+    const col   = WO_MUSCLE_COLORS[muscle]||'#7a8499';
     const ref   = VOL_REFS[muscle];
     let refHint = '';
     if(ref){
@@ -18356,12 +18528,6 @@ function woRenderUserExoList(){
   const names = Object.keys(seen);
   if(!names.length){ el.innerHTML=''; return; }
 
-  const MUSCLE_COLORS = {
-    'Pectoraux':'#4db8e8','Dos':'#35c9a0','Épaules':'#f0a030',
-    'Biceps':'#d855c0','Triceps':'#b8e030','Jambes':'#f06030',
-    'Abdos':'#a78bfa','Cardio':'#fb923c','Autre':'#7a8499'
-  };
-  const MUSCLE_ORDER = ['Pectoraux','Dos','Épaules','Biceps','Triceps','Jambes','Abdos','Cardio','Autre'];
   // Grouper par muscle
   const byMuscle = {};
   names.forEach(n=>{
@@ -18369,12 +18535,12 @@ function woRenderUserExoList(){
     if(!byMuscle[m]) byMuscle[m]=[];
     byMuscle[m].push(n);
   });
-  const sortedMuscles = MUSCLE_ORDER.filter(m=>byMuscle[m])
-    .concat(Object.keys(byMuscle).filter(m=>!MUSCLE_ORDER.includes(m)));
+  const sortedMuscles = WO_MUSCLE_ORDER.filter(m=>byMuscle[m])
+    .concat(Object.keys(byMuscle).filter(m=>!WO_MUSCLE_ORDER.includes(m)));
 
   el.innerHTML = `<div style="font-size:0.63rem;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:0.09em;margin-bottom:0.65rem">Mes exercices (${names.length})</div>`
   + sortedMuscles.map(muscle=>{
-    const col = MUSCLE_COLORS[muscle]||'#7a8499';
+    const col = WO_MUSCLE_COLORS[muscle]||'#7a8499';
     const r=parseInt(col.slice(1,3),16),g=parseInt(col.slice(3,5),16),b=parseInt(col.slice(5,7),16);
     const exos = byMuscle[muscle].sort();
     return `<div style="margin-bottom:0.75rem">
@@ -18384,18 +18550,6 @@ function woRenderUserExoList(){
       </div>
     </div>`;
   }).join('');
-}
-
-function woCalcStreak(allSessions){
-  const dates = new Set(allSessions.map(s=>s.date));
-  let streak=0, d=new Date(today()+'T12:00');
-  for(let i=0;i<60;i++){
-    const ds=d.toISOString().split('T')[0];
-    if(dates.has(ds)){ streak++; d.setDate(d.getDate()-1); }
-    else if(i===0){ d.setDate(d.getDate()-1); }
-    else break;
-  }
-  return streak;
 }
 
 function woRenderPickerHistory(all, typeOrder, allTypes){
@@ -18415,9 +18569,8 @@ function woRenderPickerHistory(all, typeOrder, allTypes){
     const kcal=woV2CalcKcal(sess);
     const d=Math.round((new Date(today()+'T12:00')-new Date(sess.date+'T12:00'))/86400000);
     const dateStr=d===0?"Aujourd\'hui":d===1?'Hier':fmtDL(sess.date);
-    // Phase color
-    const PCOLS = { deficit:'#6ba3f5', maintien:'#a78bfa', surplus:'#fb923c' };
-    const phaseColor = sess.phase ? PCOLS[sess.phase] : null;
+    // Phase color (réutilise la constante globale, ne pas redéfinir localement)
+    const phaseColor = sess.phase ? WO_PHASE_COLORS[sess.phase] : null;
     const dotColor = phaseColor || t.color;
     const phasePill = sess.phase ? `<span style="font-size:0.58rem;color:${phaseColor};background:${phaseColor}18;border:1px solid ${phaseColor}44;border-radius:var(--r-pill);padding:1px 6px;margin-left:5px">${sess.phase==='deficit'?'Déficit':sess.phase==='maintien'?'Maintien':'Surplus'}</span>` : '';
     return `<div onclick="WO2.pickerDate='${sess.date}';woStartSession('${sess.type}')" class="wo-history-item" style="cursor:pointer;-webkit-tap-highlight-color:transparent" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
@@ -18549,28 +18702,28 @@ function woRenderSession(){
     return;
   }
 
-  // Séance précédente du MÊME type uniquement (on ne compare pas Push à Legs)
-  const allSessForBanner = allSessionsAll.filter(s=>s.date<draft.date && s.type===draft.type);
-  const prevSessGlobal = allSessForBanner.slice(-1)[0];
+  // Chaque exo est comparé à SA dernière occurrence, tous types de séance confondus
+  // (ex : pompes faites en Push ET en Upper → l'une sert de référence à l'autre).
   let globalPct = null;
-  if(prevSessGlobal && draft.exercises.length){
+  if(draft.exercises.length){
     const indivPcts=[];
     draft.exercises.forEach(exo=>{
-      const prevExo = prevSessGlobal.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
+      const prevExo = woLastExoOccurrence(allSessionsAll, draft.date, exo);
       if(!prevExo) return;
       const mp = woMatchedProgress(exo.sets||[], prevExo.sets||[]);
       if(mp.pct !== null) indivPcts.push(mp.pct);
     });
     if(indivPcts.length){
-      globalPct = Math.round(indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length);
+      globalPct = indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length;
     }
   }
   const banner = document.getElementById('wo-prog-banner');
   const bannerVal = document.getElementById('wo-prog-banner-val');
   if(banner && bannerVal && globalPct !== null){
     const gColor = globalPct > 0 ? 'var(--lime)' : globalPct < 0 ? 'var(--red)' : 'var(--muted)';
-    const gSign  = globalPct >= 0 ? '+' : '';
-    bannerVal.innerHTML = `<span style="color:${gColor}">${gSign}${globalPct}%</span> <span style="font-size:0.62rem;color:var(--muted2);font-weight:400">force estimée vs séance précédente</span>`;
+    const gSign  = globalPct > 0 ? '+' : globalPct < 0 ? '-' : '+';
+    const gStr   = Math.abs(globalPct).toFixed(1); // valeur affichée au dixième, jamais tronquée (ex: "4.0" et pas "4")
+    bannerVal.innerHTML = `<span style="color:${gColor}">${gSign}${gStr}%</span><span style="display:block;font-size:0.6rem;color:var(--muted2);font-weight:400;white-space:nowrap;margin-top:1px">force estimée</span>`;
     banner.style.display = 'flex';
     banner.style.borderColor = gColor + '44';
   } else if(banner){
@@ -18595,7 +18748,7 @@ function woRenderSession(){
     // Limiter à 5 séances max pour ne pas surcharger l'affichage
     const histDisplay = history.slice(-5);
     // Vrai 1RM estimé : le max sur UNE série
-    const epley1RM = sets => sets.reduce((best,x)=>{ const w=parseFloat(x.weight)||0,r=parseFloat(x.reps)||0; return (!w||!r)?best:Math.max(best,w*(1+r/30)); }, 0);
+    const epley1RM = woEpley1RMBest;
     // Records all-time pour détecter un PR en cours de saisie
     const allTimeMax1RM   = history.reduce((m,h)=>Math.max(m,epley1RM(h.sets)),0);
     const allTimeMaxW     = history.reduce((m,h)=>Math.max(m,...h.sets.map(s=>parseFloat(s.weight)||0)),0);
@@ -18646,21 +18799,21 @@ function woRenderSession(){
       : '';
     const livePRBadge = (isLivePRWeight || isLivePR1RM)
       ? `<span style="display:inline-flex;align-items:center;gap:3px;margin-left:3px">`
-        +(isLivePRWeight?`<span style="display:inline-flex;align-items:center;font-size:0.48rem;font-weight:800;color:var(--lime);background:var(--lime-bg);border:1px solid var(--lime-d);border-radius:4px;padding:1px 4px;animation:woPRFlash 1s ease-in-out infinite alternate">⭐PR poids</span>`:'')
-        +(isLivePR1RM?`<span style="display:inline-flex;align-items:center;font-size:0.48rem;font-weight:800;color:var(--lime);background:var(--lime-bg);border:1px solid var(--lime-d);border-radius:4px;padding:1px 4px;animation:woPRFlash 1s ease-in-out infinite alternate">⭐PR 1RM</span>`:'')
+        +(isLivePRWeight?`<span style="display:inline-flex;align-items:center;font-size:0.48rem;font-weight:800;color:var(--lime);background:var(--lime-bg);border:1px solid var(--lime-d);border-radius:4px;padding:1px 4px;animation:woPRFlash 1s ease-in-out infinite alternate">⭐poids ${Math.round(allTimeMaxW)}→${Math.round(liveMaxW)}kg</span>`:'')
+        +(isLivePR1RM?`<span style="display:inline-flex;align-items:center;font-size:0.48rem;font-weight:800;color:var(--lime);background:var(--lime-bg);border:1px solid var(--lime-d);border-radius:4px;padding:1px 4px;animation:woPRFlash 1s ease-in-out infinite alternate">⭐1RM ${Math.round(allTimeMax1RM)}→${Math.round(live1RM)}kg</span>`:'')
         +`</span>`
       : '';
     const todayCol = `<div style="padding:6px 10px;background:${todayBg};min-width:110px;${hasHistory?'border-left:2px solid '+(isLivePR?'var(--lime)':inputBorderColor):''}">
       <div style="font-size:0.54rem;color:${isLivePR?'var(--lime)':inputBorderColor};margin-bottom:5px;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;display:flex;align-items:center">${draftColLabel}${todayEvolBadge}${livePRBadge}</div>
       ${currentSets.map((s,si)=>`
-        <div style="display:flex;align-items:center;gap:4px;margin-bottom:5px;opacity:${s.skipped?'0.38':'1'}">
+        <div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">
           <input type="number" value="${s.reps||''}" placeholder="r" min="1" max="99" inputmode="numeric"
-            style="width:42px;height:36px;padding:4px 3px;font-size:0.9rem;font-weight:600;border-radius:6px;border:2px solid ${s.skipped?'var(--muted2)':inputBorderColor};background:var(--s3);color:var(--text);text-align:center;font-family:DM Sans,sans-serif;${s.skipped?'text-decoration:line-through':''}"
-            onfocus="this.select()" oninput="woDraftUpdateSet(${ei},${si},'reps',this.value)" ${s.skipped?'disabled':''}>
+            style="width:42px;height:36px;padding:4px 3px;font-size:0.9rem;font-weight:600;border-radius:6px;border:2px solid ${inputBorderColor};background:var(--s3);color:var(--text);text-align:center;font-family:DM Sans,sans-serif"
+            onfocus="this.select()" oninput="woDraftUpdateSet(${ei},${si},'reps',this.value)">
           <span style="font-size:0.62rem;color:var(--muted2);flex-shrink:0">×</span>
           <input type="number" value="${s.weight||''}" placeholder="kg" min="0" max="999" step="0.5" inputmode="decimal"
-            style="width:50px;height:36px;padding:4px 3px;font-size:0.9rem;font-weight:600;border-radius:6px;border:2px solid ${s.skipped?'var(--muted2)':inputBorderColor};background:var(--s3);color:var(--text);text-align:center;font-family:DM Sans,sans-serif;${s.skipped?'text-decoration:line-through':''}"
-            onfocus="this.select()" oninput="woDraftUpdateSet(${ei},${si},'weight',this.value)" ${s.skipped?'disabled':''}>
+            style="width:50px;height:36px;padding:4px 3px;font-size:0.9rem;font-weight:600;border-radius:6px;border:2px solid ${inputBorderColor};background:var(--s3);color:var(--text);text-align:center;font-family:DM Sans,sans-serif"
+            onfocus="this.select()" oninput="woDraftUpdateSet(${ei},${si},'weight',this.value)">
           <button onclick="woDraftDelSet(${ei},${si})"
             style="background:none;border:none;color:var(--muted2);cursor:pointer;font-size:0.75rem;padding:4px 3px;min-width:24px;min-height:30px;-webkit-tap-highlight-color:transparent">✕</button>
         </div>`).join('')}
@@ -19004,6 +19157,26 @@ function woFinishSession(){
     openWoDurPanel(true); // true = mode "terminer"
     return;
   }
+  // ── Détection des PR 1RM avant sauvegarde : on compare chaque exercice de
+  //    la séance à son record all-time (toutes séances, tous types confondus),
+  //    pour pouvoir annoncer "de combien à combien" dans le toast final. ──
+  const _allTypesPR = Object.keys(woGetAllTypes());
+  const _priorSessionsPR = [];
+  _allTypesPR.forEach(tid=>woV2GetSessions(tid).forEach(s=>{ if(s.date<draft.date) _priorSessionsPR.push(s); }));
+  const prList = [];
+  activeExos.forEach(exo=>{
+    const curSets = (exo.sets||[]).filter(s=>!s.skipped);
+    const cur1RM = Math.round(woEpley1RMBest(curSets));
+    if(cur1RM<=0) return;
+    let prevBest=0;
+    _priorSessionsPR.forEach(sess=>{
+      const found = sess.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
+      if(found) prevBest = Math.max(prevBest, woEpley1RMBest(found.sets));
+    });
+    prevBest = Math.round(prevBest);
+    if(prevBest>0 && cur1RM>prevBest) prList.push({name:exo.name, from:prevBest, to:cur1RM});
+  });
+
   const session = {
     id:'sess_'+Date.now(),
     date: draft.date,
@@ -19025,7 +19198,13 @@ function woFinishSession(){
   recomputeAllTDEE?.();
   if(draft.date===today()){ renderDashboard?.(); renderApDayBanner?.(); }
   woDraftClear();
-  toast(`✓ Séance ${WO_SESSION_TYPES[draft.type]?.label} · ~${kcal} kcal enregistrée`, 'var(--teal)');
+  if(prList.length){
+    const p = prList[0];
+    const extra = prList.length>1 ? ` (+${prList.length-1} autre record${prList.length>2?'s':''})` : '';
+    toast(`⭐ Nouveau 1RM ${p.name} : ${p.from}kg → ${p.to}kg${extra}`, 'var(--lime)');
+  } else {
+    toast(`✓ Séance ${WO_SESSION_TYPES[draft.type]?.label} · ~${kcal} kcal enregistrée`, 'var(--teal)');
+  }
   woShowScreen('picker');
   woRenderPicker();
 }
@@ -19254,7 +19433,7 @@ function mrCardHtml(t){
   const prot = Math.round(t.ingredients.reduce((s,i) => s + (i.prot||0), 0) * 10) / 10;
   const gluc = Math.round(t.ingredients.reduce((s,i) => s + (i.gluc||0), 0) * 10) / 10;
   const lip  = Math.round(t.ingredients.reduce((s,i) => s + (i.lip||0),  0) * 10) / 10;
-  return `<div class="mr-card" onclick="mrOpenUseDetail('${t.id}')" role="button" tabindex="0" aria-label="Adapter ${t.name} pour ce repas" style="display:flex;align-items:center;gap:0.7rem">
+  return `<div class="mr-card" onclick="mrOpenUseDetail('${t.id}')" role="button" tabindex="0" aria-label="Adapter ${t.name} pour ce repas" style="display:flex;flex-direction:row;align-items:center;gap:0.7rem">
     ${t.image
       ? `<img src="${t.image}" alt="" style="width:42px;height:42px;border-radius:10px;object-fit:cover;flex-shrink:0">`
       : `<div style="width:42px;height:42px;border-radius:10px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0" aria-hidden="true">${t.emoji||'🍽️'}</div>`}
