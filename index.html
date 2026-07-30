@@ -5392,7 +5392,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
           <div class="hero-underline"></div>
         </div>
         <div class="range-tabs">
-          <button class="range-tab active" id="wo-prog-tab-session" onclick="woSwitchProgTab('session')">Séance</button>
+          <button class="range-tab active" id="wo-prog-tab-week" onclick="woSwitchProgTab('week')">Semaine</button>
           <button class="range-tab" id="wo-prog-tab-month" onclick="woSwitchProgTab('month')">Mois</button>
         </div>
       </div>
@@ -6155,7 +6155,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-07-30.10';
+const APP_BUILD_VERSION = '2026-07-30.12';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -17687,16 +17687,16 @@ function woSwitchPickerTab(tab){
     if(p) p.style.display = active ? '' : 'none';
     if(b) b.classList.toggle('active', active);
   });
-  if(tab === 'progression') woSwitchProgTab('session');
+  if(tab === 'progression') woSwitchProgTab('week');
   if(tab === 'volume'){ woRenderVolumeTable(); woRenderUserExoList(); }
 }
 
 
-/* ── Sous-onglets période (séance / mois) ── */
+/* ── Sous-onglets période (semaine / mois) ── */
 function woSwitchProgTab(period){
-  const btnS = document.getElementById('wo-prog-tab-session');
+  const btnW = document.getElementById('wo-prog-tab-week');
   const btnM = document.getElementById('wo-prog-tab-month');
-  [[btnS,'session'],[btnM,'month']].forEach(([btn,t])=>{
+  [[btnW,'week'],[btnM,'month']].forEach(([btn,t])=>{
     if(!btn) return;
     btn.classList.toggle('active', t===period);
   });
@@ -17908,32 +17908,6 @@ function woSessPairPct(curSess, allSorted){
   return indivPcts.length ? Math.round(indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length) : null;
 }
 
-// % "depuis le début" pour un type de séance : pour chaque exo présent dans la
-// DERNIÈRE séance de ce type, on retrouve TOUTE son historique (tous types de
-// séance confondus, cf. décision sur les exos partagés entre types), et on compare
-// sa toute première occurrence jamais enregistrée à cette dernière occurrence.
-// Puis moyenne simple entre tous les exos concernés.
-function woSessTrendPct(sortedAsc, allSorted){
-  if(!sortedAsc || !sortedAsc.length) return null;
-  const lastSess = sortedAsc[sortedAsc.length-1];
-  if(!lastSess.exercises?.length) return null;
-  const pcts = [];
-  lastSess.exercises.forEach(exo=>{
-    // Toutes les occurrences de cet exo (tous types), triées, jusqu'à lastSess incluse
-    const occs = [];
-    allSorted.forEach(s=>{
-      if(s.date > lastSess.date) return;
-      const match = s.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
-      if(match) occs.push({date:s.date, sets:(match.sets||[]).filter(x=>!x.skipped)});
-    });
-    if(occs.length < 2) return; // pas d'historique antérieur pour cet exo
-    const first = occs[0], last = occs[occs.length-1];
-    const mp = woMatchedProgress(last.sets, first.sets);
-    if(mp.pct !== null) pcts.push(mp.pct);
-  });
-  return pcts.length ? Math.round(pcts.reduce((a,b)=>a+b,0)/pcts.length) : null;
-}
-
 // % entre deux mois agrégés : même principe, sur woAggregate()
 function woPeriodPairPct(dCur, dRef){
   if(!dCur || !dRef) return null;
@@ -17995,10 +17969,13 @@ function woBuildProgSeries(period){
     return {typesArr, labels, datasets};
   }
 
-  // month : union des périodes de tous les types, chacune comparée au mois
-  // précédent où ce type de séance a été pratiqué (même principe que ci-dessus)
-  const periodFn = woMonthKey;
-  const labelFn  = woMonthLabel;
+  // week / month : union des périodes de tous les types, chacune comparée à la
+  // période précédente où ce type de séance a été pratiqué (même principe que
+  // ci-dessus). Une semaine/mois sans séance d'un type n'a simplement pas de clé
+  // dans byPeriod pour ce type → pas de "plat" artificiel, juste un point manquant
+  // (spanGaps trace une ligne directe jusqu'au point suivant, comme le graphique Poids).
+  const periodFn = period==='week' ? woWeekKey  : woMonthKey;
+  const labelFn  = period==='week' ? woWeekLabel : woMonthLabel;
   const perType = typesArr.map(([tid,t])=>{
     const byPeriod = woAggregate(woV2GetSessions(tid), periodFn);
     const periods  = [...byPeriod.keys()].sort();
@@ -18183,7 +18160,11 @@ function woBuildHistoryHtml(typesArr){
 
     let trendBadge = '';
     if(sortedAsc.length >= 2){
-      const tp = woSessTrendPct(sortedAsc, allSorted);
+      // Même valeur que le point final de la courbe chaînée du graphique
+      // (woChainSessPct), pour que badge et graphique concordent toujours.
+      const chain = woChainSessPct(sortedAsc, allSorted);
+      let tp = null;
+      for(let i=chain.length-1;i>=0;i--){ if(chain[i]!==null){ tp = chain[i]; break; } }
       if(tp !== null){
         const tc = tp>0?'#4ade80':tp<0?'var(--red)':'var(--muted)';
         trendBadge = `<span style="font-size:0.6rem;font-weight:700;color:${tc};background:${tc}18;border:1px solid ${tc}44;border-radius:var(--r-pill);padding:2px 7px">${tp>0?'▲ +':'▼ '}${tp}% depuis début</span>`;
