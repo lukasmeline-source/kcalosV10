@@ -580,17 +580,6 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 .spinner{width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--lime);border-radius:50%;animation:spin 0.7s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ── AI COACH PAGE ──
-   FEATURE DÉSACTIVÉE TEMPORAIREMENT (demande utilisateur — juillet 2026).
-   La page "page-coach" et tout son JS (refreshCoachData, buildCoachPrompt, askCoach…)
-   restent intacts et fonctionnels, seuls les liens de navigation qui y mènent sont masqués
-   ci-dessous. Personne ne peut donc plus y accéder, mais rien n'a été supprimé.
-   → Pour RÉACTIVER : supprimer (ou commenter) la règle CSS juste en dessous
-   ( .nav-item[data-page="coach"], .bn-item[data-page="coach"] { display:none!important } ).
-   Ne pas supprimer le HTML de #page-coach ni les fonctions coach dans le JS. */
-.nav-item[data-page="coach"],
-.bn-item[data-page="coach"]{display:none!important}
-
 /* ── SLEEP PAGE ──
    FEATURE DÉSACTIVÉE TEMPORAIREMENT (demande utilisateur — juillet 2026) :
    le suivi sommeil ne fonctionne pas correctement tant que l'app tourne en PWA.
@@ -606,33 +595,6 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 #widget-sommeil,
 #widget-sleep-score,
 #sl-dashboard-banner{display:none!important}
-
-.ai-key-zone{padding:1.1rem 1.4rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);margin-bottom:1rem}
-.ai-key-zone .ak-lbl{font-size:0.68rem;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;gap:6px}
-.ai-key-zone .ak-lbl .ak-badge{font-size:0.6rem;padding:2px 8px;background:var(--lime-bg);border:1px solid var(--lime-d);border-radius:10px;color:var(--lime)}
-.data-preview{display:grid;grid-template-columns:repeat(3,1fr);gap:0.9rem;margin-bottom:1.1rem}
-.dp-card{padding:0.9rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm)}
-.dp-card .dp-lbl{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted2);margin-bottom:4px}
-.dp-card .dp-val{font-size:1.2rem;font-weight:500;color:var(--text)}
-.dp-card .dp-sub{font-size:0.65rem;color:var(--muted);margin-top:2px}
-.goal-selector{display:flex;gap:6px;margin-bottom:1.1rem}
-.gs-btn{flex:1;padding:0.55rem;text-align:center;border:1px solid var(--border);border-radius:var(--r-sm);cursor:pointer;font-size:0.78rem;color:var(--muted);background:var(--s2);transition:all var(--trans);font-family:Syne,sans-serif}
-.gs-btn.active{background:var(--lime-bg);border-color:var(--lime-d);color:var(--lime);font-weight:500}
-.ai-response-block{margin-top:1.1rem;display:none}
-.ai-response-block.show{display:block}
-.ai-response-card{background:var(--s1);border:1px solid var(--teal-d);border-radius:var(--r);padding:1.5rem;position:relative;overflow:hidden}
-.ai-response-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--teal),var(--lime))}
-.ai-response-card .arc-header{display:flex;align-items:center;gap:10px;margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border)}
-.ai-response-card .arc-header .arc-icon{font-size:1.3rem}
-.ai-response-card .arc-header .arc-title{font-size:0.78rem;font-weight:500;color:var(--teal)}
-.ai-response-card .arc-header .arc-date{font-size:0.65rem;color:var(--muted2);margin-left:auto}
-.ai-response-card .arc-body{font-size:0.83rem;color:var(--muted);line-height:1.7;white-space:pre-wrap}
-.ai-loading{display:none;align-items:center;gap:12px;padding:1.5rem;font-size:0.82rem;color:var(--muted)}
-.ai-loading.show{display:flex}
-.ai-history-item{background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:1rem;margin-bottom:0.65rem;cursor:pointer;transition:all var(--trans)}
-.ai-history-item:hover{border-color:var(--border2)}
-.ai-history-item .ah-date{font-size:0.65rem;color:var(--muted2);margin-bottom:4px}
-.ai-history-item .ah-preview{font-size:0.77rem;color:var(--muted);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 
 /* ── MINI BAR CHART ── */
 .mini-chart-wrap{background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:1rem;margin-top:1rem}
@@ -679,6 +641,40 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
   color:#fff;font-weight:700;font-size:0.82rem;letter-spacing:0;
 }
 .account-bubble.ab-hidden{display:none}
+
+/* ── REPORT BUBBLE (compte rendu / IA) ── */
+.report-bubble{
+  position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);right:66px;z-index:900;
+  width:42px;height:42px;border-radius:50%;
+  background:var(--s3);border:1.5px solid var(--border2);color:var(--muted);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  box-shadow:0 2px 12px rgba(0,0,0,0.35);
+  transition:all var(--trans);-webkit-tap-highlight-color:transparent;
+}
+.report-bubble:hover{border-color:var(--teal-d);background:var(--teal-bg);color:var(--teal)}
+.report-bubble:active{transform:scale(0.92)}
+.report-bubble.rb-hidden{display:none}
+.report-bubble.rb-active{border-color:var(--teal-d);background:var(--teal-bg);color:var(--teal)}
+
+.report-bubble-menu{
+  position:fixed;top:calc(env(safe-area-inset-top,0px) + 58px);right:16px;z-index:901;
+  background:var(--s1);border:1px solid var(--border2);border-radius:var(--r-sm);
+  box-shadow:0 8px 24px rgba(0,0,0,0.35);padding:6px;min-width:170px;
+  display:none;flex-direction:column;gap:2px;
+  animation:reportMenuIn 0.16s cubic-bezier(0.34,1.2,0.64,1);
+}
+.report-bubble-menu.open{display:flex}
+@keyframes reportMenuIn{from{opacity:0;transform:translateY(-6px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.rbm-item{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 10px;border-radius:8px;border:none;background:none;
+  color:var(--text);font-size:0.8rem;font-family:Syne,sans-serif;text-align:left;
+  cursor:pointer;transition:background var(--trans);width:100%;
+}
+.rbm-item:hover{background:var(--s2)}
+.rbm-item .ico{flex-shrink:0;color:var(--muted2)}
+.rbm-soon{margin-left:auto;font-size:0.58rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted2);background:var(--s2);border:1px solid var(--border);border-radius:var(--r-pill);padding:2px 6px}
 
 /* ── ACCOUNT PANEL ── */
 .account-panel{
@@ -1257,7 +1253,6 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
   #steps-stats-grid{grid-template-columns:1fr 1fr!important}
   .grid2,.grid3,.grid4{grid-template-columns:1fr}
   .stat-cards{grid-template-columns:1fr 1fr}
-  .data-preview{grid-template-columns:1fr 1fr}
   /* keep row2 as 2 cols — inputs side by side */
   .row2{grid-template-columns:1fr 1fr}
   /* page header smaller */
@@ -1284,12 +1279,8 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
   .range-tab{padding:0.3rem 0.7rem;font-size:0.68rem}
   /* import stats */
   .import-stat-grid{grid-template-columns:1fr 1fr 1fr}
-  /* goal selector */
-  .goal-selector{flex-direction:column}
   /* tdee total stack */
   .tdee-total{flex-direction:column;gap:0.5rem}
-  /* ai data preview */
-  .data-preview{grid-template-columns:1fr}
   /* mini chart smaller */
   .mini-chart-wrap canvas{max-height:130px}
   /* stat cards */
@@ -2561,6 +2552,21 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   align-items:flex-end;justify-content:center;
 }
 .mr-use-modal.open{display:flex}
+
+/* ── HARMONISATION POP-UPS ──
+   Croix de fermeture unique et cohérente sur tous les pop-up + anti
+   scroll-chaining (empêche le scroll du pop-up de "remonter" vers la page
+   en dessous une fois qu'on atteint le haut/bas du contenu). */
+.kc-modal-close{
+  position:absolute;top:14px;right:14px;z-index:3;
+  width:30px;height:30px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--s3);border:1px solid var(--border2);
+  color:var(--muted);font-size:0.85rem;cursor:pointer;
+  transition:var(--trans);-webkit-tap-highlight-color:transparent;
+}
+.kc-modal-close:hover{color:var(--text);background:var(--s2)}
+.kc-modal-scroll{overscroll-behavior:contain}
 .mr-use-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
 .mr-use-sheet{
   position:relative;width:100%;max-width:480px;
@@ -2640,8 +2646,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   <div class="nav-item"        data-page="apports">   <span class="nav-icon"><span class="ico"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M3 8.5h10"/><path d="M4 8.5C4 11.6 5.8 13 8 13s4-1.4 4-4.5"/><path d="M8 8.5V5M6.2 5.8 8 4l1.8 1.8"/></svg></span></span> Apports</div>
   <div class="nav-item"        data-page="progression"><span class="nav-icon"><span class="ico"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,12 5.5,7.5 9,9.5 14,3.5"/><circle cx="14" cy="3.5" r="1.3" fill="currentColor" stroke="none"/></svg></span></span> Progression</div>
   <div class="nav-item"        data-page="steps">     <span class="nav-icon"><span class="ico"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><ellipse cx="5.5" cy="5.5" rx="2.2" ry="3.2" transform="rotate(-8 5.5 5.5)"/><ellipse cx="10.5" cy="10.5" rx="2.2" ry="3.2" transform="rotate(8 10.5 10.5)"/></svg></span></span> Mes Pas</div>
-  <!-- Coach IA : page masquée temporairement, voir règle CSS ".nav-item[data-page='coach']" (recherche "FEATURE DÉSACTIVÉE") -->
-  <div class="nav-item"        data-page="coach">     <span class="nav-icon"><span class="ico"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="2.5" y="5.5" width="11" height="8.5" rx="2.2"/><circle cx="6" cy="9.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="10" cy="9.5" r="1.1" fill="currentColor" stroke="none"/><line x1="8" y1="2" x2="8" y2="5.5"/><line x1="5.5" y1="2" x2="10.5" y2="2"/><line x1="5" y1="12.5" x2="7" y2="12.5"/><line x1="9" y1="12.5" x2="11" y2="12.5"/></svg></span></span> Coach IA</div>
+  <!-- Coach IA supprimé (remplacé par le système compte-rendu/IA) -->
   <div class="nav-item"        data-page="workout">   <span class="nav-icon"><span class="ico"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="5.5" y1="8" x2="10.5" y2="8"/><line x1="1.5" y1="6" x2="1.5" y2="10"/><line x1="5" y1="5" x2="5" y2="11"/><line x1="11" y1="5" x2="11" y2="11"/><line x1="14.5" y1="6" x2="14.5" y2="10"/></svg></span></span> Séances</div>
   <!-- Sommeil : page masquée temporairement, voir règle CSS ".nav-item[data-page='sommeil']" (recherche "FEATURE DÉSACTIVÉE") -->
   <div class="nav-item"        data-page="sommeil">  <span class="nav-icon"><span class="ico"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M13.5 8A6 6 0 013 6a7 7 0 008 8 6 6 0 002.5-6z"/><circle cx="11" cy="4" r="0.8" fill="currentColor" stroke="none"/><circle cx="13" cy="6.5" r="0.6" fill="currentColor" stroke="none"/></svg></span></span> Sommeil</div>
@@ -2657,7 +2662,6 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     <button class="bn-item" data-page="progression"><span class="bn-icon"><span class="ico"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,12 5.5,7.5 9,9.5 14,3.5"/><circle cx="14" cy="3.5" r="1.3" fill="currentColor" stroke="none"/></svg></span></span>Courbe</button>
     <button class="bn-item" data-page="workout"><span class="bn-icon"><span class="ico"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="5.5" y1="8" x2="10.5" y2="8"/><line x1="1.5" y1="6" x2="1.5" y2="10"/><line x1="5" y1="5" x2="5" y2="11"/><line x1="11" y1="5" x2="11" y2="11"/><line x1="14.5" y1="6" x2="14.5" y2="10"/></svg></span></span>Séances</button>
     <button class="bn-item" data-page="steps"><span class="bn-icon"><span class="ico"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><ellipse cx="5.5" cy="5.5" rx="2.2" ry="3.2" transform="rotate(-8 5.5 5.5)"/><ellipse cx="10.5" cy="10.5" rx="2.2" ry="3.2" transform="rotate(8 10.5 10.5)"/></svg></span></span>Pas</button>
-    <button class="bn-item" data-page="coach"><span class="bn-icon"><span class="ico"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="2.5" y="5.5" width="11" height="8.5" rx="2.2"/><circle cx="6" cy="9.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="10" cy="9.5" r="1.1" fill="currentColor" stroke="none"/><line x1="8" y1="2" x2="8" y2="5.5"/><line x1="5.5" y1="2" x2="10.5" y2="2"/><line x1="5" y1="12.5" x2="7" y2="12.5"/><line x1="9" y1="12.5" x2="11" y2="12.5"/></svg></span></span>Coach</button>
     <!-- Sommeil : bouton masqué temporairement, voir règle CSS ".bn-item[data-page='sommeil']" (recherche "FEATURE DÉSACTIVÉE") -->
     <button class="bn-item" data-page="sommeil"><span class="bn-icon"><span class="ico"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M13.5 8A6 6 0 013 6a7 7 0 008 8 6 6 0 002.5-6z"/></svg></span></span>Sommeil</button>
   </div>
@@ -2667,6 +2671,23 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <button class="account-bubble" id="account-bubble" onclick="openAccountPanel()" title="Mon compte">
   <div class="ab-avatar" id="ab-avatar"><span class="ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="8" cy="5.5" r="3"/><path d="M2.5 14c0-3 2.4-5 5.5-5s5.5 2 5.5 5"/></svg></span></div>
 </button>
+
+<!-- ══ REPORT BUBBLE (compte rendu / IA) ══
+     Visible uniquement sur les pages où un compte rendu existe (voir REPORT_BUBBLE_PAGES).
+     Contenu du menu adapté à la page active au moment du clic. -->
+<button class="report-bubble" id="report-bubble" onclick="toggleReportMenu()" title="Compte rendu">
+  <span class="ico"><svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13.5V8.5"/><path d="M8 13.5V4.5"/><path d="M13 13.5V6.5"/></svg></span>
+</button>
+<div class="report-bubble-menu" id="report-bubble-menu">
+  <button class="rbm-item" onclick="openReportPeriodPicker()">
+    <span class="ico"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13.5V8.5"/><path d="M8 13.5V4.5"/><path d="M13 13.5V6.5"/></svg></span>
+    Compte rendu
+  </button>
+  <button class="rbm-item" onclick="openReportIAComingSoon()">
+    <span class="ico"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 14c-3.3 0-5.2-2-5.2-4.3 0-2 1.4-3 1.4-5.2C5.3 6 5.5 7 6.3 7.7c-.1-2.2 1-4.5 3-6 0 2 1 3.8 1.5 5 .5-.8.4-2 .4-3.2 1.8 1.7 2.5 3.8 2.5 5.2C13.7 11 12 14 8 14z"/></svg></span>
+    IA <span class="rbm-soon">Bientôt</span>
+  </button>
+</div>
 
 <!-- ══ ACCOUNT PANEL ══ -->
 <div class="account-panel" id="account-panel">
@@ -2769,6 +2790,32 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
           <div class="rb"><input type="radio" name="ap-sexe" id="ap-h" value="homme" checked><label for="ap-h">Homme</label></div>
           <div class="rb"><input type="radio" name="ap-sexe" id="ap-f" value="femme"><label for="ap-f">Femme</label></div>
         </div>
+      </div>
+
+      <!-- Phase actuelle — synchronisée avec la page Séance (wo_last_phase) et l'historique objectif kcal -->
+      <div class="field">
+        <label>Phase actuelle</label>
+        <div class="radio-group cols3">
+          <div class="rb" id="ap-phase-deficit" onclick="setCurrentPhase('deficit')" style="cursor:pointer">
+            <label style="pointer-events:none;border-color:#6ba3f526;color:var(--muted);flex-direction:row;gap:6px">
+              <span style="width:7px;height:7px;border-radius:50%;background:#6ba3f5;display:inline-block;flex-shrink:0"></span>
+              Déficit
+            </label>
+          </div>
+          <div class="rb" id="ap-phase-maintien" onclick="setCurrentPhase('maintien')" style="cursor:pointer">
+            <label style="pointer-events:none;border-color:#a78bfa26;color:var(--muted);flex-direction:row;gap:6px">
+              <span style="width:7px;height:7px;border-radius:50%;background:#a78bfa;display:inline-block;flex-shrink:0"></span>
+              Maintien
+            </label>
+          </div>
+          <div class="rb" id="ap-phase-surplus" onclick="setCurrentPhase('surplus')" style="cursor:pointer">
+            <label style="pointer-events:none;border-color:#fb923c26;color:var(--muted);flex-direction:row;gap:6px">
+              <span style="width:7px;height:7px;border-radius:50%;background:#fb923c;display:inline-block;flex-shrink:0"></span>
+              Surplus
+            </label>
+          </div>
+        </div>
+        <div style="font-size:0.62rem;color:var(--muted2);margin-top:5px">Appliqué immédiatement · synchronisé avec la page Séance</div>
       </div>
 
       <button class="btn" onclick="saveAccountProfile()" style="margin-top:0.5rem">Enregistrer le profil →</button>
@@ -4202,6 +4249,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <div class="mr-use-modal" id="mr-use-modal">
   <div class="mr-use-overlay" onclick="mrCloseUseModal()"></div>
   <div class="mr-use-sheet">
+    <button class="kc-modal-close" onclick="mrCloseUseModal()" aria-label="Fermer">✕</button>
     <div class="mr-use-handle"></div>
     <div class="mr-use-title">Ajouter <em id="mr-use-name">ce repas</em></div>
     <div class="mr-use-subtitle">Choisir le repas de la journée</div>
@@ -5260,64 +5308,6 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 
 
 <!-- ═══ COACH IA ═══ -->
-<div class="page" id="page-coach">
-  <div class="ph"><h2>Coach <em>IA</em></h2><p>Analyse intelligente · Recommandations personnalisées · Anthropic Claude</p></div>
-  <div class="grid2">
-    <div class="card">
-      <div class="card-title">Configuration</div>
-      <div class="ai-key-zone">
-        <div class="ak-lbl">Clé API Anthropic <span class="ak-badge">Stockée localement</span></div>
-        <div class="inp-wrap" style="margin-top:4px">
-          <input type="password" id="ai-key" placeholder="sk-ant-api03-…" oninput="localStorage.setItem('kcalos_apikey',this.value)">
-        </div>
-        <div style="font-size:0.66rem;color:var(--muted2);margin-top:6px">La clé n'est jamais envoyée ailleurs que vers api.anthropic.com · <a href="https://console.anthropic.com" target="_blank" style="color:var(--teal)">Obtenir une clé →</a></div>
-      </div>
-
-      <div class="field"><label>Objectif actuel</label>
-        <div class="goal-selector">
-          <div class="gs-btn active" data-goal="cut" onclick="selectGoal(this)">🔵 Sèche</div>
-          <div class="gs-btn" data-goal="maintien" onclick="selectGoal(this)"><span style="width:7px;height:7px;border-radius:50%;background:var(--teal);display:inline-block;margin-right:4px;vertical-align:middle"></span>Maintien</div>
-          <div class="gs-btn" data-goal="bulk" onclick="selectGoal(this)">🟠 Prise de masse</div>
-        </div>
-      </div>
-
-      <div class="field"><label>Message additionnel <span class="hint">optionnel</span></label>
-        <textarea id="ai-extra" placeholder="Ex : j'ai du mal à perdre du poids depuis 2 semaines, je ressens de la fatigue…" style="height:70px"></textarea>
-      </div>
-
-      <div style="margin-bottom:0.9rem">
-        <div style="font-size:0.7rem;color:var(--muted2);margin-bottom:6px">Données envoyées au coach (14 derniers jours)</div>
-        <div class="data-preview" id="data-preview">
-          <div class="dp-card"><div class="dp-lbl">Poids moyen</div><div class="dp-val" id="dp-poids">—</div><div class="dp-sub">kg sur 14j</div></div>
-          <div class="dp-card"><div class="dp-lbl">Apport moyen</div><div class="dp-val" id="dp-apport">—</div><div class="dp-sub">kcal/j</div></div>
-          <div class="dp-card"><div class="dp-lbl">Balance moy.</div><div class="dp-val" id="dp-balance">—</div><div class="dp-sub">kcal/j</div></div>
-        </div>
-      </div>
-
-      <button class="btn teal" id="ai-btn" onclick="askCoach()"><span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="2.5" y="5.5" width="11" height="8.5" rx="2.2"/><circle cx="6" cy="9.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="10" cy="9.5" r="1.1" fill="currentColor" stroke="none"/><line x1="8" y1="2" x2="8" y2="5.5"/><line x1="5.5" y1="2" x2="10.5" y2="2"/></svg></span> Analyser avec le Coach IA →</button>
-      <div class="ai-loading" id="ai-loading"><div class="spinner" style="border-top-color:var(--teal)"></div>Le coach analyse tes données…</div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Réponse du coach</div>
-      <div class="ai-response-block" id="ai-response-block">
-        <div class="ai-response-card" id="ai-response-card">
-          <div class="arc-header">
-            <div class="arc-icon"><span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="2.5" y="5.5" width="11" height="8.5" rx="2.2"/><circle cx="6" cy="9.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="10" cy="9.5" r="1.1" fill="currentColor" stroke="none"/><line x1="8" y1="2" x2="8" y2="5.5"/><line x1="5.5" y1="2" x2="10.5" y2="2"/></svg></span></div>
-            <div><div class="arc-title">Coach KCALos</div></div>
-            <div class="arc-date" id="arc-date"></div>
-          </div>
-          <div class="arc-body" id="arc-body"></div>
-        </div>
-      </div>
-      <div id="ai-history-list" style="margin-top:1rem"></div>
-      <div id="ai-empty" style="font-size:0.78rem;color:var(--muted2);text-align:center;padding:2.5rem 1rem;line-height:1.7">
-        <span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="2.5" y="5.5" width="11" height="8.5" rx="2.2"/><circle cx="6" cy="9.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="10" cy="9.5" r="1.1" fill="currentColor" stroke="none"/><line x1="8" y1="2" x2="8" y2="5.5"/><line x1="5.5" y1="2" x2="10.5" y2="2"/></svg></span> Ton coach IA est prêt.<br>Configure ta clé API et lance l'analyse.
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- ═══ WORKOUT / SÉANCES ═══ -->
 <div class="page" id="page-workout">
 
@@ -5856,6 +5846,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <!-- EAU — Bottom sheet saisie personnalisée -->
 <div id="eau-sheet" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)" onclick="if(event.target===this)closeEauSheet()">
   <div style="position:absolute;bottom:0;left:0;right:0;background:var(--s1);border-radius:20px 20px 0 0;padding:1.5rem 1.25rem calc(1.75rem + env(safe-area-inset-bottom,0px));max-width:480px;margin:0 auto;border-top:1px solid var(--border2)">
+    <button class="kc-modal-close" onclick="closeEauSheet()" aria-label="Fermer">✕</button>
     <div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1.25rem"></div>
     <div style="font-family:Playfair Display,serif;font-size:1.1rem;margin-bottom:0.9rem">💧 Ajouter de l'eau</div>
     <div style="display:flex;gap:8px;margin-bottom:0.85rem">
@@ -5878,7 +5869,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <div style="font-size:0.65rem;color:var(--muted2);font-family:Syne,sans-serif">Historique · <strong id="eau-sheet-total" style="color:var(--teal)">0</strong> ml aujourd'hui</div>
       <button onclick="eauReset()" style="font-size:0.65rem;color:rgba(248,113,113,0.8);background:none;border:1px solid var(--border);border-radius:20px;padding:2px 8px;cursor:pointer;font-family:Syne,sans-serif">Effacer</button>
     </div>
-    <div id="eau-sheet-log" style="max-height:90px;overflow-y:auto;font-size:0.68rem;font-family:Syne,sans-serif"></div>
+    <div id="eau-sheet-log" class="kc-modal-scroll" style="max-height:90px;overflow-y:auto;font-size:0.68rem;font-family:Syne,sans-serif"></div>
     <!-- Modifier l'objectif -->
     <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--border)">
       <div style="font-size:0.65rem;color:var(--muted2);font-family:Syne,sans-serif;margin-bottom:6px">Objectif journalier</div>
@@ -5896,7 +5887,8 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 
 <!-- BALANCE 7J — Détail du calcul + exclusion manuelle de jours -->
 <div id="bal7-sheet" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)" onclick="if(event.target===this)closeBal7Sheet()">
-  <div style="position:absolute;bottom:0;left:0;right:0;background:var(--s1);border-radius:20px 20px 0 0;padding:1.5rem 1.25rem calc(1.75rem + env(safe-area-inset-bottom,0px));max-width:480px;margin:0 auto;border-top:1px solid var(--border2);max-height:85vh;overflow-y:auto">
+  <div class="kc-modal-scroll" style="position:absolute;bottom:0;left:0;right:0;background:var(--s1);border-radius:20px 20px 0 0;padding:1.5rem 1.25rem calc(1.75rem + env(safe-area-inset-bottom,0px));max-width:480px;margin:0 auto;border-top:1px solid var(--border2);max-height:85vh;overflow-y:auto">
+    <button class="kc-modal-close" onclick="closeBal7Sheet()" aria-label="Fermer">✕</button>
     <div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1.25rem"></div>
     <div style="font-family:Playfair Display,serif;font-size:1.1rem;margin-bottom:0.3rem">⚖️ Détail de la <em style="font-style:italic;color:var(--teal)">balance 7j</em></div>
     <div style="font-size:0.68rem;color:var(--muted2);margin-bottom:1rem;line-height:1.5">Seuls les jours avec un apport <strong style="color:var(--text)">et</strong> une dépense réellement saisis comptent par défaut dans la moyenne. Un jour sans donnée est grisé automatiquement — touche-le pour le réintégrer quand même, ou pour retirer un jour valide (ex : saisie partielle).</div>
@@ -5919,6 +5911,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <div id="poids-quick-modal" style="display:none;position:fixed;inset:0;z-index:800;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closePoidsQuickEdit()">
   <div style="background:rgba(0,0,0,0.55);position:absolute;inset:0;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)"></div>
   <div id="poids-quick-sheet" style="position:relative;width:100%;max-width:480px;background:var(--s1);border-radius:20px 20px 0 0;border-top:1px solid var(--border2);padding:1.5rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom,0px));animation:slideUp 0.25s cubic-bezier(0.4,0,0.2,1)">
+    <button class="kc-modal-close" onclick="closePoidsQuickEdit()" aria-label="Fermer">✕</button>
     <div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1.25rem"></div>
     <div style="font-family:Playfair Display,serif;font-size:1.25rem;font-weight:400;margin-bottom:0.35rem">Mettre à jour le <em style="color:var(--pink)">poids</em></div>
     <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.9rem" id="poids-quick-last"></div>
@@ -5958,15 +5951,15 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       </div>
       <div style="font-size:0.58rem;color:var(--muted2);max-width:90px;line-height:1.4">Mis à jour dans ton profil et le graphique corps</div>
     </div>
-    <button onclick="savePoidsQuick()" class="btn" style="margin-bottom:0.6rem">Enregistrer →</button>
-    <button onclick="closePoidsQuickEdit()" class="btn secondary" style="font-size:0.8rem">Annuler</button>
+    <button onclick="savePoidsQuick()" class="btn">Enregistrer →</button>
   </div>
 </div>
 
 <!-- PROJECTION — Modal détail -->
 <div id="projection-modal" style="display:none;position:fixed;inset:0;z-index:800;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeProjectionModal()">
   <div style="background:rgba(0,0,0,0.55);position:absolute;inset:0;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)"></div>
-  <div style="position:relative;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;background:var(--s1);border-radius:20px 20px 0 0;border-top:1px solid var(--border2);padding:1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom,0px));animation:slideUp 0.25s cubic-bezier(0.4,0,0.2,1)">
+  <div class="kc-modal-scroll" style="position:relative;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;background:var(--s1);border-radius:20px 20px 0 0;border-top:1px solid var(--border2);padding:1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom,0px));animation:slideUp 0.25s cubic-bezier(0.4,0,0.2,1)">
+    <button class="kc-modal-close" onclick="closeProjectionModal()" aria-label="Fermer">✕</button>
     <div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1.25rem"></div>
     <div style="font-family:Playfair Display,serif;font-size:1.2rem;font-weight:400;margin-bottom:0.25rem">Projection du <em style="color:var(--lime)">poids</em></div>
     <div style="font-size:0.7rem;color:var(--muted);margin-bottom:1rem">Basée sur ta balance calorique moyenne des 7 derniers jours</div>
@@ -5986,8 +5979,6 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     <!-- Détail du calcul -->
     <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted2);margin-bottom:0.6rem">Comment c'est calculé</div>
     <div id="projection-detail" style="background:var(--s2);border:1px solid var(--border2);border-radius:14px;padding:0.9rem 1rem;margin-bottom:1.1rem"></div>
-
-    <button onclick="closeProjectionModal()" class="btn secondary" style="font-size:0.8rem">Fermer</button>
   </div>
 </div>
 
@@ -5997,7 +5988,8 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <!-- ═══ OBJECTIF KCAL MODAL ═══ -->
 <div id="kcal-goal-modal" style="display:none;position:fixed;inset:0;z-index:550;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeKcalGoalModal()">
   <div style="background:rgba(0,0,0,0.55);position:absolute;inset:0;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)"></div>
-  <div style="position:relative;width:100%;max-width:480px;background:var(--s1);border-radius:20px 20px 0 0;border-top:1px solid var(--border2);padding:1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom,0));animation:slideUp 0.25s cubic-bezier(0.4,0,0.2,1);max-height:90vh;overflow-y:auto">
+  <div class="kc-modal-scroll" style="position:relative;width:100%;max-width:480px;background:var(--s1);border-radius:20px 20px 0 0;border-top:1px solid var(--border2);padding:1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom,0));animation:slideUp 0.25s cubic-bezier(0.4,0,0.2,1);max-height:90vh;overflow-y:auto">
+    <button class="kc-modal-close" onclick="closeKcalGoalModal()" aria-label="Fermer">✕</button>
     <div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1.25rem"></div>
     <div style="font-family:Playfair Display,serif;font-size:1.15rem;font-weight:400;margin-bottom:0.25rem">Objectif <em style="color:var(--lime)">calorique</em></div>
     <div style="font-size:0.68rem;color:var(--muted);margin-bottom:1.25rem">Choisis un objectif ou entre un chiffre personnalisé</div>
@@ -6062,29 +6054,72 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <div id="macro-pct-total" style="font-size:0.58rem;color:var(--muted2);text-align:center;margin-top:4px">Total : —%</div>
     </div>
 
-    <button onclick="saveKcalGoal()" class="btn" style="margin-bottom:0.6rem">Enregistrer →</button>
-    <button onclick="closeKcalGoalModal()" class="btn secondary" style="font-size:0.8rem">Annuler</button>
+    <button onclick="saveKcalGoal()" class="btn">Enregistrer →</button>
+  </div>
+</div>
+
+<!-- ═══ COMPTE RENDU — MODAL (sélecteur de type + période + résultat) ═══
+     Alimenté par kcalos_kcal_goal_history pour la liste des phases. La bulle
+     n'est visible que sur le Dashboard (REPORT_BUBBLE_PAGES) pour ne pas
+     gêner les autres pages, mais le sélecteur de type (report-type-tabs)
+     permet de générer n'importe quel compte rendu depuis cet unique point
+     d'entrée : dashboard / apports / courbe / steps / séance. -->
+<div id="report-modal" style="display:none;position:fixed;inset:0;z-index:560;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeReportModal()">
+  <div style="background:rgba(0,0,0,0.55);position:absolute;inset:0;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)"></div>
+  <div class="kc-modal-scroll" style="position:relative;width:100%;max-width:480px;background:var(--s1);border-radius:20px 20px 0 0;border-top:1px solid var(--border2);padding:1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom,0));animation:slideUp 0.25s cubic-bezier(0.4,0,0.2,1);max-height:90vh;overflow-y:auto">
+    <button onclick="closeReportModal()" aria-label="Fermer" style="position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:50%;background:var(--s2);border:none;color:var(--muted);font-size:0.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent">✕</button>
+    <div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1.25rem"></div>
+
+    <!-- VUE 1 : sélection de la période -->
+    <div id="report-view-period">
+      <div style="font-family:Playfair Display,serif;font-size:1.15rem;font-weight:400;margin-bottom:0.25rem">Compte rendu <em style="color:var(--teal)">période</em></div>
+      <div style="font-size:0.68rem;color:var(--muted);margin-bottom:1.1rem">Choisis un type de compte rendu et une période à analyser</div>
+
+      <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted2);margin-bottom:0.5rem">Type de compte rendu</div>
+      <div id="report-type-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem"></div>
+
+      <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted2);margin-bottom:0.5rem">Phases enregistrées</div>
+      <div id="report-phase-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:1.25rem"></div>
+
+      <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted2);margin-bottom:0.5rem">Ou période personnalisée</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem">
+        <input type="date" id="report-date-start" style="flex:1">
+        <span style="color:var(--muted2);font-size:0.75rem;flex-shrink:0">→</span>
+        <input type="date" id="report-date-end" style="flex:1">
+      </div>
+      <button class="btn" onclick="reportGenerateFromCustomDates()">Générer le compte rendu →</button>
+    </div>
+
+    <!-- VUE 2 : résultat -->
+    <div id="report-view-result" style="display:none">
+      <button onclick="reportBackToPeriodPicker()" style="background:none;border:none;color:var(--muted);font-size:0.72rem;cursor:pointer;padding:0;margin-bottom:0.9rem;display:flex;align-items:center;gap:4px;font-family:Syne,sans-serif">← Changer de période</button>
+      <div id="report-result-content"></div>
+      <button onclick="openReportIAComingSoon()" style="margin-top:0.9rem;width:100%;display:flex;align-items:center;justify-content:center;gap:6px;padding:0.65rem;border-radius:var(--r-sm);border:1.5px dashed var(--border2);background:none;color:var(--muted);font-size:0.72rem;cursor:pointer;font-family:Syne,sans-serif">
+        <span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 14c-3.3 0-5.2-2-5.2-4.3 0-2 1.4-3 1.4-5.2C5.3 6 5.5 7 6.3 7.7c-.1-2.2 1-4.5 3-6 0 2 1 3.8 1.5 5 .5-.8.4-2 .4-3.2 1.8 1.7 2.5 3.8 2.5 5.2C13.7 11 12 14 8 14z"/></svg></span>
+        Analyse IA de ce compte rendu — bientôt
+      </button>
+    </div>
   </div>
 </div>
 
 <!-- ═══ GLYCÉMIE — MODAL INFO ═══ -->
 <div id="glycemia-info-modal" style="display:none;position:fixed;inset:0;z-index:550;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);align-items:flex-end;justify-content:center" onclick="if(event.target===this)glycemiaHideInfo()">
-  <div style="background:var(--s1);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:540px;max-height:88vh;overflow-y:auto;padding:1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom,0));animation:slideUp 0.28s cubic-bezier(0.34,1.2,0.64,1)">
+  <div class="kc-modal-scroll" style="position:relative;background:var(--s1);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:540px;max-height:88vh;overflow-y:auto;padding:1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom,0));animation:slideUp 0.28s cubic-bezier(0.34,1.2,0.64,1)">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem">
       <div style="font-family:Playfair Display,serif;font-size:1.05rem;font-weight:700;color:var(--text)">Détail du calcul</div>
-      <button onclick="glycemiaHideInfo()" style="background:var(--s3);border:1px solid var(--border2);border-radius:50%;width:28px;height:28px;color:var(--muted);cursor:pointer;font-size:0.85rem;display:flex;align-items:center;justify-content:center">✕</button>
     </div>
+    <button class="kc-modal-close" onclick="glycemiaHideInfo()" aria-label="Fermer">✕</button>
     <div id="glycemia-info-body" style="font-size:0.73rem;color:var(--muted);line-height:1.7"></div>
   </div>
 </div>
 
 <!-- ═══ INFO — SOURCE DE DONNÉES RECHERCHE ═══ -->
 <div id="search-source-info-modal" style="display:none;position:fixed;inset:0;z-index:550;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);align-items:flex-end;justify-content:center" onclick="if(event.target===this)hideSourceInfo()">
-  <div style="background:var(--s1);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:540px;max-height:88vh;overflow-y:auto;padding:1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom,0));animation:slideUp 0.28s cubic-bezier(0.34,1.2,0.64,1)">
+  <div class="kc-modal-scroll" style="position:relative;background:var(--s1);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:540px;max-height:88vh;overflow-y:auto;padding:1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom,0));animation:slideUp 0.28s cubic-bezier(0.34,1.2,0.64,1)">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem">
       <div style="font-family:Playfair Display,serif;font-size:1.05rem;font-weight:700;color:var(--text)">Sources de données</div>
-      <button onclick="hideSourceInfo()" style="background:var(--s3);border:1px solid var(--border2);border-radius:50%;width:28px;height:28px;color:var(--muted);cursor:pointer;font-size:0.85rem;display:flex;align-items:center;justify-content:center">✕</button>
     </div>
+    <button class="kc-modal-close" onclick="hideSourceInfo()" aria-label="Fermer">✕</button>
     <div style="font-size:0.78rem;color:var(--muted);line-height:1.7">
       <div style="display:flex;gap:10px;margin-bottom:1rem;padding:0.85rem;background:var(--teal-bg);border:1px solid var(--teal-d);border-radius:var(--r-sm)">
         <div style="font-size:1.1rem;flex-shrink:0">🇫🇷</div>
@@ -6107,7 +6142,8 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 
 <!-- ═══ SÉLECTEUR D'UNITÉ — SAISIE ALIMENT ═══ -->
 <div id="qty-unit-picker-modal" style="display:none;position:fixed;inset:0;z-index:650;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeUnitPicker()">
-  <div style="background:var(--s1);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:540px;padding:0.85rem 1rem calc(1.1rem + env(safe-area-inset-bottom,0));animation:slideUp 0.28s cubic-bezier(0.34,1.2,0.64,1)">
+  <div style="position:relative;background:var(--s1);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:540px;padding:0.85rem 1rem calc(1.1rem + env(safe-area-inset-bottom,0));animation:slideUp 0.28s cubic-bezier(0.34,1.2,0.64,1)">
+    <button class="kc-modal-close" onclick="closeUnitPicker()" aria-label="Fermer">✕</button>
     <div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 0.9rem"></div>
     <button class="qty-unit-option" data-mode="grams" onclick="pickUnit('grams')">
       <span>Grammes</span>
@@ -6155,11 +6191,23 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-07-30.13';
+const APP_BUILD_VERSION = '2026-08-05.9';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
 });
+
+/* ── HARMONISATION POP-UPS : verrou de scroll du body pendant l'ouverture ──
+   Compteur pour gérer le cas où un pop-up en ouvre un autre par-dessus. */
+let _kcModalOpenCount = 0;
+function kcLockScroll(){
+  _kcModalOpenCount++;
+  document.body.style.overflow = 'hidden';
+}
+function kcUnlockScroll(){
+  _kcModalOpenCount = Math.max(0, _kcModalOpenCount - 1);
+  if(_kcModalOpenCount === 0) document.body.style.overflow = '';
+}
 
 /* ── ICON MAP ── */
 const ICONS={
@@ -6284,10 +6332,8 @@ let chartInst=null, weekChartInst=null, stepsChartInst=null;
 const DB = {
   getFitness: ()=>JSON.parse(localStorage.getItem('kcalos_fitness')||'[]'),
   getFood:    ()=>JSON.parse(localStorage.getItem('kcalos_food')||'[]'),
-  getAIHist:  ()=>JSON.parse(localStorage.getItem('kcalos_ai_hist')||'[]'),
   setFitness: d=>localStorage.setItem('kcalos_fitness',JSON.stringify(d)),
   setFood:    d=>localStorage.setItem('kcalos_food',JSON.stringify(d)),
-  setAIHist:  d=>localStorage.setItem('kcalos_ai_hist',JSON.stringify(d)),
   upsertFitness(e){ const d=this.getFitness(), i=d.findIndex(x=>x.date===e.date); i>=0?d[i]={...d[i],...e}:d.push(e); this.setFitness(d); },
   upsertFood(e){ const d=this.getFood(), i=d.findIndex(x=>x.date===e.date); i>=0?d[i]={...d[i],...e}:d.push(e); this.setFood(d); },
   removeFoodByDate(date){ this.setFood(this.getFood().filter(x=>x.date!==date)); },
@@ -6301,6 +6347,44 @@ const DB = {
 function updateAccountBubbleVisibility(id){
   document.getElementById('account-bubble')?.classList.toggle('ab-hidden', id !== 'dashboard');
 }
+// Pages sur lesquelles la bulle "Compte rendu" est affichée (uniquement le
+// Dashboard, pour ne pas surcharger les autres pages). Le type de compte
+// rendu généré (dashboard/apports/courbe/steps/séance) se choisit ensuite
+// via le sélecteur report-type-tabs, indépendamment de la page active.
+const REPORT_BUBBLE_PAGES = ['dashboard'];
+function updateReportBubbleVisibility(id){
+  const btn = document.getElementById('report-bubble');
+  if (btn) btn.classList.toggle('rb-hidden', !REPORT_BUBBLE_PAGES.includes(id));
+  closeReportMenu();
+}
+
+function toggleReportMenu(){
+  const menu = document.getElementById('report-bubble-menu');
+  const btn  = document.getElementById('report-bubble');
+  if (!menu) return;
+  const willOpen = !menu.classList.contains('open');
+  menu.classList.toggle('open', willOpen);
+  btn?.classList.toggle('rb-active', willOpen);
+}
+
+function closeReportMenu(){
+  document.getElementById('report-bubble-menu')?.classList.remove('open');
+  document.getElementById('report-bubble')?.classList.remove('rb-active');
+}
+
+// Ferme le menu au clic en dehors (bulle + menu eux-mêmes exclus)
+document.addEventListener('click', function(e){
+  const menu = document.getElementById('report-bubble-menu');
+  const btn  = document.getElementById('report-bubble');
+  if (!menu || !menu.classList.contains('open')) return;
+  if (menu.contains(e.target) || btn?.contains(e.target)) return;
+  closeReportMenu();
+});
+
+function openReportIAComingSoon(){
+  closeReportMenu();
+  toast('✨ Analyse IA du compte rendu : bientôt disponible', 'var(--teal)');
+}
 function switchPage(pageId){
   const id = pageId.replace('page-','');
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -6309,10 +6393,10 @@ function switchPage(pageId){
   if(pg) pg.classList.add('active');
   document.querySelectorAll(`[data-page="${id}"]`).forEach(n=>n.classList.add('active'));
   updateAccountBubbleVisibility(id);
+  updateReportBubbleVisibility(id);
   hidePWABanner?.();
   if(id==='progression') loadChart();
   if(id==='apports'){ renderFoodHistory(); renderWeekChart(); }
-  if(id==='coach') refreshCoachData();
   if(id==='steps') loadStepsPage();
 }
 document.querySelectorAll('.nav-item, .bn-item').forEach(el=>{
@@ -6323,11 +6407,11 @@ document.querySelectorAll('.nav-item, .bn-item').forEach(el=>{
     document.getElementById('page-'+id).classList.add('active');
     document.querySelectorAll(`[data-page="${id}"]`).forEach(n=>n.classList.add('active'));
     updateAccountBubbleVisibility(id);
+    updateReportBubbleVisibility(id);
     // Masquer le banner PWA à chaque navigation
     hidePWABanner?.();
     if(id==='progression') loadChart();
     if(id==='apports'){ renderFoodHistory(); renderWeekChart(); }
-    if(id==='coach') refreshCoachData();
     if(id==='steps') loadStepsPage();
   });
 });
@@ -7752,156 +7836,6 @@ function processStepsFile(file){
     },300);
   };
   reader.readAsText(file,'UTF-8');
-}
-
-/* ════════════════════════════════════════
-   AI COACH — Anthropic API
-════════════════════════════════════════ */
-function selectGoal(el){ document.querySelectorAll('.gs-btn').forEach(b=>b.classList.remove('active')); el.classList.add('active'); S.selectedGoal=el.dataset.goal; }
-
-function refreshCoachData(){
-  const fitness=DB.getFitness().sort((a,b)=>a.date.localeCompare(b.date)).slice(-14);
-  const vP=fitness.map(f=>f.poids).filter(Boolean);
-  const vPaired=fitness.map(f=>{ const t=getDayTotals(f.date); return (t.kcal>0&&f.calories)?{a:t.kcal,d:f.calories}:null; }).filter(Boolean);
-  const vA=vPaired.map(p=>p.a);
-  const vD=vPaired.map(p=>p.d);
-  const vB=vPaired.map(p=>p.a-p.d);
-  document.getElementById('dp-poids').textContent=vP.length?(vP.reduce((a,b)=>a+b,0)/vP.length).toFixed(1)+' kg':'—';
-  document.getElementById('dp-apport').textContent=vA.length?fmt(vA.reduce((a,b)=>a+b,0)/vA.length):'—';
-  document.getElementById('dp-balance').textContent=vB.length?(vB.reduce((a,b)=>a+b,0)/vB.length>0?'+':'')+fmt(vB.reduce((a,b)=>a+b,0)/vB.length):'—';
-  // Restore key
-  const k=localStorage.getItem('kcalos_apikey')||'';
-  document.getElementById('ai-key').value=k;
-  renderAIHistory();
-}
-
-function buildCoachPrompt(){
-  const fitness=DB.getFitness().sort((a,b)=>a.date.localeCompare(b.date)).slice(-14);
-  const profile=JSON.parse(localStorage.getItem('kcalos_profile')||'{}');
-  const real=estimateRealTDEE();
-  const extra=document.getElementById('ai-extra').value.trim();
-
-  const rows=fitness.map(f=>{
-    const t=getDayTotals(f.date);
-    return {
-      date:f.date,
-      poids:f.poids,
-      depense:f.calories,
-      apport:t.kcal>0?t.kcal:null,
-      balance:t.kcal>0&&f.calories?t.kcal-f.calories:null,
-      prot:t.prot>0?t.prot:null,
-    };
-  });
-
-  const tableStr=rows.map(r=>`${r.date} | ${r.poids||'?'}kg | Dép: ${r.depense||'?'} kcal | App: ${r.apport||'?'} kcal | Bal: ${r.balance!==null?r.balance:'-'} | Prot: ${r.prot||'?'}g`).join('\n');
-
-  return `Tu es un coach fitness expert et nutritionniste. Réponds en français. Ton rôle est d\'analyser les données réelles de l\'utilisateur et de lui donner un diagnostic précis et des recommandations concrètes.
-
-PROFIL :
-- Sexe : ${profile.sexe||'Non renseigné'}
-- Taille : ${profile.taille||'?'} cm
-- Poids récent : ${rows[rows.length-1]?.poids||'?'} kg
-- Bodyfat : ${profile.bf||'?'}%
-- TDEE théorique : ${S.tdee?fmt(S.tdee):'-'} kcal
-- TDEE réel estimé : ${real?fmt(real)+' kcal (basé sur l\'évolution du poids réel)':'Pas assez de données'}
-- Objectif déclaré : ${S.selectedGoal==='cut'?'Sèche (perte de masse grasse)':S.selectedGoal==='bulk'?'Prise de masse':'Maintien'}
-
-DONNÉES 14 DERNIERS JOURS (Date | Poids | Dépense | Apport | Balance | Protéines) :
-${tableStr}
-
-${extra?'MESSAGE DE L\'UTILISATEUR :\n'+extra:''}
-
-Fournis :
-1. Un diagnostic synthétique (2-3 lignes max)
-2. 3 à 5 recommandations concrètes et actionnables (numérotées)
-3. Un ajustement calorique précis proposé (ex: "Vise 2 150 kcal/j")
-4. Un ajustement des macros si nécessaire
-
-Sois direct, motivant, concis. Maximum 350 mots.`;
-}
-
-async function askCoach(){
-  const apiKey=document.getElementById('ai-key').value.trim();
-  if(!apiKey){ toast('Entre ta clé API Anthropic','var(--red)'); return; }
-
-  const btn=document.getElementById('ai-btn');
-  const loading=document.getElementById('ai-loading');
-  const emptyEl=document.getElementById('ai-empty');
-  btn.disabled=true;
-  loading.classList.add('show');
-  document.getElementById('ai-response-block').classList.remove('show');
-  emptyEl.style.display='none';
-
-  const prompt=buildCoachPrompt();
-
-  try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'x-api-key':apiKey,
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true',
-      },
-      body:JSON.stringify({
-        model:'claude-sonnet-5',
-        max_tokens:1000,
-        messages:[{role:'user',content:prompt}],
-      }),
-    });
-
-    if(!res.ok){
-      const err=await res.json().catch(()=>({}));
-      throw new Error(err?.error?.message||`Erreur API ${res.status}`);
-    }
-
-    const data=await res.json();
-    const text=data.content.map(b=>b.text||'').join('\n').trim();
-
-    const now=new Date().toLocaleString('fr-FR');
-    document.getElementById('arc-body').textContent=text;
-    document.getElementById('arc-date').textContent=now;
-    document.getElementById('ai-response-block').classList.add('show');
-
-    // Save to history
-    const hist=DB.getAIHist();
-    hist.unshift({date:now,text,goal:S.selectedGoal});
-    if(hist.length>10) hist.pop();
-    DB.setAIHist(hist);
-    renderAIHistory();
-    toast('Analyse IA reçue ✓','var(--teal)');
-  } catch(e){
-    document.getElementById('ai-response-block').classList.remove('show');
-    emptyEl.style.display='block';
-    emptyEl.innerHTML=`<span style="color:var(--red)">❌ Erreur : ${e.message}</span><br><span style="font-size:0.7rem;color:var(--muted2);margin-top:6px;display:block">Vérifie ta clé API et que tu as des crédits disponibles.</span>`;
-    toast('Erreur API : '+e.message,'var(--red)');
-  } finally{
-    btn.disabled=false;
-    loading.classList.remove('show');
-  }
-}
-
-function renderAIHistory(){
-  const hist=DB.getAIHist();
-  const el=document.getElementById('ai-history-list');
-  const empty=document.getElementById('ai-empty');
-  if(!el) return;
-  if(!hist.length){ el.innerHTML=''; return; }
-  if(empty) empty.style.display='none';
-  el.innerHTML='<div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted2);margin-bottom:0.6rem;border-top:1px solid var(--border);padding-top:0.75rem">Analyses précédentes</div>'+
-    hist.slice().reverse().map((h,i)=>`<div class="ai-history-item" onclick="showHistItem(${hist.length-1-i})">
-      <div class="ah-date">${h.date} · ${h.goal}</div>
-      <div class="ah-preview">${h.text.slice(0,90)}…</div>
-    </div>`).join('');
-}
-
-function showHistItem(i){
-  const h=DB.getAIHist()[i];
-  if(!h) return;
-  document.getElementById('arc-body').textContent=h.text;
-  document.getElementById('arc-date').textContent=h.date;
-  document.getElementById('ai-response-block').classList.add('show');
-  document.getElementById('ai-empty').style.display='none';
 }
 
 /* ════════════════════════════════════════
@@ -13262,11 +13196,11 @@ function toggleSearchSource() {
 }
 function showSourceInfo() {
   const m = document.getElementById('search-source-info-modal');
-  if (m) m.style.display = 'flex';
+  if (m) { m.style.display = 'flex'; kcLockScroll(); }
 }
 function hideSourceInfo() {
   const m = document.getElementById('search-source-info-modal');
-  if (m) m.style.display = 'none';
+  if (m) { m.style.display = 'none'; kcUnlockScroll(); }
 }
 
 async function searchFood(query) {
@@ -13731,10 +13665,11 @@ function openUnitPicker() {
     b.classList.toggle('active', b.dataset.mode === AP._qtyMode);
   });
   modal.style.display = 'flex';
+  kcLockScroll();
 }
 function closeUnitPicker() {
   const modal = document.getElementById('qty-unit-picker-modal');
-  if (modal) modal.style.display = 'none';
+  if (modal) { modal.style.display = 'none'; kcUnlockScroll(); }
 }
 function pickUnit(mode) {
   closeUnitPicker();
@@ -15720,6 +15655,7 @@ function openAccountPanel(tab){
   if(actEl) actEl.checked = true;
   if(p.sessions){ const el=document.getElementById('ap-sessions'); if(el) el.value = p.sessions; }
   if(p.duree){    const el=document.getElementById('ap-duree');    if(el) el.value = p.duree; }
+  if(typeof renderProfilePhaseButtons==='function') renderProfilePhaseButtons(p.phase||null);
 
   // Pre-fill estimer tab from profile too
   if(p.taille){ const e=document.getElementById('c-taille'); if(e) e.value=p.taille; }
@@ -16227,11 +16163,12 @@ function openBal7Sheet(){
   const s = document.getElementById('bal7-sheet');
   if(!s) return;
   s.style.display = 'block';
+  kcLockScroll();
   renderBal7Sheet();
 }
 function closeBal7Sheet(){
   const s = document.getElementById('bal7-sheet');
-  if(s) s.style.display = 'none';
+  if(s){ s.style.display = 'none'; kcUnlockScroll(); }
 }
 function toggleBal7Day(date){
   const fitness = DB.getFitness();
@@ -16613,11 +16550,12 @@ function openPoidsQuickEdit(){
   const bfInp = document.getElementById('poids-quick-bf');
   if(bfInp && prof.bf) bfInp.value = prof.bf;
   modal.style.display = 'flex';
+  kcLockScroll();
   setTimeout(()=>{ const i=document.getElementById('poids-quick-input'); if(i){i.focus();i.select();} }, 120);
 }
 function closePoidsQuickEdit(){
   const modal = document.getElementById('poids-quick-modal');
-  if(modal){ modal.style.display='none'; }
+  if(modal){ modal.style.display='none'; kcUnlockScroll(); }
 }
 function poidsQuickStep(delta){
   const inp = document.getElementById('poids-quick-input');
@@ -16665,11 +16603,12 @@ function openProjectionModal(){
   const modal = document.getElementById('projection-modal');
   if(!modal) return;
   modal.style.display = 'flex';
+  kcLockScroll();
   setProjHorizon(window._projHorizon || 14);
 }
 function closeProjectionModal(){
   const modal = document.getElementById('projection-modal');
-  if(modal) modal.style.display = 'none';
+  if(modal){ modal.style.display = 'none'; kcUnlockScroll(); }
 }
 function setProjHorizon(days){
   window._projHorizon = days;
@@ -17543,11 +17482,12 @@ function glycemiaShowInfo() {
       </div>`;
   }
   modal.style.display = 'flex';
+  kcLockScroll();
 }
 
 function glycemiaHideInfo() {
   const modal = document.getElementById('glycemia-info-modal');
-  if (modal) modal.style.display = 'none';
+  if (modal) { modal.style.display = 'none'; kcUnlockScroll(); }
 }
 
 function woInit(){
@@ -17786,13 +17726,21 @@ function woMatchedProgress(curSets, prevSets){
   const ps = (prevSets||[]).filter(s=>!s.skipped);
   const n = Math.min(cs.length, ps.length);
   let curSum=0, prevSum=0;
+  let pctSum=0, validPairs=0;
   for(let i=0;i<n;i++){
     const cw=parseFloat(cs[i].weight)||0, cr=parseFloat(cs[i].reps)||0;
     const pw=parseFloat(ps[i].weight)||0, pr=parseFloat(ps[i].reps)||0;
-    if(cr) curSum  += (cw||1)*(1+cr/30); // poids du corps (0kg) → 1kg (voir woEpley)
-    if(pr) prevSum += (pw||1)*(1+pr/30);
+    const curEpley  = cr ? (cw||1)*(1+cr/30) : 0; // poids du corps (0kg) -> 1kg (voir woEpley)
+    const prevEpley = pr ? (pw||1)*(1+pr/30) : 0;
+    curSum  += curEpley;
+    prevSum += prevEpley;
+    // Progression par serie : delta individuel, somme (pas moyenne)
+    if(prevEpley > 0){
+      pctSum += (curEpley - prevEpley) / prevEpley * 100;
+      validPairs++;
+    }
   }
-  const pct = prevSum>0 ? Math.round((curSum-prevSum)/prevSum*100) : null;
+  const pct = validPairs > 0 ? Math.round(pctSum) : null;
   return {curSum, prevSum, pct};
 }
 
@@ -17935,7 +17883,7 @@ function woChainPct(rawPcts){
       cum = started ? ((1+cum/100)*(1+pct/100)-1)*100 : pct;
       started = true;
     }
-    return started ? Math.round(cum) : null;
+    return started ? Math.round(cum*10)/10 : null;
   });
 }
 
@@ -18046,12 +17994,12 @@ function woRenderProgAll(period){
     for(let i=d.data.length-1;i>=0;i--) if(d.data[i]!==null) return d.data[i];
     return null;
   }).filter(v=>v!==null);
-  const heroVal = finals.length ? Math.round(finals.reduce((a,b)=>a+b,0)/finals.length) : null;
+  const heroVal = finals.length ? Math.round((finals.reduce((a,b)=>a+b,0)/finals.length)*10)/10 : null;
   if(heroEl){
     if(heroVal===null){ heroEl.textContent='—'; heroEl.style.color='var(--text)'; }
     else{
       const up=heroVal>0, eq=heroVal===0;
-      heroEl.textContent = `${up?'+':''}${heroVal}%`;
+      heroEl.textContent = `${up?'+':''}${heroVal.toFixed(1)}%`;
       heroEl.style.color = up?'var(--lime)':eq?'var(--text)':'var(--red)';
     }
   }
@@ -18188,7 +18136,7 @@ function woBuildHistoryHtml(typesArr, datasets){
       if(ds){ for(let i=ds.data.length-1;i>=0;i--){ if(ds.data[i]!==null){ tp = ds.data[i]; break; } } }
       if(tp !== null){
         const tc = tp>0?'#4ade80':tp<0?'var(--red)':'var(--muted)';
-        trendBadge = `<span style="font-size:0.6rem;font-weight:700;color:${tc};background:${tc}18;border:1px solid ${tc}44;border-radius:var(--r-pill);padding:2px 7px">${tp>0?'▲ +':'▼ '}${tp}% depuis début</span>`;
+        trendBadge = `<span style="font-size:0.6rem;font-weight:700;color:${tc};background:${tc}18;border:1px solid ${tc}44;border-radius:var(--r-pill);padding:2px 7px">${tp>0?'▲ +':'▼ '}${tp.toFixed(1)}% depuis début</span>`;
       }
     }
 
@@ -18269,7 +18217,13 @@ function woBuildExoHtml(typesArr){
     (sess.exercises||[]).forEach(exo=>{
       const sets = (exo.sets||[]).filter(s=>!s.skipped);
       if(!sets.length) return;
-      const key = exo.id || exo.name;
+      // Clé = nom normalisé (et non l'id) : un même exercice ajouté séparément
+      // dans plusieurs types de séance peut avoir des id différents (ex :
+      // exercice personnalisé créé indépendamment en Push et en Upper) ;
+      // le regrouper par nom garantit une seule progression par exercice,
+      // conformément au principe de la section 1 de workout-logic.md.
+      const key = (exo.name||'').trim().toLowerCase();
+      if(!key) return;
       if(!exoMap[key]) exoMap[key] = {name:exo.name, muscle:woGetMuscle(exo), occ:[]};
       exoMap[key].occ.push({date:sess.date, sets});
     });
@@ -18628,7 +18582,7 @@ function woStartSession(type){
       const lastSess = sessions.filter(s=>s.date<date).slice(-1)[0];
       const paused    = new Set(woPausedGet());
       const preloaded = lastSess?.exercises?.filter(e=>!paused.has(e.name)).map(e=>({id:e.id, name:e.name, muscle:e.muscle||woGetMuscle(e), sets:[]})) || [];
-      const lastPhase = localStorage.getItem('wo_last_phase') || null;
+      const lastPhase = localStorage.getItem('wo_last_phase') || (typeof getCurrentPhase==='function' ? getCurrentPhase() : null);
       woDraftSet({ type, date, duration:null, intensity:5, phase:lastPhase, exercises:preloaded, _pristine: true }, {pristine: true});
     }
   }
@@ -19084,6 +19038,9 @@ function woDraftSetPhase(phase){
   d.phase = phase;
   woDraftSet(d);
   localStorage.setItem('wo_last_phase', phase);
+  // Sync vers le Profil + historique kcal/phase (skipWorkoutDraft: on vient déjà
+  // de mettre à jour ce brouillon ci-dessus, pas besoin que setCurrentPhase le refasse)
+  if (typeof setCurrentPhase === 'function') setCurrentPhase(phase, { skipWorkoutDraft: true });
   // Re-render session so set input borders update
   woRenderSession();
 }
@@ -19325,7 +19282,13 @@ function woFilterExercises(query){
   WO.searchQuery = query;
   const q = query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   const customExos = JSON.parse(localStorage.getItem('kcalos_custom_exos')||'[]');
-  const all = [...EXERCISE_DB, ...customExos];
+  const seenNames = new Set();
+  const all = [...EXERCISE_DB, ...customExos].filter(e=>{
+    const k = (e.name||'').toLowerCase();
+    if(seenNames.has(k)) return false;
+    seenNames.add(k);
+    return true;
+  });
   let results = all.filter(e=>{
     const matchCat = WO.filter==='Tous' || e.muscle===WO.filter;
     const matchQ = !q || (e.name+' '+e.muscle).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').includes(q);
@@ -19376,10 +19339,19 @@ function woAddCustomExercise(){
   const name = document.getElementById('wo-custom-name')?.value.trim();
   const muscle = document.getElementById('wo-custom-muscle')?.value || 'Autre';
   if(!name){ toast('Entre un nom', 'var(--red)'); return; }
-  const exo = { id:'custom_'+Date.now(), name, muscle, cardio: muscle==='Cardio' };
+  const nameKey = name.toLowerCase();
   const customs = JSON.parse(localStorage.getItem('kcalos_custom_exos')||'[]');
-  customs.push(exo);
-  localStorage.setItem('kcalos_custom_exos', JSON.stringify(customs));
+  // Réutiliser l'id d'un exercice existant du même nom (personnalisé ou de la
+  // base) plutôt que d'en générer un nouveau à chaque fois : sinon, ajouter
+  // le même exercice séparément dans deux types de séance créait deux id
+  // différents, et donc deux progressions distinctes dans l'onglet Progression.
+  const existing = customs.find(e=>(e.name||'').toLowerCase()===nameKey)
+                 || EXERCISE_DB.find(e=>(e.name||'').toLowerCase()===nameKey);
+  const exo = existing ? existing : { id:'custom_'+Date.now(), name, muscle, cardio: muscle==='Cardio' };
+  if(!existing){
+    customs.push(exo);
+    localStorage.setItem('kcalos_custom_exos', JSON.stringify(customs));
+  }
   woSelectExercise(exo);
   document.getElementById('wo-custom-name').value = '';
 }
@@ -19840,11 +19812,11 @@ function mrOpenUse(id){
   MR.useMealSlot = catToMeal[t.cat||''] || AP.currentMeal || 'dejeuner';
   document.querySelectorAll('.mr-meal-sel-btn').forEach(b => b.classList.toggle('active', b.dataset.meal === MR.useMealSlot));
   const modal = document.getElementById('mr-use-modal');
-  if(modal){ modal.classList.add('open'); document.body.style.overflow='hidden'; }
+  if(modal){ modal.classList.add('open'); kcLockScroll(); }
 }
 function mrCloseUseModal(){
   const modal = document.getElementById('mr-use-modal');
-  if(modal){ modal.classList.remove('open'); document.body.style.overflow=''; }
+  if(modal){ modal.classList.remove('open'); kcUnlockScroll(); }
   MR.useTemplateId = null;
 }
 function mrSelectMealSlot(el){
@@ -20589,6 +20561,7 @@ function openNutriScoreModal() {
 
   if (!d) {
     modal.style.display = 'flex';
+    kcLockScroll();
     document.getElementById('ns-modal-score').textContent = '—/100';
     document.getElementById('ns-modal-tip').textContent = 'Aucun repas saisi pour ce jour.';
     document.getElementById('ns-modal-breakdown').innerHTML = '';
@@ -20628,6 +20601,11 @@ function openNutriScoreModal() {
   }).join('');
 
   modal.style.display = 'flex';
+  kcLockScroll();
+}
+function closeNutriScoreModal() {
+  const modal = document.getElementById('nutriscore-modal');
+  if (modal) { modal.style.display = 'none'; kcUnlockScroll(); }
 }
 
 /* ══════════════════════════════════════════════
@@ -20718,16 +20696,16 @@ function openKcalGoalModal() {
     if (avgDep > 0) {
       var base = avgDep;
       var gs = [
-        { lbl:'🔵 SÈCHE',        kcal:Math.round(base*0.85), delta:'-15% · moy. '+fmt(base)+' kcal dép.', prot:lbm*2.0,   fat:Math.max((base*0.85*0.20)/9, poids/9), color:'#6ba3f5', border:'rgba(107,163,245,.4)' },
-        { lbl:'MAINTIEN',         kcal:Math.round(base),      delta:'Équilibre · '+fmt(base)+' kcal/j',    prot:poids*1.8, fat:(base*0.25)/9,                          color:'var(--lime)', border:'rgba(200,240,74,.35)' },
-        { lbl:'🟠 PRISE DE MASSE',kcal:Math.round(base*1.10), delta:'+10% · moy. '+fmt(base)+' kcal dép.', prot:poids*1.8, fat:(base*1.10*0.25)/9,                    color:'var(--orange)', border:'rgba(251,146,60,.4)' }
+        { lbl:'🔵 DÉFICIT',       kcal:Math.round(base*0.85), delta:'-15% · moy. '+fmt(base)+' kcal dép.', prot:lbm*2.0,   fat:Math.max((base*0.85*0.20)/9, poids/9), color:'#6ba3f5', border:'rgba(107,163,245,.4)', phase:'deficit' },
+        { lbl:'MAINTIEN',         kcal:Math.round(base),      delta:'Équilibre · '+fmt(base)+' kcal/j',    prot:poids*1.8, fat:(base*0.25)/9,                          color:'var(--lime)', border:'rgba(200,240,74,.35)', phase:'maintien' },
+        { lbl:'🟠 SURPLUS',       kcal:Math.round(base*1.10), delta:'+10% · moy. '+fmt(base)+' kcal dép.', prot:poids*1.8, fat:(base*1.10*0.25)/9,                    color:'var(--orange)', border:'rgba(251,146,60,.4)', phase:'surplus' }
       ];
 
       var cardsHtml = gs.map(function(g) {
         var carbs   = Math.round(Math.max(0, (g.kcal - g.prot*4 - g.fat*9) / 4));
         var active  = cur && Math.abs(cur - g.kcal) < 30;
         var borderC = active ? g.color : 'var(--border)';
-        return '<button onclick="selectKcalSuggestion(' + g.kcal + ')" style="background:var(--s2);border:2px solid ' + borderC + ';border-radius:var(--r);padding:0.75rem 0.4rem;cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent;position:relative;transition:border-color .15s" onmouseover="this.style.borderColor=\'' + g.color + '\'" onmouseout="this.style.borderColor=\'' + borderC + '\'">'
+        return '<button onclick="selectKcalSuggestion(' + g.kcal + ',\'' + g.phase + '\')" style="background:var(--s2);border:2px solid ' + borderC + ';border-radius:var(--r);padding:0.75rem 0.4rem;cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent;position:relative;transition:border-color .15s" onmouseover="this.style.borderColor=\'' + g.color + '\'" onmouseout="this.style.borderColor=\'' + borderC + '\'">'
           + (active ? '<div style="position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:' + g.color + '"></div>' : '')
           + '<div style="font-size:0.55rem;font-weight:700;color:' + g.color + ';text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">' + g.lbl + '</div>'
           + '<div style="font-size:1.3rem;font-weight:800;color:' + g.color + ';line-height:1;margin-bottom:2px">' + fmt(g.kcal) + '</div>'
@@ -20748,6 +20726,7 @@ function openKcalGoalModal() {
   }
 
   modal.style.display = 'flex';
+  kcLockScroll();
   updateMacroLivePreview();
   setTimeout(function(){ if (inp) inp.focus(); }, 200);
 }
@@ -20807,8 +20786,142 @@ function resetMacroGoal() {
   toast('Répartition macros réinitialisée', 'var(--muted)');
 }
 
-function selectKcalSuggestion(val) {
+/* ══════════════════════════════════════════════
+   PHASE ACTUELLE (déficit/maintien/surplus)
+   Source de vérité partagée entre l'onglet Profil et la page Séance,
+   synchronisée dans les deux sens par setCurrentPhase(). Stockée sur
+   kcalos_profile.phase (déjà lue par l'analyse glycémie / coach), avec
+   wo_last_phase maintenu en miroir pour préremplir un nouveau brouillon
+   de séance (comportement déjà existant côté page Séance).
+══════════════════════════════════════════════ */
+function getCurrentPhase() {
+  var p = JSON.parse(localStorage.getItem('kcalos_profile') || '{}');
+  return p.phase || null;
+}
+
+// Reflète visuellement la phase donnée sur les boutons de l'onglet Profil
+// (appelé au clic via setCurrentPhase, et à l'ouverture du panneau pour préremplir).
+function renderProfilePhaseButtons(phase) {
+  if (typeof WO_PHASE_COLORS === 'undefined') return;
+  Object.keys(WO_PHASE_COLORS).forEach(function(ph) {
+    var rb = document.getElementById('ap-phase-' + ph);
+    if (!rb) return;
+    var lbl = rb.querySelector('label');
+    if (!lbl) return;
+    var col = WO_PHASE_COLORS[ph];
+    var active = ph === phase;
+    lbl.style.background = active ? col + '22' : 'var(--s2)';
+    lbl.style.borderColor = active ? col + '99' : col + '26';
+    lbl.style.color = active ? col : 'var(--muted)';
+    lbl.style.fontWeight = active ? '500' : '';
+  });
+}
+
+function setCurrentPhase(phase, opts) {
+  opts = opts || {};
+  var p = JSON.parse(localStorage.getItem('kcalos_profile') || '{}');
+  p.phase = phase;
+  localStorage.setItem('kcalos_profile', JSON.stringify(p));
+  localStorage.setItem('wo_last_phase', phase);
+
+  // Historique objectif/phase (kcalGoalHistoryLog déduplique déjà les entrées identiques)
+  var curKcal = parseInt(localStorage.getItem('kcalos_kcal_goal') || '0') || null;
+  if (curKcal) kcalGoalHistoryLog(curKcal, phase);
+
+  // Sync visuel — boutons Profil (onglet "Mon compte")
+  renderProfilePhaseButtons(phase);
+
+  // Sync visuel — brouillon de séance en cours, si la page Séance est active en fond
+  if (!opts.skipWorkoutDraft && typeof woDraftGet === 'function') {
+    try {
+      var d = woDraftGet();
+      if (d) { d.phase = phase; woDraftSet(d); if (typeof woRenderSession === 'function') woRenderSession(); }
+    } catch (e) { /* page Séance pas initialisée : rien à synchroniser en direct */ }
+  }
+}
+
+/* ══════════════════════════════════════════════
+   HISTORIQUE OBJECTIF KCAL / PHASE
+   Log append-only, base pour les futurs comptes rendus par période.
+══════════════════════════════════════════════ */
+function kcalGoalHistoryGet() {
+  try { return JSON.parse(localStorage.getItem('kcalos_kcal_goal_history') || '[]'); }
+  catch (e) { return []; }
+}
+
+// Déduit la phase depuis le TDEE estimé (±5%, cohérent avec tmgGetObjectif).
+// Retourne null si pas de TDEE dispo (rien à suggérer).
+function kcalPhaseAutoSuggest(val) {
+  var tdee = (typeof S !== 'undefined' && S && S.tdee) ? S.tdee : null;
+  if (!tdee || !val) return null;
+  return val < tdee * 0.95 ? 'deficit' : val > tdee * 1.05 ? 'surplus' : 'maintien';
+}
+
+// phaseOverride: si fourni (phase actuelle connue via getCurrentPhase, ou choix
+// explicite d'une carte de suggestion), prime sur l'auto-suggestion et est loggé
+// avec source:'manuel'. Sinon on retombe sur la déduction auto depuis le TDEE.
+function kcalGoalHistoryLog(val, phaseOverride) {
+  var phase = phaseOverride || kcalPhaseAutoSuggest(val);
+  if (!phase) return; // pas de TDEE et pas de phase connue : rien à logguer
+
+  var hist = kcalGoalHistoryGet();
+  var last = hist[hist.length - 1];
+
+  // Évite les doublons si on re-sauvegarde la même valeur avec la même phase
+  if (last && last.kcalGoal === val && last.phase === phase) return;
+
+  var entry = { date: today(), kcalGoal: val, phase: phase, source: phaseOverride ? 'manuel' : 'auto' };
+
+  // Plusieurs changements le même jour : on ne garde que le dernier (on remplace
+  // l'entrée du jour au lieu d'empiler une nouvelle ligne à chaque changement).
+  if (last && last.date === entry.date) hist[hist.length - 1] = entry;
+  else hist.push(entry);
+
+  localStorage.setItem('kcalos_kcal_goal_history', JSON.stringify(hist));
+}
+
+// Migration silencieuse : si un objectif kcal existe déjà (utilisateur pré-existant)
+// mais qu'aucun historique n'a encore été créé, on pose une entrée rétroactive
+// pour que les comptes rendus aient au moins une phase à proposer.
+(function kcalGoalHistoryMigrate() {
+  try {
+    if (kcalGoalHistoryGet().length) return; // déjà initialisé, rien à faire
+    var cur = parseInt(localStorage.getItem('kcalos_kcal_goal') || '0');
+    if (!cur) return; // aucun objectif défini : rien à migrer
+    var phase = getCurrentPhase() || kcalPhaseAutoSuggest(cur) || 'maintien';
+    var food = DB.getFood();
+    var firstDate = food.length ? food.map(function(f){ return f.date; }).sort()[0] : today();
+    localStorage.setItem('kcalos_kcal_goal_history', JSON.stringify([
+      { date: firstDate, kcalGoal: cur, phase: phase, source: 'auto' }
+    ]));
+  } catch (e) {}
+})();
+
+// Nettoyage silencieux au chargement : si plusieurs changements ont été
+// loggués le même jour (avant le correctif de kcalGoalHistoryLog ci-dessus),
+// on ne garde que le dernier de chaque jour, sans changer l'ordre chronologique.
+(function kcalGoalHistoryDedupeOnLoad() {
+  try {
+    var hist = kcalGoalHistoryGet();
+    if (!hist.length) return;
+    var byDate = {}, order = [];
+    hist.forEach(function(e) {
+      if (!byDate[e.date]) order.push(e.date);
+      byDate[e.date] = e; // la dernière entrée de cette date écrase les précédentes
+    });
+    var deduped = order.map(function(d) { return byDate[d]; });
+    if (deduped.length !== hist.length) {
+      localStorage.setItem('kcalos_kcal_goal_history', JSON.stringify(deduped));
+    }
+  } catch (e) {}
+})();
+
+function selectKcalSuggestion(val, phase) {
   localStorage.setItem('kcalos_kcal_goal', val);
+  // Choisir une carte préfaite (déficit/maintien/surplus) vaut comme choix explicite
+  // de phase actuelle : on synchronise Profil + Séance en même temps.
+  if (phase) setCurrentPhase(phase);
+  else kcalGoalHistoryLog(val, getCurrentPhase());
   closeKcalGoalModal();
   if (typeof renderApDayBanner === 'function') renderApDayBanner();
   toast('🎯 Objectif : ' + parseInt(val).toLocaleString('fr-FR') + ' kcal', 'var(--lime)');
@@ -20832,6 +20945,7 @@ function saveKcalGoal() {
   }
 
   localStorage.setItem('kcalos_kcal_goal', val);
+  kcalGoalHistoryLog(val, getCurrentPhase());
   closeKcalGoalModal();
   if (typeof renderApDayBanner === 'function') renderApDayBanner();
   toast('🎯 Objectif : ' + val.toLocaleString('fr-FR') + ' kcal sauvegardé', 'var(--lime)');
@@ -20839,7 +20953,719 @@ function saveKcalGoal() {
 
 function closeKcalGoalModal() {
   var modal = document.getElementById('kcal-goal-modal');
-  if (modal) modal.style.display = 'none';
+  if (modal) { modal.style.display = 'none'; kcUnlockScroll(); }
+}
+
+/* ══════════════════════════════════════════════
+   COMPTE RENDU — sélecteur de période + rapport
+   Phase 2 : seul le compte rendu Dashboard est implémenté pour l'instant
+   (voir REPORT_BUBBLE_PAGES). Les périodes proposées viennent de
+   kcalos_kcal_goal_history ; une période libre par dates reste possible.
+══════════════════════════════════════════════ */
+const REPORT_PHASE_LABELS = { deficit: 'Déficit', maintien: 'Maintien', surplus: 'Surplus', perso: 'Personnalisé' };
+
+// Registre des types de compte rendu disponibles depuis le sélecteur.
+// Chaque entrée fournit son icône/couleur d'affichage ; compute()/render()
+// sont appelés dynamiquement dans reportGenerateAndShow().
+const REPORT_TYPES = {
+  dashboard: { label:'Général', color:'var(--lime)',   bg:'var(--lime-bg)',   border:'var(--lime-d)',
+    icon:'<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"><path d="M2 7.5L8 2l6 5.5V14H10.5v-3.5H5.5V14H2z"/></svg>' },
+  apports:   { label:'Apports', color:'var(--blue)',   bg:'var(--blue-bg)',   border:'var(--blue-d)',
+    icon:'<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M3 8.5h10"/><path d="M4 8.5C4 11.6 5.8 13 8 13s4-1.4 4-4.5"/><path d="M8 8.5V5M6.2 5.8 8 4l1.8 1.8"/></svg>' },
+  courbe:    { label:'Courbe',  color:'var(--orange)', bg:'var(--orange-bg)', border:'var(--orange-d)',
+    icon:'<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,12 5.5,7.5 9,9.5 14,3.5"/><circle cx="14" cy="3.5" r="1.3" fill="currentColor" stroke="none"/></svg>' },
+  steps:     { label:'Pas',     color:'var(--teal)',   bg:'var(--teal-bg)',   border:'var(--teal-d)',
+    icon:'<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><ellipse cx="5.5" cy="5.5" rx="2.2" ry="3.2" transform="rotate(-8 5.5 5.5)"/><ellipse cx="10.5" cy="10.5" rx="2.2" ry="3.2" transform="rotate(8 10.5 10.5)"/></svg>' },
+  seance:    { label:'Séance',  color:'var(--pink)',   bg:'var(--pink-bg)',   border:'var(--pink-d)',
+    icon:'<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="5.5" y1="8" x2="10.5" y2="8"/><line x1="1.5" y1="6" x2="1.5" y2="10"/><line x1="5" y1="5" x2="5" y2="11"/><line x1="11" y1="5" x2="11" y2="11"/><line x1="14.5" y1="6" x2="14.5" y2="10"/></svg>' },
+};
+let REPORT_SELECTED_TYPE = 'dashboard';
+
+function renderReportTypeTabs() {
+  const box = document.getElementById('report-type-tabs');
+  if (!box) return;
+  box.innerHTML = Object.keys(REPORT_TYPES).map(function(key) {
+    const t = REPORT_TYPES[key];
+    const active = key === REPORT_SELECTED_TYPE;
+    return '<button onclick="reportSetType(\'' + key + '\')" style="display:flex;align-items:center;gap:5px;padding:0.4rem 0.75rem;border-radius:20px;font-size:0.68rem;cursor:pointer;font-family:Syne,sans-serif;-webkit-tap-highlight-color:transparent;transition:all var(--trans);'
+      + 'background:' + (active ? t.bg : 'var(--s2)') + ';border:1px solid ' + (active ? t.border : 'var(--border)') + ';color:' + (active ? t.color : 'var(--muted)') + '">'
+      + t.icon + t.label + '</button>';
+  }).join('');
+}
+
+function reportSetType(key) {
+  if (!REPORT_TYPES[key]) return;
+  REPORT_SELECTED_TYPE = key;
+  renderReportTypeTabs();
+}
+
+function openReportPeriodPicker() {
+  closeReportMenu();
+  var modal = document.getElementById('report-modal');
+  if (!modal) return;
+  document.getElementById('report-view-result').style.display = 'none';
+  document.getElementById('report-view-period').style.display = 'block';
+  renderReportTypeTabs();
+  renderReportPhaseList();
+  var endInp = document.getElementById('report-date-end');
+  var startInp = document.getElementById('report-date-start');
+  if (endInp && !endInp.value) endInp.value = today();
+  if (startInp && !startInp.value) {
+    var d = new Date(); d.setDate(d.getDate() - 6);
+    startInp.value = d.toISOString().split('T')[0];
+  }
+  modal.style.display = 'flex';
+  kcLockScroll();
+}
+
+function closeReportModal() {
+  var modal = document.getElementById('report-modal');
+  if (modal) { modal.style.display = 'none'; kcUnlockScroll(); }
+}
+
+// Reconstruit des périodes à partir de l'historique objectif/phase : chaque
+// entrée court jusqu'à la suivante (ou jusqu'à aujourd'hui pour la dernière).
+function reportBuildPhasePeriods() {
+  var hist = kcalGoalHistoryGet();
+  if (!hist.length) return [];
+  return hist.map(function(entry, i) {
+    var next = hist[i + 1];
+    return {
+      start: entry.date,
+      end: next ? next.date : today(),
+      ongoing: !next,
+      phase: entry.phase,
+      kcalGoal: entry.kcalGoal,
+    };
+  }).reverse(); // plus récent en premier
+}
+
+function renderReportPhaseList() {
+  var box = document.getElementById('report-phase-list');
+  if (!box) return;
+  var periods = reportBuildPhasePeriods();
+  if (!periods.length) {
+    box.innerHTML = '<div style="font-size:0.7rem;color:var(--muted2);padding:0.3rem 0 0.1rem">Aucune phase enregistrée pour l\'instant — définis un objectif calorique pour en créer une.</div>';
+    return;
+  }
+  box.innerHTML = periods.map(function(p) {
+    var col = (typeof WO_PHASE_COLORS !== 'undefined' && WO_PHASE_COLORS[p.phase]) || 'var(--teal)';
+    var lbl = REPORT_PHASE_LABELS[p.phase] || p.phase;
+    var range = p.ongoing ? (fmtDL(p.start) + ' → en cours') : (fmtDL(p.start) + ' → ' + fmtDL(p.end));
+    return '<button onclick="reportGenerateFromPhase(\'' + p.start + '\',\'' + p.end + '\',\'' + p.phase + '\')" '
+      + 'style="display:flex;align-items:center;gap:10px;padding:0.65rem 0.8rem;border-radius:var(--r-sm);border:1.5px solid ' + col + '4d;background:var(--s2);cursor:pointer;text-align:left;font-family:Syne,sans-serif;width:100%;-webkit-tap-highlight-color:transparent">'
+      + '<span style="width:9px;height:9px;border-radius:50%;background:' + col + ';flex-shrink:0"></span>'
+      + '<span style="flex:1;min-width:0"><span style="font-size:0.78rem;font-weight:600;color:' + col + '">' + lbl + '</span>'
+      + '<span style="display:block;font-size:0.65rem;color:var(--muted)">' + range + '</span></span>'
+      + '<span style="font-size:0.68rem;color:var(--muted2);flex-shrink:0">' + fmt(p.kcalGoal) + ' kcal</span>'
+      + '</button>';
+  }).join('');
+}
+
+function reportGenerateFromPhase(start, end, phase) {
+  reportGenerateAndShow(start, end, REPORT_PHASE_LABELS[phase] || phase);
+}
+
+function reportGenerateFromCustomDates() {
+  var start = document.getElementById('report-date-start')?.value;
+  var end   = document.getElementById('report-date-end')?.value;
+  if (!start || !end || start > end) { toast('Sélectionne une période valide', 'var(--red)'); return; }
+  reportGenerateAndShow(start, end, 'Période personnalisée');
+}
+
+function reportBackToPeriodPicker() {
+  document.getElementById('report-view-result').style.display = 'none';
+  document.getElementById('report-view-period').style.display = 'block';
+}
+
+// Route vers le compute/render du type de compte rendu sélectionné dans
+// report-type-tabs (dashboard par défaut si aucun type valide).
+function reportGenerateAndShow(start, end, label) {
+  var type = REPORT_TYPES[REPORT_SELECTED_TYPE] ? REPORT_SELECTED_TYPE : 'dashboard';
+  var html;
+  if (type === 'apports')     html = renderApportsReportHtml(start, end, label, computeApportsReport(start, end));
+  else if (type === 'courbe') html = renderCourbeReportHtml(start, end, label, computeCourbeReport(start, end));
+  else if (type === 'steps')  html = renderStepsReportHtml(start, end, label, computeStepsReport(start, end));
+  else if (type === 'seance') html = renderSeanceReportHtml(start, end, label, computeSeanceReport(start, end));
+  else                        html = renderDashboardReportHtml(start, end, label, computeDashboardReport(start, end));
+  document.getElementById('report-result-content').innerHTML = html;
+  document.getElementById('report-view-period').style.display = 'none';
+  document.getElementById('report-view-result').style.display = 'block';
+}
+
+// Toutes les dates YYYY-MM-DD entre start et end (inclus), utilisé par les
+// compute() de chaque type de compte rendu.
+function reportDateRange(start, end) {
+  var dates = [];
+  var d = new Date(start + 'T12:00');
+  var endD = new Date(end + 'T12:00');
+  while (d <= endD) { dates.push(d.toISOString().split('T')[0]); d.setDate(d.getDate() + 1); }
+  return dates;
+}
+
+function reportResultHeader(label, start, end, nbJours) {
+  var suffix = (nbJours !== null && nbJours !== undefined) ? (' · ' + nbJours + ' jours') : '';
+  return '<div style="font-family:Playfair Display,serif;font-size:1.1rem;font-weight:400;margin-bottom:2px">' + label + '</div>'
+    + '<div style="font-size:0.68rem;color:var(--muted);margin-bottom:1.1rem">' + fmtDL(start) + ' → ' + fmtDL(end) + suffix + '</div>';
+}
+
+// Calcule les indicateurs du compte rendu Dashboard sur [start, end] (inclus).
+function computeDashboardReport(start, end) {
+  var dates = reportDateRange(start, end);
+  var fitness = DB.getFitness();
+  var kcalGoal = parseInt(localStorage.getItem('kcalos_kcal_goal') || '0') || null;
+
+  var apportDays = 0, apportSum = 0, depSum = 0, depDays = 0, stepsSum = 0, stepsDays = 0, onTargetDays = 0;
+  var poidsPoints = [];
+
+  dates.forEach(function(ds) {
+    var dayTot = getDayTotals(ds);
+    if (dayTot.kcal > 0) {
+      apportDays++; apportSum += dayTot.kcal;
+      if (kcalGoal && Math.abs(dayTot.kcal - kcalGoal) <= kcalGoal * 0.07) onTargetDays++;
+    }
+    var f = fitness.find(function(x) { return x.date === ds; });
+    if (f && f.calories > 0) { depSum += f.calories; depDays++; }
+    if (f && f.steps > 0) { stepsSum += f.steps; stepsDays++; }
+    if (f && f.poids) poidsPoints.push({ date: ds, poids: parseFloat(f.poids) });
+  });
+
+  var nbJours = dates.length;
+  var avgApport = apportDays ? Math.round(apportSum / apportDays) : null;
+  var avgDep    = depDays ? Math.round(depSum / depDays) : null;
+  var avgSteps  = stepsDays ? Math.round(stepsSum / stepsDays) : null;
+  var balance   = (avgApport !== null && avgDep !== null) ? Math.round(avgApport - avgDep) : null;
+  var regularite = nbJours ? Math.round((apportDays / nbJours) * 100) : 0;
+
+  var poidsDelta = null, poidsStart = null, poidsEnd = null;
+  if (poidsPoints.length >= 2) {
+    poidsStart = poidsPoints[0].poids;
+    poidsEnd   = poidsPoints[poidsPoints.length - 1].poids;
+    poidsDelta = Math.round((poidsEnd - poidsStart) * 10) / 10;
+  }
+
+  var sessions = (typeof woAllSessionsSorted === 'function' ? woAllSessionsSorted() : [])
+    .filter(function(s) { return s.date >= start && s.date <= end; });
+
+  return {
+    nbJours: nbJours, apportDays: apportDays, avgApport: avgApport, avgDep: avgDep,
+    balance: balance, regularite: regularite, kcalGoal: kcalGoal, onTargetDays: onTargetDays,
+    poidsStart: poidsStart, poidsEnd: poidsEnd, poidsDelta: poidsDelta,
+    avgSteps: avgSteps, nbSessions: sessions.length,
+  };
+}
+
+function reportStatCard(label, value, sub, color) {
+  return '<div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:0.7rem 0.8rem">'
+    + '<div style="font-size:0.58rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted2);margin-bottom:4px">' + label + '</div>'
+    + '<div style="font-size:1.05rem;font-weight:700;color:' + color + ';line-height:1.1;margin-bottom:2px">' + value + '</div>'
+    + '<div style="font-size:0.6rem;color:var(--muted)">' + sub + '</div>'
+    + '</div>';
+}
+
+function renderDashboardReportHtml(start, end, label, r) {
+  var pct = r.apportDays ? Math.round((r.onTargetDays / r.apportDays) * 100) : null;
+  var balCol = r.balance === null ? 'var(--muted2)' : r.balance < 0 ? 'var(--blue)' : 'var(--orange)';
+  var poidsCol = r.poidsDelta === null ? 'var(--muted2)' : r.poidsDelta < 0 ? 'var(--blue)' : r.poidsDelta > 0 ? 'var(--orange)' : 'var(--muted)';
+
+  var respectSub = r.kcalGoal ? (r.onTargetDays + '/' + r.apportDays + ' j dans la cible (±7%)') : 'Aucun objectif défini';
+  var balanceSub = (r.avgApport !== null && r.avgDep !== null) ? ('Apport ' + fmt(r.avgApport) + ' · Dép. ' + fmt(r.avgDep)) : 'Données insuffisantes';
+  var poidsSub = r.poidsDelta === null ? 'Pas assez de mesures' : (r.poidsStart.toFixed(1) + ' → ' + r.poidsEnd.toFixed(1) + ' kg');
+
+  var html = reportResultHeader(label, start, end, r.nbJours);
+
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">';
+  html += reportStatCard('Respect objectif', r.kcalGoal ? (pct !== null ? pct + '%' : '—') : '—', respectSub, 'var(--lime)');
+  html += reportStatCard('Régularité', r.regularite + '%', r.apportDays + '/' + r.nbJours + ' jours saisis', 'var(--teal)');
+  html += reportStatCard('Balance moy.', r.balance !== null ? ((r.balance > 0 ? '+' : '') + fmt(r.balance) + ' kcal') : '—', balanceSub, balCol);
+  html += reportStatCard('Poids', r.poidsDelta !== null ? ((r.poidsDelta > 0 ? '+' : '') + r.poidsDelta + ' kg') : '—', poidsSub, poidsCol);
+  html += '</div>';
+
+  html += '<div style="display:flex;gap:8px">';
+  html += '<div style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:0.6rem 0.8rem;display:flex;justify-content:space-between;align-items:center">'
+    + '<span style="font-size:0.68rem;color:var(--muted)">Séances loguées</span><span style="font-size:0.8rem;font-weight:600;color:var(--text)">' + r.nbSessions + '</span></div>';
+  html += '<div style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:0.6rem 0.8rem;display:flex;justify-content:space-between;align-items:center">'
+    + '<span style="font-size:0.68rem;color:var(--muted)">Pas moy./j</span><span style="font-size:0.8rem;font-weight:600;color:var(--text)">' + (r.avgSteps !== null ? fmt(r.avgSteps) : '—') + '</span></div>';
+  html += '</div>';
+
+  return html;
+}
+
+// Poids de corps représentatif d'une période : moyenne des pesées dans la
+// période si dispo, sinon dernière pesée connue avant, sinon profil, sinon 70kg.
+// Sert aux indicateurs g/kg (macros) partagés entre plusieurs compte rendus.
+function reportBodyweight(start, end) {
+  var fitness = DB.getFitness();
+  var prof = JSON.parse(localStorage.getItem('kcalos_profile') || '{}');
+  var inRange = fitness.filter(function(f) { return f.poids && f.date >= start && f.date <= end; });
+  if (inRange.length) {
+    var sum = inRange.reduce(function(s, f) { return s + parseFloat(f.poids); }, 0);
+    return sum / inRange.length;
+  }
+  var before = fitness.filter(function(f) { return f.poids && f.date < start; }).sort(function(a, b) { return b.date.localeCompare(a.date); });
+  if (before.length) return parseFloat(before[0].poids);
+  return parseFloat(prof.poids) || 70;
+}
+
+/* ── Compte rendu APPORTS ──
+   Régularité, apport moyen (kcal + macros détaillées g et g/kg), répartition
+   par repas, plus quelques indicateurs secondaires (fibres, sucres, nb repas). */
+function computeApportsReport(start, end) {
+  var dates = reportDateRange(start, end);
+  var apportDays = 0, kcalSum = 0, protSum = 0, glucSum = 0, lipSum = 0, fibresSum = 0, sucresSum = 0, mealCountSum = 0;
+  var mealSums = {};
+  Object.keys(MEAL_LABELS).forEach(function(k) { mealSums[k] = 0; });
+
+  dates.forEach(function(ds) {
+    var dayTot = getDayTotals(ds);
+    if (dayTot.kcal > 0) {
+      apportDays++; kcalSum += dayTot.kcal; protSum += dayTot.prot; glucSum += dayTot.gluc; lipSum += dayTot.lip;
+      fibresSum += dayTot.fibres || 0; sucresSum += dayTot.sucres || 0;
+    }
+    Object.keys(MEAL_LABELS).forEach(function(k) {
+      var mt = getMealTotals(ds, k);
+      mealSums[k] += mt.kcal;
+      if (mt.kcal > 0) mealCountSum++;
+    });
+  });
+
+  var nbJours = dates.length;
+  var mealAvg = {};
+  Object.keys(mealSums).forEach(function(k) { mealAvg[k] = nbJours ? Math.round(mealSums[k] / nbJours) : 0; });
+
+  var bw = reportBodyweight(start, end);
+  var avgProt = apportDays ? protSum / apportDays : null;
+  var avgGluc = apportDays ? glucSum / apportDays : null;
+  var avgLip  = apportDays ? lipSum  / apportDays : null;
+
+  // Répartition calorique des macros (prot/gluc = 4 kcal/g, lip = 9 kcal/g).
+  var kcalFromProt = (avgProt || 0) * 4, kcalFromGluc = (avgGluc || 0) * 4, kcalFromLip = (avgLip || 0) * 9;
+  var macroKcalTotal = kcalFromProt + kcalFromGluc + kcalFromLip;
+
+  return {
+    nbJours: nbJours, apportDays: apportDays,
+    avgKcal: apportDays ? Math.round(kcalSum / apportDays) : null,
+    avgProt: avgProt !== null ? Math.round(avgProt) : null,
+    avgGluc: avgGluc !== null ? Math.round(avgGluc) : null,
+    avgLip:  avgLip  !== null ? Math.round(avgLip)  : null,
+    protPerKg: avgProt !== null ? Math.round((avgProt / bw) * 10) / 10 : null,
+    glucPerKg: avgGluc !== null ? Math.round((avgGluc / bw) * 10) / 10 : null,
+    lipPerKg:  avgLip  !== null ? Math.round((avgLip  / bw) * 10) / 10 : null,
+    protPct: macroKcalTotal ? Math.round((kcalFromProt / macroKcalTotal) * 100) : null,
+    glucPct: macroKcalTotal ? Math.round((kcalFromGluc / macroKcalTotal) * 100) : null,
+    lipPct:  macroKcalTotal ? Math.round((kcalFromLip  / macroKcalTotal) * 100) : null,
+    avgFibres: apportDays ? Math.round(fibresSum / apportDays) : null,
+    avgSucres: apportDays ? Math.round(sucresSum / apportDays) : null,
+    avgMealCount: apportDays ? Math.round((mealCountSum / apportDays) * 10) / 10 : null,
+    regularite: nbJours ? Math.round((apportDays / nbJours) * 100) : 0,
+    mealAvg: mealAvg,
+  };
+}
+
+// Petite carte compacte (3 par ligne) pour les macros, avec le g/kg en sous-texte.
+function reportMacroCard(label, grams, perKg, color) {
+  return '<div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:0.55rem 0.6rem;text-align:center">'
+    + '<div style="font-size:0.56rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted2);margin-bottom:3px">' + label + '</div>'
+    + '<div style="font-size:0.92rem;font-weight:700;color:' + color + ';line-height:1.1">' + (grams !== null ? grams + 'g' : '—') + '</div>'
+    + '<div style="font-size:0.58rem;color:var(--muted);margin-top:2px">' + (perKg !== null ? perKg + ' g/kg' : '—') + '</div>'
+    + '</div>';
+}
+
+function renderApportsReportHtml(start, end, label, r) {
+  var html = reportResultHeader(label, start, end, r.nbJours);
+
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">';
+  html += reportStatCard('Régularité', r.regularite + '%', r.apportDays + '/' + r.nbJours + ' jours saisis', 'var(--teal)');
+  html += reportStatCard('Apport moyen', r.avgKcal !== null ? (fmt(r.avgKcal) + ' kcal') : '—', 'Moyenne / jour saisi', 'var(--lime)');
+  html += '</div>';
+
+  html += '<div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted2);margin-bottom:6px">Macros — moyenne / jour saisi</div>';
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">';
+  html += reportMacroCard('Protéines', r.avgProt, r.protPerKg, 'var(--blue)');
+  html += reportMacroCard('Glucides', r.avgGluc, r.glucPerKg, 'var(--orange)');
+  html += reportMacroCard('Lipides', r.avgLip, r.lipPerKg, 'var(--pink)');
+  html += '</div>';
+
+  if (r.protPct !== null) {
+    html += '<div style="display:flex;height:8px;border-radius:4px;overflow:hidden;margin-bottom:4px">'
+      + '<div style="width:' + r.protPct + '%;background:var(--blue)"></div>'
+      + '<div style="width:' + r.glucPct + '%;background:var(--orange)"></div>'
+      + '<div style="width:' + r.lipPct + '%;background:var(--pink)"></div>'
+      + '</div>';
+    html += '<div style="display:flex;justify-content:space-between;font-size:0.6rem;color:var(--muted);margin-bottom:12px">'
+      + '<span>Prot. ' + r.protPct + '%</span><span>Gluc. ' + r.glucPct + '%</span><span>Lip. ' + r.lipPct + '%</span></div>';
+  }
+
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px">';
+  html += reportStatCard('Fibres', r.avgFibres !== null ? (r.avgFibres + 'g') : '—', '/j (réf. ~30g)', 'var(--lime)');
+  html += reportStatCard('Sucres', r.avgSucres !== null ? (r.avgSucres + 'g') : '—', 'Moyenne / jour', 'var(--muted)');
+  html += reportStatCard('Repas / j', r.avgMealCount !== null ? r.avgMealCount : '—', 'Moyenne saisie', 'var(--teal)');
+  html += '</div>';
+
+  html += '<div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted2);margin-bottom:8px">Répartition moyenne par repas</div>';
+  var maxMeal = Math.max(1, Math.max.apply(null, Object.values(r.mealAvg)));
+  html += '<div style="display:flex;flex-direction:column;gap:6px">';
+  html += Object.keys(MEAL_LABELS).map(function(k) {
+    var lbl = MEAL_LABELS[k].replace(/<[^>]+>/g, '').trim();
+    var val = r.mealAvg[k];
+    var pct = Math.round((val / maxMeal) * 100);
+    return '<div style="display:flex;align-items:center;gap:8px">'
+      + '<div style="width:96px;flex-shrink:0;font-size:0.65rem;color:var(--muted)">' + lbl + '</div>'
+      + '<div style="flex:1;height:8px;border-radius:4px;background:var(--s3);overflow:hidden"><div style="width:' + pct + '%;height:100%;background:var(--blue)"></div></div>'
+      + '<div style="width:56px;flex-shrink:0;text-align:right;font-size:0.65rem;color:var(--text);font-weight:600">' + fmt(val) + ' kcal</div>'
+      + '</div>';
+  }).join('');
+  html += '</div>';
+
+  return html;
+}
+
+// Delta simple première mesure → dernière mesure d'une série de points
+// { date, val }, arrondi. Utilisé pour poids/BF/IMC/apport dans le compte rendu Courbe.
+function reportSeriesDelta(points, decimals) {
+  if (points.length < 2) return null;
+  var f = Math.pow(10, decimals || 1);
+  return Math.round((points[points.length - 1].val - points[0].val) * f) / f;
+}
+
+/* ── Compte rendu COURBE ──
+   Trois volets : Corps (poids, BF%, IMC), Calories (évolution de l'apport),
+   Activité (pas, kcal dépensées via les pas, répartition par jour de semaine). */
+function computeCourbeReport(start, end) {
+  var dates = reportDateRange(start, end);
+  var fitness = DB.getFitness();
+  var prof = JSON.parse(localStorage.getItem('kcalos_profile') || '{}');
+  var tailleM = prof.taille ? parseFloat(prof.taille) / 100 : null;
+
+  var poidsPts = [], bfPts = [], imcPts = [], kcalPts = [], stepsPts = [];
+  var weekdaySums = [0,0,0,0,0,0,0], weekdayCounts = [0,0,0,0,0,0,0];
+
+  dates.forEach(function(ds) {
+    var f = fitness.find(function(x) { return x.date === ds; });
+    if (f && f.poids) {
+      var p = parseFloat(f.poids);
+      poidsPts.push({ date: ds, poids: p, val: p });
+      if (tailleM) imcPts.push({ date: ds, poids: p, val: Math.round((p / (tailleM * tailleM)) * 10) / 10 });
+    }
+    if (f && f.bf) bfPts.push({ date: ds, poids: parseFloat(f.bf), val: parseFloat(f.bf) });
+    var dayTot = getDayTotals(ds);
+    if (dayTot.kcal > 0) kcalPts.push({ date: ds, poids: dayTot.kcal, val: dayTot.kcal });
+    if (f && f.steps > 0) {
+      stepsPts.push({ date: ds, poids: f.steps, val: f.steps });
+      var wd = (new Date(ds + 'T12:00').getDay() + 6) % 7; // 0=Lun ... 6=Dim
+      weekdaySums[wd] += f.steps; weekdayCounts[wd]++;
+    }
+  });
+
+  var weeklyDelta = null;
+  var poidsDelta = reportSeriesDelta(poidsPts, 1);
+  if (poidsPts.length >= 2) {
+    var days = (new Date(poidsPts[poidsPts.length - 1].date) - new Date(poidsPts[0].date)) / 86400000;
+    weeklyDelta = days > 0 ? Math.round((poidsDelta / days) * 7 * 100) / 100 : null;
+  }
+
+  var bw = reportBodyweight(start, end);
+  var stepsAvg = stepsPts.length ? Math.round(stepsPts.reduce(function(s, p) { return s + p.poids; }, 0) / stepsPts.length) : null;
+  var stepsKcalAvg = stepsAvg !== null ? Math.round(reportStepsKcal(stepsAvg, bw)) : null;
+  var stepsKcalTotal = Math.round(stepsPts.reduce(function(s, p) { return s + reportStepsKcal(p.poids, bw); }, 0));
+  var weekdayAvg = weekdaySums.map(function(s, i) { return weekdayCounts[i] ? Math.round(s / weekdayCounts[i]) : 0; });
+  var bestWeekdayIdx = weekdayAvg.indexOf(Math.max.apply(null, weekdayAvg));
+
+  return {
+    nbJours: dates.length,
+    corps: {
+      nbMesures: poidsPts.length, points: poidsPts,
+      poidsStart: poidsPts.length ? poidsPts[0].poids : null,
+      poidsEnd: poidsPts.length ? poidsPts[poidsPts.length - 1].poids : null,
+      poidsDelta: poidsDelta, weeklyDelta: weeklyDelta,
+      poidsMin: poidsPts.length ? Math.min.apply(null, poidsPts.map(function(p){return p.poids;})) : null,
+      poidsMax: poidsPts.length ? Math.max.apply(null, poidsPts.map(function(p){return p.poids;})) : null,
+      bfDelta: reportSeriesDelta(bfPts, 1), bfStart: bfPts.length ? bfPts[0].val : null, bfEnd: bfPts.length ? bfPts[bfPts.length-1].val : null,
+      imcDelta: reportSeriesDelta(imcPts, 1), imcStart: imcPts.length ? imcPts[0].val : null, imcEnd: imcPts.length ? imcPts[imcPts.length-1].val : null,
+    },
+    calories: {
+      nbMesures: kcalPts.length, points: kcalPts,
+      avgKcal: kcalPts.length ? Math.round(kcalPts.reduce(function(s,p){return s+p.poids;},0) / kcalPts.length) : null,
+      delta: reportSeriesDelta(kcalPts, 0),
+    },
+    activite: {
+      nbMesures: stepsPts.length, points: stepsPts,
+      avgSteps: stepsAvg, delta: reportSeriesDelta(stepsPts, 0),
+      stepsKcalAvg: stepsKcalAvg, stepsKcalTotal: stepsKcalTotal,
+      weekdayAvg: weekdayAvg, bestWeekdayIdx: stepsPts.length ? bestWeekdayIdx : null,
+    },
+  };
+}
+
+// Mini-courbe SVG autonome (pas de dépendance Chart.js), réutilisée pour le
+// poids, l'apport calorique ou les pas selon la clé de valeur passée.
+function reportSparklineSvg(points, valueKey, colorVar) {
+  valueKey = valueKey || 'poids';
+  colorVar = colorVar || 'var(--orange)';
+  if (points.length < 2) return '';
+  var w = 280, h = 60, pad = 4;
+  var vals = points.map(function(p) { return p[valueKey]; });
+  var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+  var range = (max - min) || 1;
+  var stepX = (w - pad * 2) / (points.length - 1);
+  var coords = points.map(function(p, i) {
+    var x = pad + i * stepX;
+    var y = pad + (h - pad * 2) * (1 - (p[valueKey] - min) / range);
+    return x.toFixed(1) + ',' + y.toFixed(1);
+  }).join(' ');
+  return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" style="width:100%;height:70px;display:block;margin-bottom:10px">'
+    + '<polyline points="' + coords + '" fill="none" style="stroke:' + colorVar + ';stroke-width:2px" stroke-linecap="round" stroke-linejoin="round"/>'
+    + '</svg>';
+}
+
+// Estimation kcal dépensées via les pas (cohérente avec le calcul NEAT utilisé
+// ailleurs dans l'app : ~0.025 kcal/pas, ajusté au poids corporel vs 70kg réf.).
+function reportStepsKcal(steps, poids) {
+  return steps * ((poids || 70) / 70) * 0.025;
+}
+
+// Petit graphique en bâtons (7 valeurs Lun→Dim), utilisé pour la répartition
+// hebdomadaire des pas dans le compte rendu Courbe/Activité.
+function reportWeekdayBarChart(avgByDay, color) {
+  var labels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+  var max = Math.max(1, Math.max.apply(null, avgByDay));
+  var html = '<div style="display:flex;align-items:flex-end;gap:5px;height:80px;margin-bottom:6px">';
+  html += avgByDay.map(function(v, i) {
+    var h = Math.round((v / max) * 100);
+    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%">'
+      + '<div style="width:100%;height:' + h + '%;background:' + color + ';border-radius:3px 3px 0 0;min-height:2px" title="' + fmt(v) + '"></div>'
+      + '</div>';
+  }).join('');
+  html += '</div>';
+  html += '<div style="display:flex;gap:5px">' + labels.map(function(l) {
+    return '<div style="flex:1;text-align:center;font-size:0.58rem;color:var(--muted2)">' + l + '</div>';
+  }).join('') + '</div>';
+  return html;
+}
+
+function reportSectionTitle(txt) {
+  return '<div style="font-size:0.66rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--orange);font-weight:600;margin:14px 0 8px">' + txt + '</div>';
+}
+
+function renderCourbeReportHtml(start, end, label, r) {
+  var html = reportResultHeader(label, start, end, r.nbJours);
+  var c = r.corps, k = r.calories, a = r.activite;
+
+  // ── Corps : poids (courbe), + delta BF% et IMC si dispo ──
+  html += reportSectionTitle('Corps');
+  if (c.nbMesures < 2) {
+    html += '<div style="font-size:0.7rem;color:var(--muted2);padding:0.2rem 0 0.8rem">Pas assez de pesées sur cette période pour tracer une évolution (' + c.nbMesures + ' mesure' + (c.nbMesures > 1 ? 's' : '') + ').</div>';
+  } else {
+    html += reportSparklineSvg(c.points, 'poids', 'var(--orange)');
+    var deltaCol = c.poidsDelta < 0 ? 'var(--blue)' : c.poidsDelta > 0 ? 'var(--orange)' : 'var(--muted)';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">';
+    html += reportStatCard('Poids', (c.poidsDelta > 0 ? '+' : '') + c.poidsDelta + ' kg', c.poidsStart.toFixed(1) + ' → ' + c.poidsEnd.toFixed(1) + ' kg', deltaCol);
+    html += reportStatCard('Par semaine', c.weeklyDelta !== null ? ((c.weeklyDelta > 0 ? '+' : '') + c.weeklyDelta + ' kg/sem') : '—', 'Tendance moyenne', deltaCol);
+    html += '</div>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">';
+    var bfCol = c.bfDelta === null ? 'var(--muted2)' : c.bfDelta < 0 ? 'var(--blue)' : c.bfDelta > 0 ? 'var(--orange)' : 'var(--muted)';
+    html += reportStatCard('Masse grasse', c.bfDelta !== null ? ((c.bfDelta > 0 ? '+' : '') + c.bfDelta + ' %') : '—', c.bfDelta !== null ? (c.bfStart.toFixed(1) + ' → ' + c.bfEnd.toFixed(1) + ' %') : 'Non renseignée', bfCol);
+    var imcCol = c.imcDelta === null ? 'var(--muted2)' : c.imcDelta < 0 ? 'var(--blue)' : c.imcDelta > 0 ? 'var(--orange)' : 'var(--muted)';
+    html += reportStatCard('IMC', c.imcDelta !== null ? ((c.imcDelta > 0 ? '+' : '') + c.imcDelta) : '—', c.imcDelta !== null ? (c.imcStart.toFixed(1) + ' → ' + c.imcEnd.toFixed(1)) : 'Taille non renseignée', imcCol);
+    html += '</div>';
+  }
+
+  // ── Calories : évolution de l'apport moyen ──
+  html += reportSectionTitle('Calories');
+  if (k.nbMesures < 2) {
+    html += '<div style="font-size:0.7rem;color:var(--muted2);padding:0.2rem 0 0.8rem">Pas assez de jours saisis sur cette période.</div>';
+  } else {
+    html += reportSparklineSvg(k.points, 'poids', 'var(--lime)');
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">';
+    html += reportStatCard('Apport moyen', fmt(k.avgKcal) + ' kcal', k.nbMesures + ' jours saisis', 'var(--lime)');
+    var kCol = k.delta === null ? 'var(--muted2)' : k.delta < 0 ? 'var(--blue)' : k.delta > 0 ? 'var(--orange)' : 'var(--muted)';
+    html += reportStatCard('Tendance', k.delta !== null ? ((k.delta > 0 ? '+' : '') + fmt(k.delta) + ' kcal') : '—', 'Premier vs dernier jour saisi', kCol);
+    html += '</div>';
+  }
+
+  // ── Activité : pas + kcal dépensées + répartition par jour de semaine ──
+  html += reportSectionTitle('Activité');
+  if (a.nbMesures < 2) {
+    html += '<div style="font-size:0.7rem;color:var(--muted2);padding:0.2rem 0">Pas assez de relevés de pas sur cette période.</div>';
+  } else {
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">';
+    html += reportStatCard('Pas moyens', fmt(a.avgSteps) + '/j', a.nbMesures + ' jours relevés', 'var(--teal)');
+    html += reportStatCard('Kcal via pas', fmt(a.stepsKcalAvg) + '/j', 'Total période : ' + fmt(a.stepsKcalTotal) + ' kcal', 'var(--pink)');
+    html += '</div>';
+    html += '<div style="font-size:0.6rem;color:var(--muted);margin-bottom:6px">Répartition des pas par jour de semaine' + (a.bestWeekdayIdx !== null ? (' — record : ' + ['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'][a.bestWeekdayIdx]) : '') + '</div>';
+    html += reportWeekdayBarChart(a.weekdayAvg, 'var(--teal)');
+  }
+
+  return html;
+}
+
+/* ── Compte rendu STEPS ──
+   Moyenne, régularité, % de jours où l'objectif est atteint, record. */
+function computeStepsReport(start, end) {
+  var dates = reportDateRange(start, end);
+  var fitness = DB.getFitness();
+  var goal = parseInt(localStorage.getItem('kcalos_step_goal') || '10000');
+  var stepsDays = 0, stepsSum = 0, goalDays = 0, best = 0, bestDate = null;
+
+  dates.forEach(function(ds) {
+    var f = fitness.find(function(x) { return x.date === ds; });
+    if (f && f.steps > 0) {
+      stepsDays++; stepsSum += f.steps;
+      if (f.steps > best) { best = f.steps; bestDate = ds; }
+      if (f.steps >= goal) goalDays++;
+    }
+  });
+
+  var nbJours = dates.length;
+  return {
+    nbJours: nbJours, stepsDays: stepsDays,
+    avgSteps: stepsDays ? Math.round(stepsSum / stepsDays) : null,
+    regularite: nbJours ? Math.round((stepsDays / nbJours) * 100) : 0,
+    goal: goal, goalDays: goalDays,
+    goalPct: stepsDays ? Math.round((goalDays / stepsDays) * 100) : null,
+    best: best, bestDate: bestDate,
+  };
+}
+
+function renderStepsReportHtml(start, end, label, r) {
+  var html = reportResultHeader(label, start, end, r.nbJours);
+
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
+  html += reportStatCard('Moyenne', r.avgSteps !== null ? fmt(r.avgSteps) : '—', r.stepsDays + '/' + r.nbJours + ' jours saisis', 'var(--teal)');
+  html += reportStatCard('Régularité', r.regularite + '%', 'Jours avec un relevé', 'var(--blue)');
+  html += reportStatCard('Objectif atteint', r.goalPct !== null ? (r.goalPct + '%') : '—', r.goalDays + '/' + r.stepsDays + ' j ≥ ' + fmt(r.goal) + ' pas', 'var(--lime)');
+  html += reportStatCard('Record', r.best ? fmt(r.best) : '—', r.bestDate ? ('Le ' + fmtDL(r.bestDate)) : 'Aucun relevé', 'var(--orange)');
+  html += '</div>';
+
+  return html;
+}
+
+/* ── Compte rendu SÉANCE ──
+   Volume total (vs période équivalente précédente), fréquence, progression
+   globale (moyenne de tous les exos comparables), détail par type de séance,
+   top progressions et top régressions (1RM estimé Epley, premier vs dernier
+   passage dans la période). */
+function computeSeanceReport(start, end) {
+  var all = (typeof woAllSessionsSorted === 'function') ? woAllSessionsSorted() : [];
+  var sessions = all.filter(function(s) { return s.date >= start && s.date <= end; });
+  var totalVol = sessions.reduce(function(sum, s) { return sum + woSessVol(s); }, 0);
+  var days = Math.round((new Date(end) - new Date(start)) / 86400000) + 1;
+  var freqPerWeek = days > 0 ? Math.round((sessions.length / days) * 7 * 10) / 10 : null;
+
+  // Volume de la période précédente de même durée, pour contextualiser l'évolution.
+  var prevEnd = new Date(start); prevEnd.setDate(prevEnd.getDate() - 1);
+  var prevStart = new Date(prevEnd); prevStart.setDate(prevStart.getDate() - (days - 1));
+  var prevStartS = prevStart.toISOString().split('T')[0];
+  var prevEndS   = prevEnd.toISOString().split('T')[0];
+  var prevVol = all.filter(function(s) { return s.date >= prevStartS && s.date <= prevEndS; })
+    .reduce(function(sum, s) { return sum + woSessVol(s); }, 0);
+  var volPct = prevVol > 0 ? Math.round(((totalVol - prevVol) / prevVol) * 100) : null;
+
+  // Détail par type de séance (compte, volume, fréquence/semaine).
+  var allTypes = (typeof woGetAllTypes === 'function') ? woGetAllTypes() : {};
+  var byType = {};
+  sessions.forEach(function(s) {
+    if (!byType[s.type]) byType[s.type] = { count: 0, vol: 0 };
+    byType[s.type].count++;
+    byType[s.type].vol += woSessVol(s);
+  });
+  var typeBreakdown = Object.keys(byType).map(function(tid) {
+    var t = allTypes[tid] || { label: tid, color: 'var(--muted)' };
+    var b = byType[tid];
+    return {
+      id: tid, label: t.label, color: t.color, count: b.count, vol: Math.round(b.vol),
+      freqPerWeek: days > 0 ? Math.round((b.count / days) * 7 * 10) / 10 : null,
+    };
+  }).sort(function(a, b) { return b.count - a.count; });
+
+  // Regroupe les occurrences de chaque exo dans la période pour calculer une progression.
+  var byExo = {};
+  sessions.forEach(function(s) {
+    (s.exercises || []).forEach(function(e) {
+      var best1rm = woEpley1RMBest(e.sets || []);
+      if (!best1rm) return;
+      if (!byExo[e.name]) byExo[e.name] = [];
+      byExo[e.name].push({ date: s.date, best1rm: best1rm });
+    });
+  });
+
+  var exoDeltas = Object.keys(byExo).map(function(name) {
+    var occs = byExo[name].sort(function(a, b) { return a.date.localeCompare(b.date); });
+    if (occs.length < 2) return null;
+    var first = occs[0].best1rm, last = occs[occs.length - 1].best1rm;
+    var pct = first > 0 ? Math.round(((last - first) / first) * 100) : null;
+    return { name: name, first: first, last: last, pct: pct, occ: occs.length };
+  }).filter(Boolean);
+  exoDeltas.sort(function(a, b) { return b.pct - a.pct; });
+
+  var globalPct = exoDeltas.length
+    ? Math.round((exoDeltas.reduce(function(s, e) { return s + e.pct; }, 0) / exoDeltas.length) * 10) / 10
+    : null;
+
+  var topBest = exoDeltas.filter(function(e) { return e.pct > 0; }).slice(0, 3);
+  var topWorst = exoDeltas.filter(function(e) { return e.pct < 0; }).slice(-3).reverse();
+
+  return {
+    nbSessions: sessions.length, totalVol: Math.round(totalVol), volPct: volPct,
+    freqPerWeek: freqPerWeek, globalPct: globalPct, nbExosComparables: exoDeltas.length,
+    typeBreakdown: typeBreakdown, topBest: topBest, topWorst: topWorst,
+  };
+}
+
+function reportExoCard(title, exo, color) {
+  return '<div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:0.6rem 0.75rem;margin-bottom:6px">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">'
+    + '<span style="font-size:0.76rem;font-weight:600;color:var(--text)">' + exo.name + '</span>'
+    + '<span style="font-size:0.8rem;font-weight:700;color:' + color + ';flex-shrink:0">' + (exo.pct > 0 ? '+' : '') + exo.pct + '%</span>'
+    + '</div>'
+    + '<div style="font-size:0.6rem;color:var(--muted);margin-top:2px">1RM est. ' + Math.round(exo.first) + 'kg → ' + Math.round(exo.last) + 'kg · ' + exo.occ + ' séances</div>'
+    + '</div>';
+}
+
+function reportTypeRow(t) {
+  return '<div style="display:flex;align-items:center;gap:8px;padding:0.45rem 0.6rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);margin-bottom:6px">'
+    + '<span style="width:8px;height:8px;border-radius:50%;background:' + t.color + ';flex-shrink:0"></span>'
+    + '<span style="flex:1;font-size:0.72rem;font-weight:600;color:var(--text)">' + t.label + '</span>'
+    + '<span style="font-size:0.62rem;color:var(--muted)">' + t.count + ' séance' + (t.count > 1 ? 's' : '') + (t.freqPerWeek !== null ? ' · ' + t.freqPerWeek + '/sem' : '') + '</span>'
+    + '<span style="font-size:0.65rem;font-weight:600;color:var(--text);flex-shrink:0">' + fmt(t.vol) + ' kg</span>'
+    + '</div>';
+}
+
+function renderSeanceReportHtml(start, end, label, r) {
+  var html = reportResultHeader(label, start, end, null);
+
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">';
+  html += reportStatCard('Séances', r.nbSessions, r.freqPerWeek !== null ? (r.freqPerWeek + '/semaine') : 'Loguées sur la période', 'var(--pink)');
+  html += reportStatCard('Volume total', fmt(r.totalVol) + ' kg',
+    r.volPct !== null ? ((r.volPct > 0 ? '+' : '') + r.volPct + '% vs période précédente') : 'Pas de période de comparaison',
+    r.volPct === null ? 'var(--muted2)' : r.volPct >= 0 ? 'var(--lime)' : 'var(--red)');
+  html += '</div>';
+
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">';
+  html += reportStatCard('Progression globale', r.globalPct !== null ? ((r.globalPct > 0 ? '+' : '') + r.globalPct + '%') : '—',
+    r.nbExosComparables ? (r.nbExosComparables + ' exos comparables') : 'Pas assez de données',
+    r.globalPct === null ? 'var(--muted2)' : r.globalPct >= 0 ? 'var(--lime)' : 'var(--red)');
+  html += reportStatCard('Types pratiqués', r.typeBreakdown.length, r.typeBreakdown.length ? r.typeBreakdown.map(function(t){return t.label;}).join(', ') : '—', 'var(--pink)');
+  html += '</div>';
+
+  if (r.typeBreakdown.length) {
+    html += '<div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted2);margin-bottom:6px">Par type de séance</div>';
+    html += r.typeBreakdown.map(reportTypeRow).join('');
+  }
+
+  if (r.topBest.length) {
+    html += '<div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted2);margin:10px 0 6px">Meilleures progressions</div>';
+    html += r.topBest.map(function(e) { return reportExoCard(null, e, 'var(--lime)'); }).join('');
+  }
+  if (r.topWorst.length) {
+    html += '<div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted2);margin:10px 0 6px">Plus grosses régressions</div>';
+    html += r.topWorst.map(function(e) { return reportExoCard(null, e, 'var(--red)'); }).join('');
+  }
+  if (!r.topBest.length && !r.topWorst.length) {
+    html += '<div style="font-size:0.7rem;color:var(--muted2);padding:0.4rem 0">Pas assez d\'occurrences d\'un même exercice sur cette période pour calculer une progression.</div>';
+  }
+
+  return html;
 }
 
 /* ══════════════════════════════════════════════
@@ -21548,7 +22374,7 @@ function closeKcalGoalModal() {
   };
   window.openEauSheet = function(){
     var s = document.getElementById('eau-sheet');
-    if(s){ s.style.display='flex'; setTimeout(function(){ _eauRefreshSheet(); }, 10); }
+    if(s){ s.style.display='flex'; kcLockScroll(); setTimeout(function(){ _eauRefreshSheet(); }, 10); }
     var gi = document.getElementById('eau-goal-input'); if(gi) gi.value = EAU_GOAL;
   };
   window.eauSaveGoal = function(){
@@ -21567,7 +22393,7 @@ function closeKcalGoalModal() {
   };
   window.closeEauSheet = function(){
     var s = document.getElementById('eau-sheet');
-    if(s) s.style.display = 'none';
+    if(s){ s.style.display = 'none'; kcUnlockScroll(); }
   };
 
   function _eauRefreshWidget(){
@@ -23119,12 +23945,12 @@ else setTimeout(slInit,200);
 
 </script>
 <!-- ── Modal NutriScore ── -->
-<div id="nutriscore-modal" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);align-items:flex-end;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
-  <div style="background:var(--s1);border-radius:var(--r) var(--r) 0 0;padding:1.25rem 1rem 2rem;width:100%;max-width:480px;max-height:85vh;overflow-y:auto">
+<div id="nutriscore-modal" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeNutriScoreModal()">
+  <div class="kc-modal-scroll" style="position:relative;background:var(--s1);border-radius:var(--r) var(--r) 0 0;padding:1.25rem 1rem 2rem;width:100%;max-width:480px;max-height:85vh;overflow-y:auto">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
       <div style="font-family:Playfair Display,serif;font-size:1.1rem">Score <em style="color:var(--lime)">nutritionnel</em></div>
-      <button onclick="document.getElementById('nutriscore-modal').style.display='none'" style="background:none;border:none;font-size:1.2rem;color:var(--muted2);cursor:pointer;padding:4px">✕</button>
     </div>
+    <button class="kc-modal-close" onclick="closeNutriScoreModal()" aria-label="Fermer">✕</button>
 
     <!-- Score global -->
     <div style="display:flex;align-items:center;gap:14px;background:var(--s2);border-radius:var(--r-sm);padding:0.9rem;margin-bottom:1rem;border:1px solid var(--border)">
@@ -23183,12 +24009,12 @@ else setTimeout(slInit,200);
 
   const SYNC_KEYS = [
     'kcalos_profile','kcalos_fitness','kcalos_food','kcalos_meals',
-    'kcalos_step_goal','kcalos_kcal_goal','kcalos_macro_goal',
+    'kcalos_step_goal','kcalos_kcal_goal','kcalos_kcal_goal_history','kcalos_macro_goal',
     'kcalos_sleep_reports','kcalos_wo_v2','kcalos_custom_exos',
     'kcalos_wo_custom_types','kcalos_meal_templates',
     'kcalos_food_favs','kcalos_food_recents','kcalos_food_search_hist',
     'kcalos_widgets_config','kcalos_widgets_order','kcalos_widgets_sizes',
-    'kcalos_eau_goal','kcalos_theme','kcalos_ai_hist',
+    'kcalos_eau_goal','kcalos_theme',
     'kcalos_food_custom','kcalos_food_last_qty'
   ];
   function isSyncKey(k){ return SYNC_KEYS.includes(k) || k.startsWith('kcalos_eau_log_'); }
