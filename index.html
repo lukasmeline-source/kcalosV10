@@ -1654,6 +1654,10 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
   border:none;background:rgba(0,0,0,0.55);color:#fff;font-size:0.7rem;
   display:flex;align-items:center;justify-content:center;cursor:pointer;
 }
+.aiph-plat-block+.aiph-plat-block{margin-top:1.1rem;padding-top:1.1rem;border-top:1px solid var(--border)}
+.aiph-plat-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.65rem}
+.aiph-plat-head .aiph-plat-lbl{font-size:0.8rem;font-weight:700;color:var(--text)}
+.aiph-plat-remove{background:none;border:none;color:var(--muted2);font-size:0.68rem;cursor:pointer;text-decoration:underline;padding:2px 0;-webkit-tap-highlight-color:transparent}
 
 /* Meal summary strip (SH style : macros en ligne) */
 .meal-summary-strip{
@@ -4329,33 +4333,11 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <div style="font-size:0.62rem;color:var(--muted2);margin-top:5px">Obtenir une clé → <a href="https://console.anthropic.com" target="_blank" style="color:var(--teal)">console.anthropic.com</a></div>
     </div>
 
-    <!-- Étape 1 : photos + description -->
+    <!-- Étape 1 : plats (un ou plusieurs), chacun avec sa/ses photo(s) + description -->
     <div id="aiph-step-photos">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem">
-        <div>
-          <div style="font-size:0.72rem;font-weight:600;color:var(--text);margin-bottom:6px">🍽️ Photo du plat</div>
-          <div class="aiph-photo-box" id="aiph-box-plat" onclick="document.getElementById('aiph-file-plat').click()">
-            <span id="aiph-placeholder-plat">+ Prendre / choisir</span>
-            <img id="aiph-preview-plat" style="display:none">
-            <button type="button" class="aiph-photo-clear" id="aiph-clear-plat" style="display:none" onclick="event.stopPropagation();aiphClearPhoto('plat')">✕</button>
-          </div>
-          <input type="file" accept="image/*" id="aiph-file-plat" style="display:none" onchange="aiphHandleFile(event,'plat')">
-        </div>
-        <div>
-          <div style="font-size:0.72rem;font-weight:600;color:var(--text);margin-bottom:6px">🍴 Restes <span style="color:var(--muted2);font-weight:400">(optionnel)</span></div>
-          <div class="aiph-photo-box" id="aiph-box-restes" onclick="document.getElementById('aiph-file-restes').click()">
-            <span id="aiph-placeholder-restes">+ Prendre / choisir</span>
-            <img id="aiph-preview-restes" style="display:none">
-            <button type="button" class="aiph-photo-clear" id="aiph-clear-restes" style="display:none" onclick="event.stopPropagation();aiphClearPhoto('restes')">✕</button>
-          </div>
-          <input type="file" accept="image/*" id="aiph-file-restes" style="display:none" onchange="aiphHandleFile(event,'restes')">
-        </div>
-      </div>
+      <div id="aiph-plats-list"></div>
 
-      <div class="field">
-        <label>Description / précisions (optionnel)</label>
-        <textarea id="aiph-description" rows="3" placeholder="Ex: riz basmati, poulet grillé sans peau, un filet d'huile d'olive…" style="width:100%;background:var(--s2);border:1.5px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;font-size:0.8rem;color:var(--text);font-family:Syne,sans-serif;outline:none;resize:vertical"></textarea>
-      </div>
+      <button type="button" id="aiph-add-plat-btn" onclick="aiphAddPlat()" style="width:100%;padding:0.65rem;margin-bottom:1rem;background:var(--s2);border:1.5px dashed var(--border2);border-radius:var(--r-sm);color:var(--muted);font-size:0.75rem;font-weight:600;cursor:pointer;font-family:Syne,sans-serif;-webkit-tap-highlight-color:transparent">+ Ajouter un plat</button>
 
       <div id="aiph-error" style="display:none;font-size:0.72rem;color:var(--red);background:rgba(255,90,90,0.08);border:1px solid var(--red);border-radius:var(--r-sm);padding:8px 10px;margin-top:0.5rem;line-height:1.5"></div>
 
@@ -5909,7 +5891,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 
 <!-- POIDS — Quick edit modal -->
 <div id="poids-quick-modal" style="display:none;position:fixed;inset:0;z-index:800;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closePoidsQuickEdit()">
-  <div style="background:rgba(0,0,0,0.55);position:absolute;inset:0;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)"></div>
+  <div style="background:rgba(0,0,0,0.55);position:absolute;inset:0;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)" onclick="closePoidsQuickEdit()"></div>
   <div id="poids-quick-sheet" style="position:relative;width:100%;max-width:480px;background:var(--s1);border-radius:20px 20px 0 0;border-top:1px solid var(--border2);padding:1.5rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom,0px));animation:slideUp 0.25s cubic-bezier(0.4,0,0.2,1)">
     <button class="kc-modal-close" onclick="closePoidsQuickEdit()" aria-label="Fermer">✕</button>
     <div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1.25rem"></div>
@@ -5957,7 +5939,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 
 <!-- PROJECTION — Modal détail -->
 <div id="projection-modal" style="display:none;position:fixed;inset:0;z-index:800;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeProjectionModal()">
-  <div style="background:rgba(0,0,0,0.55);position:absolute;inset:0;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)"></div>
+  <div style="background:rgba(0,0,0,0.55);position:absolute;inset:0;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)" onclick="closeProjectionModal()"></div>
   <div class="kc-modal-scroll" style="position:relative;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;background:var(--s1);border-radius:20px 20px 0 0;border-top:1px solid var(--border2);padding:1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom,0px));animation:slideUp 0.25s cubic-bezier(0.4,0,0.2,1)">
     <button class="kc-modal-close" onclick="closeProjectionModal()" aria-label="Fermer">✕</button>
     <div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1.25rem"></div>
@@ -5987,7 +5969,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 
 <!-- ═══ OBJECTIF KCAL MODAL ═══ -->
 <div id="kcal-goal-modal" style="display:none;position:fixed;inset:0;z-index:550;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeKcalGoalModal()">
-  <div style="background:rgba(0,0,0,0.55);position:absolute;inset:0;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)"></div>
+  <div style="background:rgba(0,0,0,0.55);position:absolute;inset:0;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)" onclick="closeKcalGoalModal()"></div>
   <div class="kc-modal-scroll" style="position:relative;width:100%;max-width:480px;background:var(--s1);border-radius:20px 20px 0 0;border-top:1px solid var(--border2);padding:1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom,0));animation:slideUp 0.25s cubic-bezier(0.4,0,0.2,1);max-height:90vh;overflow-y:auto">
     <button class="kc-modal-close" onclick="closeKcalGoalModal()" aria-label="Fermer">✕</button>
     <div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1.25rem"></div>
@@ -6065,7 +6047,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
      permet de générer n'importe quel compte rendu depuis cet unique point
      d'entrée : dashboard / apports / courbe / steps / séance. -->
 <div id="report-modal" style="display:none;position:fixed;inset:0;z-index:560;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeReportModal()">
-  <div style="background:rgba(0,0,0,0.55);position:absolute;inset:0;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)"></div>
+  <div style="background:rgba(0,0,0,0.55);position:absolute;inset:0;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)" onclick="closeReportModal()"></div>
   <div class="kc-modal-scroll" style="position:relative;width:100%;max-width:480px;background:var(--s1);border-radius:20px 20px 0 0;border-top:1px solid var(--border2);padding:1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom,0));animation:slideUp 0.25s cubic-bezier(0.4,0,0.2,1);max-height:90vh;overflow-y:auto">
     <button onclick="closeReportModal()" aria-label="Fermer" style="position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:50%;background:var(--s2);border:none;color:var(--muted);font-size:0.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent">✕</button>
     <div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1.25rem"></div>
@@ -6191,22 +6173,43 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-08-06.4';
+const APP_BUILD_VERSION = '2026-08-06.9';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
 });
 
 /* ── HARMONISATION POP-UPS : verrou de scroll du body pendant l'ouverture ──
-   Compteur pour gérer le cas où un pop-up en ouvre un autre par-dessus. */
+   Compteur pour gérer le cas où un pop-up en ouvre un autre par-dessus.
+   `overflow:hidden` seul ne bloque pas le scroll tactile en arrière-plan sur
+   mobile (iOS Safari notamment) : on fixe le body à sa position de scroll
+   actuelle pendant l'ouverture, puis on restaure exactement cette position
+   à la fermeture (technique standard de body-scroll-lock cross-device). */
 let _kcModalOpenCount = 0;
+let _kcScrollY = 0;
 function kcLockScroll(){
+  if (_kcModalOpenCount === 0) {
+    _kcScrollY = window.scrollY || window.pageYOffset || 0;
+    document.body.style.position = 'fixed';
+    document.body.style.top = '-' + _kcScrollY + 'px';
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+  }
   _kcModalOpenCount++;
-  document.body.style.overflow = 'hidden';
 }
 function kcUnlockScroll(){
   _kcModalOpenCount = Math.max(0, _kcModalOpenCount - 1);
-  if(_kcModalOpenCount === 0) document.body.style.overflow = '';
+  if (_kcModalOpenCount === 0) {
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    document.body.style.overflow = '';
+    window.scrollTo(0, _kcScrollY);
+  }
 }
 
 /* ── ICON MAP ── */
@@ -8609,13 +8612,13 @@ function openMealDetail(mealKey) {
   updateMealSummaryStrip();
 
   panel.classList.add('open');
-  document.body.style.overflow = 'hidden';
+  kcLockScroll();
 }
 
 function closeMealDetail() {
   const panel = document.getElementById('meal-detail-panel');
   if (panel) panel.classList.remove('open');
-  document.body.style.overflow = '';
+  kcUnlockScroll();
   AP.currentMeal = null;
   renderMealCards();
   renderApDayBanner();
@@ -8672,40 +8675,105 @@ function updateMealSummaryStrip() {
 }
 
 /* ══════════ AI PHOTO — estimation macros par photo ══════════ */
-let AIPH = { plateFull:null, plateThumb:null, restesFull:null, items:[] };
+let AIPH = { plats:[], items:[] };
+function _aiphNewPlatId(){ return 'p'+Date.now()+Math.random().toString(36).slice(2,7); }
+function _aiphNewPlat(){ return { id:_aiphNewPlatId(), plateFull:null, plateThumb:null, restesFull:null, description:'' }; }
 
 function openAiPhotoPanel(){
   if(!AP.currentMeal){ toast("Ouvre un repas d'abord", 'var(--red)'); return; }
-  AIPH = { plateFull:null, plateThumb:null, restesFull:null, items:[] };
-  aiphResetBox('plat');
-  aiphResetBox('restes');
-  document.getElementById('aiph-description').value = '';
+  AIPH = { plats:[ _aiphNewPlat() ], items:[] };
+  aiphRenderPlatsList();
   document.getElementById('aiph-error').style.display = 'none';
   document.getElementById('aiph-loading').style.display = 'none';
   const key = localStorage.getItem('kcalos_apikey') || '';
   document.getElementById('aiph-api-key').value = key;
   document.getElementById('aiph-key-zone').style.display = key ? 'none' : 'block';
   document.getElementById('ai-photo-panel').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  kcLockScroll();
 }
 function closeAiPhotoPanel(){
   document.getElementById('ai-photo-panel').classList.remove('open');
-  document.body.style.overflow = '';
+  kcUnlockScroll();
 }
-function aiphResetBox(kind){
-  const ph = document.getElementById('aiph-placeholder-'+kind);
-  const img = document.getElementById('aiph-preview-'+kind);
-  const clr = document.getElementById('aiph-clear-'+kind);
+
+/* ── Rendu de la liste des plats (1 à N) ── */
+function aiphPlatBlockHtml(plat, idx, total){
+  const num = idx + 1;
+  return `<div class="aiph-plat-block" id="aiph-plat-${plat.id}">
+    <div class="aiph-plat-head">
+      <div class="aiph-plat-lbl">🍽️ Plat ${num}</div>
+      ${total > 1 ? `<button type="button" class="aiph-plat-remove" onclick="aiphRemovePlat('${plat.id}')">Retirer</button>` : ''}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:0.75rem">
+      <div>
+        <div style="font-size:0.72rem;font-weight:600;color:var(--text);margin-bottom:6px">Photo du plat <span style="color:var(--muted2);font-weight:400">(optionnel si description)</span></div>
+        <div class="aiph-photo-box" id="aiph-box-plat-${plat.id}" onclick="document.getElementById('aiph-file-plat-${plat.id}').click()">
+          <span id="aiph-placeholder-plat-${plat.id}" style="display:${plat.plateFull?'none':'block'}">+ Prendre / choisir</span>
+          <img id="aiph-preview-plat-${plat.id}" src="${plat.plateFull||''}" style="display:${plat.plateFull?'block':'none'}">
+          <button type="button" class="aiph-photo-clear" id="aiph-clear-plat-${plat.id}" style="display:${plat.plateFull?'flex':'none'}" onclick="event.stopPropagation();aiphClearPhoto('${plat.id}','plat')">✕</button>
+        </div>
+        <input type="file" accept="image/*" id="aiph-file-plat-${plat.id}" style="display:none" onchange="aiphHandleFile(event,'${plat.id}','plat')">
+      </div>
+      <div>
+        <div style="font-size:0.72rem;font-weight:600;color:var(--text);margin-bottom:6px">🍴 Restes <span style="color:var(--muted2);font-weight:400">(optionnel)</span></div>
+        <div class="aiph-photo-box" id="aiph-box-restes-${plat.id}" onclick="document.getElementById('aiph-file-restes-${plat.id}').click()">
+          <span id="aiph-placeholder-restes-${plat.id}" style="display:${plat.restesFull?'none':'block'}">+ Prendre / choisir</span>
+          <img id="aiph-preview-restes-${plat.id}" src="${plat.restesFull||''}" style="display:${plat.restesFull?'block':'none'}">
+          <button type="button" class="aiph-photo-clear" id="aiph-clear-restes-${plat.id}" style="display:${plat.restesFull?'flex':'none'}" onclick="event.stopPropagation();aiphClearPhoto('${plat.id}','restes')">✕</button>
+        </div>
+        <input type="file" accept="image/*" id="aiph-file-restes-${plat.id}" style="display:none" onchange="aiphHandleFile(event,'${plat.id}','restes')">
+      </div>
+    </div>
+    <div class="field">
+      <label>Description / précisions <span id="aiph-desc-label-${plat.id}" class="hint">${plat.plateFull ? '(optionnel)' : '(obligatoire sans photo)'}</span></label>
+      <textarea id="aiph-description-${plat.id}" rows="2" placeholder="Ex: riz basmati, poulet grillé sans peau, un filet d'huile d'olive…" style="width:100%;background:var(--s2);border:1.5px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;font-size:0.8rem;color:var(--text);font-family:Syne,sans-serif;outline:none;resize:vertical" oninput="aiphUpdateDescription('${plat.id}',this.value)">${plat.description||''}</textarea>
+    </div>
+  </div>`;
+}
+function aiphRenderPlatsList(){
+  const container = document.getElementById('aiph-plats-list');
+  if(!container) return;
+  container.innerHTML = AIPH.plats.map((p,i)=>aiphPlatBlockHtml(p,i,AIPH.plats.length)).join('');
+}
+function aiphAddPlat(){
+  if(AIPH.plats.length >= 6){ toast('Maximum 6 plats par repas', 'var(--red)'); return; }
+  const plat = _aiphNewPlat();
+  AIPH.plats.push(plat);
+  aiphRenderPlatsList();
+  setTimeout(()=>{ document.getElementById('aiph-plat-'+plat.id)?.scrollIntoView({behavior:'smooth', block:'start'}); }, 50);
+}
+function aiphRemovePlat(id){
+  if(AIPH.plats.length <= 1) return;
+  AIPH.plats = AIPH.plats.filter(p=>p.id!==id);
+  aiphRenderPlatsList();
+}
+function aiphUpdateDescription(id, val){
+  const plat = AIPH.plats.find(p=>p.id===id);
+  if(plat) plat.description = val;
+}
+
+function aiphResetBox(suffix){
+  const ph = document.getElementById('aiph-placeholder-'+suffix);
+  const img = document.getElementById('aiph-preview-'+suffix);
+  const clr = document.getElementById('aiph-clear-'+suffix);
   if(ph) ph.style.display = 'block';
   if(img){ img.style.display = 'none'; img.src = ''; }
   if(clr) clr.style.display = 'none';
 }
-function aiphClearPhoto(kind){
-  if(kind==='plat'){ AIPH.plateFull = null; AIPH.plateThumb = null; }
-  else { AIPH.restesFull = null; }
-  const input = document.getElementById('aiph-file-'+kind);
+function _aiphSyncDescLabel(platId, hasPlatePhoto){
+  const lbl = document.getElementById('aiph-desc-label-'+platId);
+  if(lbl) lbl.textContent = hasPlatePhoto ? '(optionnel)' : '(obligatoire sans photo)';
+}
+function aiphClearPhoto(platId, kind){
+  const plat = AIPH.plats.find(p=>p.id===platId);
+  if(plat){
+    if(kind==='plat'){ plat.plateFull = null; plat.plateThumb = null; _aiphSyncDescLabel(platId, false); }
+    else { plat.restesFull = null; }
+  }
+  const suffix = kind+'-'+platId;
+  const input = document.getElementById('aiph-file-'+suffix);
   if(input) input.value = '';
-  aiphResetBox(kind);
+  aiphResetBox(suffix);
 }
 
 // Redimensionne + compresse une image via canvas (limite le poids envoyé à l'API et stocké en local)
@@ -8733,20 +8801,26 @@ function aiphCompressImage(file, maxDim, quality){
   });
 }
 
-async function aiphHandleFile(evt, kind){
+async function aiphHandleFile(evt, platId, kind){
   const file = evt.target.files && evt.target.files[0];
   if(!file) return;
+  const plat = AIPH.plats.find(p=>p.id===platId);
+  if(!plat) return;
+  const suffix = kind+'-'+platId;
   try{
     const full = await aiphCompressImage(file, 1024, 0.82); // qualité envoyée à l'API vision
-    document.getElementById('aiph-preview-'+kind).src = full;
-    document.getElementById('aiph-preview-'+kind).style.display = 'block';
-    document.getElementById('aiph-placeholder-'+kind).style.display = 'none';
-    document.getElementById('aiph-clear-'+kind).style.display = 'flex';
+    const previewEl = document.getElementById('aiph-preview-'+suffix);
+    const placeholderEl = document.getElementById('aiph-placeholder-'+suffix);
+    const clearEl = document.getElementById('aiph-clear-'+suffix);
+    if(previewEl){ previewEl.src = full; previewEl.style.display = 'block'; }
+    if(placeholderEl) placeholderEl.style.display = 'none';
+    if(clearEl) clearEl.style.display = 'flex';
     if(kind==='plat'){
-      AIPH.plateFull = full;
-      AIPH.plateThumb = await aiphCompressImage(file, 220, 0.6); // miniature stockée avec l'aliment
+      plat.plateFull = full;
+      plat.plateThumb = await aiphCompressImage(file, 220, 0.6); // miniature stockée avec l'aliment
+      _aiphSyncDescLabel(platId, true);
     } else {
-      AIPH.restesFull = full;
+      plat.restesFull = full;
     }
   }catch(e){
     toast('❌ Photo illisible : '+e.message, 'var(--red)');
@@ -8755,9 +8829,19 @@ async function aiphHandleFile(evt, kind){
 
 function aiphB64Payload(dataUrl){ return dataUrl.split(',')[1]; }
 
-function aiphBuildPrompt(description, hasRestes){
-  return `Tu es un expert en nutrition. Analyse la ou les photos de repas fournies.
-${hasRestes ? "La première photo montre le plat servi initialement. La seconde montre ce qu'il reste APRÈS avoir mangé. Estime uniquement les quantités RÉELLEMENT CONSOMMÉES (portion initiale moins ce qui reste visible sur la seconde photo)." : "La photo montre le plat tel que consommé."}
+function aiphBuildPrompt(description, hasPlate, hasRestes){
+  let contextLine;
+  if(hasPlate && hasRestes){
+    contextLine = "La première photo montre le plat servi initialement. La seconde montre ce qu'il reste APRÈS avoir mangé. Estime uniquement les quantités RÉELLEMENT CONSOMMÉES (portion initiale moins ce qui reste visible sur la seconde photo).";
+  } else if(hasPlate){
+    contextLine = "La photo montre le plat tel que consommé.";
+  } else if(hasRestes){
+    contextLine = "Aucune photo du plat initial n'est fournie, uniquement une photo de ce qu'il reste après avoir mangé. Base-toi sur la description ci-dessous pour la portion de départ, et sur cette photo pour estimer ce qui a été réellement consommé.";
+  } else {
+    contextLine = "Aucune photo n'est fournie pour ce plat : base-toi UNIQUEMENT sur la description ci-dessous pour estimer, de la façon la plus réaliste possible, les aliments et quantités.";
+  }
+  return `Tu es un expert en nutrition. Analyse le repas décrit ci-dessous${hasPlate || hasRestes ? ' ainsi que la ou les photos fournies' : ''}.
+${contextLine}
 ${description ? `Précisions données par l'utilisateur : "${description}"` : ''}
 
 Décompose le repas en aliments distincts (ex: source de protéines, féculent, légumes, sauce, boisson...) et donne pour CHAQUE aliment une estimation nutritionnelle réaliste (portions françaises courantes) :
@@ -8769,77 +8853,109 @@ Réponds STRICTEMENT avec un JSON valide, sans aucun texte avant/après, sans ba
 {"items":[{"name":"...","grams":0,"kcal":0,"prot":0,"gluc":0,"lip":0,"sucres":0,"fibres":0,"sodium":0,"potassium":0}],"note":"remarque courte optionnelle sur l'incertitude, ou chaîne vide"}`;
 }
 
+async function _aiphCallApi(apiKey, plat){
+  const hasPlate = !!plat.plateFull;
+  const hasRestes = !!plat.restesFull;
+  const prompt = aiphBuildPrompt(plat.description, hasPlate, hasRestes);
+  const content = [];
+  if(hasPlate){
+    content.push({ type:'image', source:{ type:'base64', media_type:'image/jpeg', data: aiphB64Payload(plat.plateFull) } });
+  }
+  if(hasRestes){
+    content.push({ type:'image', source:{ type:'base64', media_type:'image/jpeg', data: aiphB64Payload(plat.restesFull) } });
+  }
+  content.push({ type:'text', text: prompt });
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key':apiKey,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true',
+    },
+    body: JSON.stringify({
+      model:'claude-sonnet-5',
+      max_tokens:1500,
+      messages:[{ role:'user', content }],
+    }),
+  });
+  if(!res.ok){
+    const err = await res.json().catch(()=>({}));
+    throw new Error(err?.error?.message || `Erreur API ${res.status}`);
+  }
+  const data = await res.json();
+  const text = data.content.map(b=>b.text || '').join('\n').trim();
+  const cleaned = text.replace(/^```json\s*|^```\s*|```$/gm, '').trim();
+  let parsed;
+  try{ parsed = JSON.parse(cleaned); }
+  catch(e){ throw new Error('Réponse IA illisible, réessaie.'); }
+  if(!parsed.items || !Array.isArray(parsed.items) || !parsed.items.length){
+    throw new Error(hasPlate ? "L'IA n'a détecté aucun aliment, réessaie avec une photo plus nette." : "L'IA n'a détecté aucun aliment, précise davantage la description.");
+  }
+  return parsed;
+}
+
 async function aiAnalyzeMeal(){
   const errEl = document.getElementById('aiph-error');
   errEl.style.display = 'none';
-  if(!AIPH.plateFull){ errEl.textContent = 'Ajoute au moins la photo du plat.'; errEl.style.display = 'block'; return; }
+
+  const plats = AIPH.plats;
+  const missingIdx = plats.findIndex(p=>!p.plateFull && !(p.description && p.description.trim()));
+  if(missingIdx !== -1){
+    errEl.textContent = plats.length > 1 ? `Ajoute une photo ou une description pour le plat ${missingIdx+1}.` : 'Ajoute une photo ou une description du plat.';
+    errEl.style.display = 'block';
+    return;
+  }
   const apiKey = (document.getElementById('aiph-api-key').value || '').trim();
   if(!apiKey){ errEl.textContent = 'Renseigne ta clé API Anthropic.'; errEl.style.display = 'block'; return; }
   localStorage.setItem('kcalos_apikey', apiKey);
 
-  const description = (document.getElementById('aiph-description').value || '').trim();
-  const hasRestes = !!AIPH.restesFull;
-  const prompt = aiphBuildPrompt(description, hasRestes);
+  const analyzeBtn = document.getElementById('aiph-analyze-btn');
+  const loadingEl = document.getElementById('aiph-loading');
+  analyzeBtn.disabled = true;
+  loadingEl.style.display = 'block';
 
-  const content = [
-    { type:'image', source:{ type:'base64', media_type:'image/jpeg', data: aiphB64Payload(AIPH.plateFull) } },
-  ];
-  if(hasRestes){
-    content.push({ type:'image', source:{ type:'base64', media_type:'image/jpeg', data: aiphB64Payload(AIPH.restesFull) } });
-  }
-  content.push({ type:'text', text: prompt });
-
-  document.getElementById('aiph-analyze-btn').disabled = true;
-  document.getElementById('aiph-loading').style.display = 'block';
+  const allItems = [];
+  const notes = [];
 
   try{
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'x-api-key':apiKey,
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true',
-      },
-      body: JSON.stringify({
-        model:'claude-sonnet-5',
-        max_tokens:1500,
-        messages:[{ role:'user', content }],
-      }),
-    });
-    if(!res.ok){
-      const err = await res.json().catch(()=>({}));
-      throw new Error(err?.error?.message || `Erreur API ${res.status}`);
+    for(let i=0; i<plats.length; i++){
+      const plat = plats[i];
+      loadingEl.textContent = plats.length > 1 ? `⏳ Analyse du plat ${i+1}/${plats.length}…` : '⏳ Analyse en cours…';
+      let parsed;
+      try{
+        parsed = await _aiphCallApi(apiKey, plat);
+      }catch(e){
+        throw new Error((plats.length > 1 ? `Plat ${i+1} — ` : '') + e.message);
+      }
+      parsed.items.forEach(it=>{
+        allItems.push({
+          name: it.name || 'Aliment',
+          grams: Math.round(Number(it.grams) || 0),
+          kcal: Math.round(Number(it.kcal) || 0),
+          prot: Math.round((Number(it.prot) || 0) * 10) / 10,
+          gluc: Math.round((Number(it.gluc) || 0) * 10) / 10,
+          lip: Math.round((Number(it.lip) || 0) * 10) / 10,
+          sucres: Math.round((Number(it.sucres) || 0) * 10) / 10,
+          fibres: Math.round((Number(it.fibres) || 0) * 10) / 10,
+          sodium: Math.round((Number(it.sodium) || 0) * 10) / 10,
+          potassium: Math.round((Number(it.potassium) || 0) * 10) / 10,
+          image: plat.plateThumb || '',
+        });
+      });
+      if(parsed.note) notes.push(plats.length > 1 ? `Plat ${i+1}: ${parsed.note}` : parsed.note);
     }
-    const data = await res.json();
-    const text = data.content.map(b=>b.text || '').join('\n').trim();
-    const cleaned = text.replace(/^```json\s*|^```\s*|```$/gm, '').trim();
-    let parsed;
-    try{ parsed = JSON.parse(cleaned); }
-    catch(e){ throw new Error('Réponse IA illisible, réessaie.'); }
-    if(!parsed.items || !Array.isArray(parsed.items) || !parsed.items.length){
-      throw new Error("L'IA n'a détecté aucun aliment, réessaie avec une photo plus nette.");
-    }
-    AIPH.items = parsed.items.map(it=>({
-      name: it.name || 'Aliment',
-      grams: Math.round(Number(it.grams) || 0),
-      kcal: Math.round(Number(it.kcal) || 0),
-      prot: Math.round((Number(it.prot) || 0) * 10) / 10,
-      gluc: Math.round((Number(it.gluc) || 0) * 10) / 10,
-      lip: Math.round((Number(it.lip) || 0) * 10) / 10,
-      sucres: Math.round((Number(it.sucres) || 0) * 10) / 10,
-      fibres: Math.round((Number(it.fibres) || 0) * 10) / 10,
-      sodium: Math.round((Number(it.sodium) || 0) * 10) / 10,
-      potassium: Math.round((Number(it.potassium) || 0) * 10) / 10,
-    }));
-    aiphFinalizeAdd(parsed.note || '');
+    AIPH.items = allItems;
+    aiphFinalizeAdd(notes.join(' · '));
   }catch(e){
     errEl.textContent = '❌ ' + e.message;
     errEl.style.display = 'block';
     toast('Erreur IA : ' + e.message, 'var(--red)');
   }finally{
-    document.getElementById('aiph-analyze-btn').disabled = false;
-    document.getElementById('aiph-loading').style.display = 'none';
+    analyzeBtn.disabled = false;
+    loadingEl.style.display = 'none';
+    loadingEl.textContent = '⏳ Analyse en cours…';
   }
 }
 
@@ -8850,7 +8966,7 @@ function aiphFinalizeAdd(note){
     name: it.name, brand: '',
     grams: it.grams, kcal: it.kcal, prot: it.prot, gluc: it.gluc, lip: it.lip,
     sucres: it.sucres, fibres: it.fibres, sodium: it.sodium, potassium: it.potassium,
-    image: AIPH.plateThumb || '',
+    image: it.image || '',
     _src: 'ai-photo',
     ts: Date.now(),
   }));
@@ -8870,7 +8986,7 @@ function openSearchPanel() {
   const panel = document.getElementById('food-search-panel');
   if (!panel) return;
   panel.classList.add('open');
-  document.body.style.overflow = 'hidden';
+  kcLockScroll();
   document.getElementById('account-bubble')?.style.setProperty('display','none');
   AP.selectedFood = null;
   AP.addingIngredientTo = null;
@@ -8889,7 +9005,7 @@ function openSearchPanel() {
 function closeSearchPanel() {
   const panel = document.getElementById('food-search-panel');
   if (panel) { panel.classList.remove('open'); panel.classList.remove('mr-nested'); }
-  document.body.style.overflow = '';
+  kcUnlockScroll();
   document.getElementById('account-bubble')?.style.removeProperty('display');
   AP.selectedFood = null;
   AP.addingIngredientTo = null;
@@ -13476,7 +13592,7 @@ function _prodThumbImgError(imgEl, src) {
   imgEl.outerHTML = _prodThumbPlaceholder(src);
 }
 function _prodThumbPlaceholder(src) {
-  const emoji = src === 'ciqual' ? '🌿' : src === 'custom' ? '✏️' : '🍴';
+  const emoji = src === 'ciqual' ? '🌿' : src === 'custom' ? '✏️' : src === 'ai-photo' ? '📝' : '🍴';
   return `<div class="sri-thumb-placeholder" aria-hidden="true">${emoji}</div>`;
 }
 
@@ -19251,7 +19367,7 @@ const WO = { filter:'Tous', searchQuery:'' }; // kept for compat with cat tabs
 function openAddExercise(){
   const panel = document.getElementById('wo-add-panel');
   if(panel) panel.style.display = 'block';
-  document.body.style.overflow = 'hidden';
+  kcLockScroll();
   const inp = document.getElementById('wo-search-input');
   if(inp){ inp.value=''; inp.focus(); }
   WO.filter = 'Tous'; WO.searchQuery = '';
@@ -19261,7 +19377,7 @@ function openAddExercise(){
 function closeAddExercise(){
   const panel = document.getElementById('wo-add-panel');
   if(panel) panel.style.display = 'none';
-  document.body.style.overflow = '';
+  kcUnlockScroll();
 }
 
 function woRenderCatTabs(){
@@ -19484,7 +19600,7 @@ function mrOpenCreate(){
   mrUpdatePreview();
   mrUpdateEditPhotoPreview();
   document.getElementById('mr-edit-panel').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  kcLockScroll();
   setTimeout(() => document.getElementById('mr-edit-name')?.focus(), 100);
 }
 
@@ -19503,7 +19619,7 @@ function mrOpenEdit(id){
   mrUpdatePreview();
   mrUpdateEditPhotoPreview();
   document.getElementById('mr-edit-panel').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  kcLockScroll();
 }
 
 // ── Photo du repas ──
@@ -19539,7 +19655,7 @@ function mrClearEditPhoto(){
 
 function mrCloseEdit(){
   document.getElementById('mr-edit-panel').classList.remove('open');
-  document.body.style.overflow = '';
+  kcUnlockScroll();
   // Refresh the list if we\'re on the mesrepas tab in search panel
   if(document.getElementById('stab-mesrepas')?.classList.contains('active')){
     mrRenderSearchResults();
@@ -19880,12 +19996,12 @@ function mrOpenUseDetail(id){
   }
   mrRenderUseDetail();
   document.getElementById('mr-use-detail-panel')?.classList.add('open');
-  document.body.style.overflow = 'hidden';
+  kcLockScroll();
 }
 
 function mrCloseUseDetail(){
   document.getElementById('mr-use-detail-panel')?.classList.remove('open');
-  document.body.style.overflow = '';
+  kcUnlockScroll();
   MR.useDetailId = null;
   MR.useDetailIngredients = [];
   // Refresh the list if we're on the mesrepas tab in search panel
@@ -20036,7 +20152,7 @@ let _woSelectedColor = 'blue';
 
 function woOpenManagePanel(){
   document.getElementById('wo-manage-panel').style.display='block';
-  document.body.style.overflow='hidden';
+  kcLockScroll();
   const bubble=document.getElementById('account-bubble');
   if(bubble) bubble.style.display='none';
   _woSelectedEmoji=''; _woSelectedColor='blue';
@@ -20048,7 +20164,7 @@ function woOpenManagePanel(){
 }
 function woCloseManagePanel(){
   document.getElementById('wo-manage-panel').style.display='none';
-  document.body.style.overflow='';
+  kcUnlockScroll();
   const bubble=document.getElementById('account-bubble');
   if(bubble) bubble.style.display='';
   woRenderPicker();
@@ -20165,7 +20281,7 @@ async function openBarcodeScanner() {
   const _tb = document.getElementById('scanner-torch-btn'); if(_tb) _tb.style.display='none';
 
   overlay.style.display = 'flex';
-  document.body.style.overflow = 'hidden';
+  kcLockScroll();
   setStatusScanner('Démarrage de la caméra…', false);
 
   // Choisir le moteur de détection
@@ -20329,7 +20445,7 @@ function _closeScannerHard() {
   });
   const overlay = document.getElementById('barcode-scanner-overlay');
   if (overlay) overlay.style.display = 'none';
-  document.body.style.overflow = '';
+  kcUnlockScroll();
 }
 
 function closeBarcodeScanner() { _closeScannerHard(); }
