@@ -1657,6 +1657,7 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 .aiph-plat-block+.aiph-plat-block{margin-top:1.1rem;padding-top:1.1rem;border-top:1px solid var(--border)}
 .aiph-plat-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.65rem}
 .aiph-plat-head .aiph-plat-lbl{font-size:0.8rem;font-weight:700;color:var(--text)}
+.aiph-photo-label{min-height:2.4em;display:flex;align-items:flex-end;margin-bottom:6px;font-size:0.72rem;font-weight:600;color:var(--text)}
 .aiph-plat-remove{background:none;border:none;color:var(--muted2);font-size:0.68rem;cursor:pointer;text-decoration:underline;padding:2px 0;-webkit-tap-highlight-color:transparent}
 
 /* Meal summary strip (SH style : macros en ligne) */
@@ -6173,7 +6174,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-08-06.9';
+const APP_BUILD_VERSION = '2026-08-06.13';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -8706,7 +8707,7 @@ function aiphPlatBlockHtml(plat, idx, total){
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:0.75rem">
       <div>
-        <div style="font-size:0.72rem;font-weight:600;color:var(--text);margin-bottom:6px">Photo du plat <span style="color:var(--muted2);font-weight:400">(optionnel si description)</span></div>
+        <div class="aiph-photo-label">Photo du plat <span style="color:var(--muted2);font-weight:400">(optionnel si description)</span></div>
         <div class="aiph-photo-box" id="aiph-box-plat-${plat.id}" onclick="document.getElementById('aiph-file-plat-${plat.id}').click()">
           <span id="aiph-placeholder-plat-${plat.id}" style="display:${plat.plateFull?'none':'block'}">+ Prendre / choisir</span>
           <img id="aiph-preview-plat-${plat.id}" src="${plat.plateFull||''}" style="display:${plat.plateFull?'block':'none'}">
@@ -8715,7 +8716,7 @@ function aiphPlatBlockHtml(plat, idx, total){
         <input type="file" accept="image/*" id="aiph-file-plat-${plat.id}" style="display:none" onchange="aiphHandleFile(event,'${plat.id}','plat')">
       </div>
       <div>
-        <div style="font-size:0.72rem;font-weight:600;color:var(--text);margin-bottom:6px">🍴 Restes <span style="color:var(--muted2);font-weight:400">(optionnel)</span></div>
+        <div class="aiph-photo-label">🍴 Restes <span style="color:var(--muted2);font-weight:400">(optionnel)</span></div>
         <div class="aiph-photo-box" id="aiph-box-restes-${plat.id}" onclick="document.getElementById('aiph-file-restes-${plat.id}').click()">
           <span id="aiph-placeholder-restes-${plat.id}" style="display:${plat.restesFull?'none':'block'}">+ Prendre / choisir</span>
           <img id="aiph-preview-restes-${plat.id}" src="${plat.restesFull||''}" style="display:${plat.restesFull?'block':'none'}">
@@ -15295,17 +15296,25 @@ function loadChartCorps(){
   const gridC = isLight?'rgba(0,0,0,0.06)':'rgba(255,255,255,0.04)';
   const tickC = isLight?'#6b7280':'#404d60';
   if(chartInst){ chartInst.destroy(); chartInst=null; }
-  const ds=(label,data,color,y='y2',dashed=false,tension=0.35)=>({
+  // idx = index dans S.dsHidden, pour appliquer l'état masqué/visible DÈS la création
+  // (et non après coup) : sinon le 1er calcul d'échelle se fait sur les 3 séries
+  // visibles, ce qui fausse l'axe même si on le "corrige" juste après.
+  const ds=(idx,label,data,color,y='y2',dashed=false,tension=0.35)=>({
     label,data,yAxisID:y,borderColor:color,backgroundColor:color+'18',
     borderWidth:dashed?1.5:2,borderDash:dashed?[5,4]:[],
-    pointRadius:0,pointHoverRadius:5,pointHitRadius:12,tension,fill:false,spanGaps:true,hidden:false,
+    pointRadius:0,pointHoverRadius:5,pointHitRadius:12,tension,fill:false,spanGaps:true,
+    hidden:!!S.dsHidden[idx],
   });
   chartInst=new Chart(canvas.getContext('2d'),{
     type:'line',
     data:{labels,datasets:[
-      ds('Poids (kg)',poids,'#f0a84a','y2'),
-      ds('Masse sèche (kg)',leanMass,'#a080e8','y2'),
-      ds('Masse grasse (kg)',fatMass,'#e84040','y2',false,0.25),
+      // Chaque courbe corps a son propre axe Y (y2/y3/y4) : échelle auto-zoomée
+      // indépendamment pour chacune, au lieu de partager un axe commun qui
+      // écrase les variations du poids (grande échelle) face à la masse grasse
+      // (petite échelle).
+      ds(0,'Poids (kg)',poids,'#f0a84a','y2'),
+      ds(1,'Masse sèche (kg)',leanMass,'#a080e8','y3'),
+      ds(2,'Masse grasse (kg)',fatMass,'#e84040','y4',false,0.25),
       {label:'_dep',data:[],yAxisID:'y',borderColor:'transparent',hidden:true},
       {label:'_app',data:[],yAxisID:'y',borderColor:'transparent',hidden:true},
       {label:'_bal',data:[],yAxisID:'y',borderColor:'transparent',hidden:true},
@@ -15677,6 +15686,11 @@ function _chartOpts(tickC,gridC,unit,mainY){
       x:{display:false},
       y:{display:false},
       y2:{display:false},
+      // y3/y4 : axes dédiés Masse sèche / Masse grasse (page corps uniquement,
+      // non référencés par le graphique calories) — chacun s'auto-zoome sur
+      // ses propres valeurs, indépendamment de l'axe y2 (Poids).
+      y3:{display:false},
+      y4:{display:false},
     }
   };
 }
@@ -18547,15 +18561,18 @@ function woRenderVolumeTable(){
   };
 
   const grandTotal = Object.values(byMuscle).reduce((s,arr)=>s+arr.reduce((ss,e)=>ss+e.weekSets,0),0);
+  const fmtD = d => d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'});
+  const pwRange = fmtD(prevMonday)+' – '+fmtD(prevSunday);
 
-  el.innerHTML = `<div style="margin-bottom:0.85rem;display:flex;flex-direction:column;gap:8px;align-items:flex-end;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">
-    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px">
-      <span style="font-size:0.95rem;font-weight:700;color:var(--lime)">${Math.round(grandTotal*10)/10} <span style="font-size:0.62rem;font-weight:400;color:var(--muted)">sér./sem</span></span>
-      <span style="font-size:0.6rem;color:var(--muted2)"><b style="color:var(--muted)">Moyenne</b> · toutes zones</span>
+  el.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:0.85rem">
+    <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:0.6rem 0.5rem;text-align:center">
+      <div style="font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-weight:700;font-size:1.05rem;color:var(--lime);line-height:1;margin-bottom:3px">${Math.round(grandTotal*10)/10} <span style="font-size:0.6rem;font-weight:400;color:var(--muted)">sér./sem</span></div>
+      <div style="font-size:0.58rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">Moyenne · 4 sem.</div>
     </div>
-    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px">
-      <span style="font-size:0.95rem;font-weight:700;color:var(--text)">${prevWeekSets} <span style="font-size:0.62rem;font-weight:400;color:var(--muted)">séries</span></span>
-      <span style="font-size:0.6rem;color:var(--muted2)"><b style="color:var(--muted)">Réel</b> · semaine dernière</span>
+    <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:0.6rem 0.5rem;text-align:center">
+      <div style="font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-weight:700;font-size:1.05rem;color:var(--text);line-height:1;margin-bottom:3px">${prevWeekSets} <span style="font-size:0.6rem;font-weight:400;color:var(--muted)">séries</span></div>
+      <div style="font-size:0.58rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">Réel · sem. dernière</div>
+      <div style="font-size:0.55rem;color:var(--muted2);margin-top:2px;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">${pwRange}</div>
     </div>
   </div>`
   + sorted.map(muscle=>{
@@ -23032,9 +23049,15 @@ function renderSeanceReportHtml(start, end, label, r) {
 
     var last8    = allSess.slice(-8);
     var lastSess = allSess[allSess.length-1];
-    var weekCut  = new Date(); weekCut.setDate(weekCut.getDate()-7);
-    var weekStr  = weekCut.toISOString().split('T')[0];
-    var weekSess = allSess.filter(function(s){ return (s.date||'')>=weekStr; });
+    /* Semaine calendaire fixe (lundi→dimanche), semaine précédant celle en cours */
+    var today      = new Date();
+    var dow        = today.getDay(); /* 0=dimanche...6=samedi */
+    var thisMonday = new Date(today); thisMonday.setDate(today.getDate() - (dow===0?6:dow-1)); thisMonday.setHours(0,0,0,0);
+    var lastMonday = new Date(thisMonday); lastMonday.setDate(thisMonday.getDate()-7);
+    var lastSunday = new Date(thisMonday); lastSunday.setDate(thisMonday.getDate()-1);
+    var weekStr    = lastMonday.toISOString().split('T')[0];
+    var weekEndStr = lastSunday.toISOString().split('T')[0];
+    var weekSess = allSess.filter(function(s){ return (s.date||'')>=weekStr && (s.date||'')<=weekEndStr; });
     var weekVol  = weekSess.reduce(function(s,ss){ return s+sessVol(ss); }, 0);
     var totVol   = allSess.reduce(function(s,ss){ return s+sessVol(ss); }, 0);
 
@@ -23046,7 +23069,7 @@ function renderSeanceReportHtml(start, end, label, r) {
       var prevVol = allSess.length>1 ? sessVol(allSess[allSess.length-2]) : 0;
       var trend   = prevVol>0 ? Math.round((lastVol-prevVol)/prevVol*100) : 0;
       _perfKpis(kpisEl,[
-        {v:fmtVol(weekVol), l:'Volume 7j',  c:'var(--lime)'},
+        {v:fmtVol(weekVol), l:'Sem. dernière', c:'var(--lime)'},
         {v:fmtVol(lastVol), l:'Dernière',   c:'var(--teal)'},
         {v:(trend>=0?'+':'')+trend+'%', l:'Évolution',  c:trend>=0?'var(--lime)':'var(--orange)'},
       ]);
@@ -23089,7 +23112,7 @@ function renderSeanceReportHtml(start, end, label, r) {
       ]);
       if(canvas){ canvas.style.display='block'; _perfDrawCanvas(canvas, last8.map(sessVol), 'var(--blue)', 'vol'); }
       var wV = fmtVol(weekVol);
-      if(detailEl) detailEl.textContent = weekSess.length+' séance'+(weekSess.length>1?'s':'')+' cette semaine · Volume: '+wV+' · Depuis le '+(allSess[0].date?fmtDate(allSess[0].date):'');
+      if(detailEl) detailEl.textContent = weekSess.length+' séance'+(weekSess.length>1?'s':'')+' la semaine dernière · Volume: '+wV+' · Depuis le '+(allSess[0].date?fmtDate(allSess[0].date):'');
     }
   }
 
