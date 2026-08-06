@@ -6081,6 +6081,10 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted2);margin-bottom:0.5rem">Phases enregistrées</div>
       <div id="report-phase-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:1.25rem"></div>
 
+      <!-- TEMPORAIRE — debug bug "période précédente" incorrecte, à retirer une fois corrigé -->
+      <button onclick="toggleDebugGoalHistory()" style="background:none;border:none;color:var(--muted2);font-size:0.62rem;cursor:pointer;padding:0;margin-bottom:0.6rem;text-decoration:underline">🔧 Debug : voir l'historique brut</button>
+      <pre id="debug-goal-history" style="display:none;white-space:pre-wrap;word-break:break-all;font-size:0.6rem;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:0.6rem;margin-bottom:1rem;user-select:text;-webkit-user-select:text"></pre>
+
       <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted2);margin-bottom:0.5rem">Ou période personnalisée</div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem">
         <input type="date" id="report-date-start" style="flex:1">
@@ -6191,7 +6195,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-08-05.9';
+const APP_BUILD_VERSION = '2026-08-06.1';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -21071,6 +21075,19 @@ function reportGenerateFromCustomDates() {
   var end   = document.getElementById('report-date-end')?.value;
   if (!start || !end || start > end) { toast('Sélectionne une période valide', 'var(--red)'); return; }
   reportGenerateAndShow(start, end, 'Période personnalisée');
+}
+
+// TEMPORAIRE — debug bug "période précédente" incorrecte, à retirer une fois corrigé.
+// Affiche kcalos_kcal_goal_history brut (lecture seule, rien n'est modifié).
+function toggleDebugGoalHistory() {
+  var box = document.getElementById('debug-goal-history');
+  if (!box) return;
+  if (box.style.display === 'none') {
+    box.textContent = JSON.stringify(kcalGoalHistoryGet(), null, 2);
+    box.style.display = 'block';
+  } else {
+    box.style.display = 'none';
+  }
 }
 
 function reportBackToPeriodPicker() {
