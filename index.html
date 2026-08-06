@@ -6191,7 +6191,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-08-06.3';
+const APP_BUILD_VERSION = '2026-08-06.4';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -21132,10 +21132,27 @@ function reportEditPeriodFormHtml(p) {
     + endField
     + '</div>'
     + (p.ongoing ? '<div style="font-size:0.6rem;color:var(--muted2)">Période en cours — pas de date de fin à ajuster.</div>' : '')
-    + '<div style="display:flex;gap:8px">'
-    + '<button onclick="reportSavePeriodEdit(' + p.histIndex + ',' + p.ongoing + ')" class="btn" style="flex:1;padding:0.5rem;font-size:0.7rem">Enregistrer</button>'
-    + '<button onclick="reportToggleEditPeriod(' + p.histIndex + ')" style="flex:1;padding:0.5rem;font-size:0.7rem;border-radius:var(--r-sm);border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;font-family:Syne,sans-serif">Annuler</button>'
+    + '<div style="display:flex;gap:6px">'
+    + '<button onclick="reportSavePeriodEdit(' + p.histIndex + ',' + p.ongoing + ')" class="btn" style="flex:1;padding:0.5rem 0.3rem;font-size:0.66rem">Enregistrer</button>'
+    + '<button onclick="reportDeletePeriodEntry(' + p.histIndex + ')" style="flex:1;padding:0.5rem 0.3rem;font-size:0.66rem;border-radius:var(--r-sm);border:1px solid var(--red);background:none;color:var(--red);cursor:pointer;font-family:Syne,sans-serif">Supprimer</button>'
+    + '<button onclick="reportToggleEditPeriod(' + p.histIndex + ')" style="flex:1;padding:0.5rem 0.3rem;font-size:0.66rem;border-radius:var(--r-sm);border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;font-family:Syne,sans-serif">Annuler</button>'
     + '</div></div>';
+}
+
+// Supprime une entrée d'historique jugée fausse/redondante (ex: reconfirmation
+// manuelle de la même phase que la période précédente). La période précédente
+// récupère alors automatiquement la borne de fin suivante (ou redevient "en
+// cours" s'il n'y a plus rien après) — la fin/début d'une période n'existant
+// que par la présence de l'entrée suivante/courante dans l'historique.
+function reportDeletePeriodEntry(histIndex) {
+  if (!window.confirm('Supprimer cette période ? Elle sera fusionnée avec la période précédente.')) return;
+  var hist = kcalGoalHistoryGet();
+  if (histIndex < 0 || histIndex >= hist.length) return;
+  hist.splice(histIndex, 1);
+  localStorage.setItem('kcalos_kcal_goal_history', JSON.stringify(hist));
+  REPORT_EDITING_INDEX = null;
+  renderReportPhaseList();
+  toast('Période supprimée', 'var(--muted)');
 }
 
 // Applique les modifications du mini-formulaire à l'entrée d'historique
