@@ -6285,7 +6285,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-08-14.3';
+const APP_BUILD_VERSION = '2026-08-14.4';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -8274,7 +8274,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v22';
+    const CACHE_NAME = 'kcalos-v23';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -18616,7 +18616,6 @@ function woRenderVolumeTable(){
 
   const allTypes        = woGetAllTypes();
   const allSessionsFlat = Object.entries(allTypes).flatMap(([tid])=>woV2GetSessions(tid));
-  const paused          = new Set(woPausedGet());
 
   if(!allSessionsFlat.length){
     el.innerHTML='<div style="font-size:0.75rem;color:var(--muted2);text-align:center;padding:1rem 0">Aucune séance enregistrée.</div>';
@@ -18638,12 +18637,9 @@ function woRenderVolumeTable(){
   let prevWeekSets = 0;
   allSessionsFlat.filter(s=>s.date>=pwStart && s.date<=pwEnd).forEach(sess=>{
     (sess.exercises||[]).forEach(exo=>{
-      // Pas de filtre "paused" ici : ce total est un compte FACTUEL de ce qui a
-      // été fait la semaine dernière. "paused" est un état courant sans date —
-      // mettre un exercice en pause aujourd'hui ne doit pas effacer rétroactivement
-      // des séries réellement réalisées la semaine passée (contrairement au calcul
-      // "Moyenne · 4 sem." ci-dessous, qui lui projette le volume courant et doit
-      // donc exclure ce qui n'est plus fait).
+      // Pas de filtre "paused" ici (ni dans "Moyenne · 4 sem." ci-dessous) : "paused"
+      // est un état courant sans date, il ne doit pas effacer des séries réellement
+      // faites — ni dans le total réel de la semaine, ni dans la moyenne.
       prevWeekSets += (exo.sets||[]).filter(s=>!s.skipped).length;
     });
   });
@@ -18653,11 +18649,12 @@ function woRenderVolumeTable(){
     return;
   }
 
-  // Cumul par exercice : séries actives (hors skipped), nb séances, semaines distinctes
+  // Cumul par exercice : séries actives (hors skipped), nb séances, semaines distinctes.
+  // Les exercices en pause sont inclus : la "pause" est un état courant, elle ne
+  // doit pas faire disparaître du volume moyen des séries réellement faites.
   const exoMap = {}; // { name: { sets, sessions, weeks:Set, muscle } }
   recent.forEach(sess=>{
     (sess.exercises||[]).forEach(exo=>{
-      if(paused.has(exo.name)) return; // exclure les exercices en veille
       const activeSets = (exo.sets||[]).filter(s=>!s.skipped).length;
       if(!activeSets) return;
       const muscle = woGetMuscle(exo);
