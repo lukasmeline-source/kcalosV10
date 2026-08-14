@@ -1767,6 +1767,11 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 .aiph-photo-label{min-height:2.4em;display:flex;align-items:flex-end;margin-bottom:6px;font-size:0.72rem;font-weight:600;color:var(--text)}
 .aiph-plat-remove{background:none;border:none;color:var(--muted2);font-size:0.68rem;cursor:pointer;text-decoration:underline;padding:2px 0;-webkit-tap-highlight-color:transparent}
 
+/* BF Photo panel — emplacements guidés (face/dos/pli cutané) */
+.bfph-slot-icon{display:block;margin:0 auto 4px;color:var(--muted2)}
+.bfph-slot-label{display:block;font-size:0.68rem;font-weight:700;color:var(--text)}
+.bfph-slot-hint{font-size:0.56rem;color:var(--muted2);line-height:1.3;text-align:center;margin-top:5px;padding:0 2px}
+
 /* Meal summary strip (SH style : macros en ligne) */
 .meal-summary-strip{
   display:flex;gap:0;border-radius:var(--r);overflow:hidden;
@@ -6041,11 +6046,65 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
             style="flex:1;font-size:1.1rem;font-weight:600;text-align:center;padding:0.55rem 0.75rem;border-radius:12px;border:1.5px solid var(--border2);background:var(--s2);color:var(--text);font-family:DM Sans,sans-serif;outline:none"
             onfocus="this.style.borderColor='var(--pink)'" onblur="this.style.borderColor='var(--border2)'">
           <span style="font-size:0.9rem;color:var(--muted);font-weight:500">%</span>
+          <button type="button" onclick="openBfPhotoPanel()" title="Estimer le % de masse grasse avec des photos (IA)" aria-label="Estimer le % de masse grasse avec des photos (IA)" style="flex-shrink:0;width:34px;height:34px;border-radius:50%;background:var(--teal-bg);border:1.5px solid var(--teal-d);color:var(--teal);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;-webkit-tap-highlight-color:transparent">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.3c0-.55.45-1 1-1h1.25l.55-1c.18-.32.52-.52.9-.52h4.6c.38 0 .72.2.9.52l.55 1H13c.55 0 1 .45 1 1V12c0 .55-.45 1-1 1H3c-.55 0-1-.45-1-1V5.3z"/><circle cx="8" cy="8.2" r="2.3"/></svg>
+            <span style="position:absolute;bottom:-3px;right:-3px;background:var(--teal-d);color:#0a0a0a;font-size:0.44rem;font-weight:800;line-height:1;padding:1.5px 3px;border-radius:5px;letter-spacing:0.2px">IA</span>
+          </button>
         </div>
       </div>
       <div style="font-size:0.58rem;color:var(--muted2);max-width:90px;line-height:1.4">Mis à jour dans ton profil et le graphique corps</div>
     </div>
     <button onclick="savePoidsQuick()" class="btn">Enregistrer →</button>
+  </div>
+</div>
+
+<!-- BF PHOTO — estimation IA du % de masse grasse par photos -->
+<div id="bf-photo-modal" style="display:none;position:fixed;inset:0;z-index:850;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeBfPhotoPanel()">
+  <div style="background:rgba(0,0,0,0.6);position:absolute;inset:0;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)" onclick="closeBfPhotoPanel()"></div>
+  <div class="kc-modal-scroll" style="position:relative;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;background:var(--s1);border-radius:20px 20px 0 0;border-top:1px solid var(--border2);padding:1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom,0px));animation:slideUp 0.25s cubic-bezier(0.4,0,0.2,1)">
+    <button class="kc-modal-close" onclick="closeBfPhotoPanel()" aria-label="Fermer">✕</button>
+    <div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1.25rem"></div>
+
+    <!-- Étape 1 : capture photos -->
+    <div id="bfph-step-photos">
+      <div style="font-family:Playfair Display,serif;font-size:1.2rem;font-weight:400;margin-bottom:0.25rem">📷 Estimation <em style="color:var(--teal)">masse grasse</em></div>
+      <div style="font-size:0.72rem;color:var(--muted);margin-bottom:1rem;line-height:1.5">Suis les 3 consignes ci-dessous pour la meilleure précision (2 ou 1 photo suffisent si besoin). Lumière naturelle, vêtements ajustés.<br>Poids utilisé : <b id="bfph-poids-label">—</b> kg — Date : <b id="bfph-date-label">—</b>.</div>
+
+      <!-- Clé API (affichée seulement si absente) -->
+      <div id="bfph-key-zone" style="display:none;margin-bottom:1rem;padding:0.85rem 1rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm)">
+        <div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px">🔑 Clé API Anthropic requise (stockée uniquement sur cet appareil)</div>
+        <input type="password" id="bfph-api-key" placeholder="sk-ant-api03-…" style="width:100%;background:var(--s1);border:1.5px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;font-size:0.8rem;color:var(--text);font-family:Syne,sans-serif;outline:none" oninput="localStorage.setItem('kcalos_apikey',this.value)">
+        <div style="font-size:0.62rem;color:var(--muted2);margin-top:5px">Obtenir une clé → <a href="https://console.anthropic.com" target="_blank" style="color:var(--teal)">console.anthropic.com</a></div>
+      </div>
+
+      <div id="bfph-photos-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1rem"></div>
+
+      <div class="field" style="margin-bottom:1rem">
+        <label>Commentaire <span class="hint">(optionnel, pour toi seulement — pas envoyé à l'IA)</span></label>
+        <textarea id="bfph-comment" rows="2" placeholder="Ex : fin de déficit, sortie d'eau, après cardio…" style="width:100%;background:var(--s2);border:1.5px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;font-size:0.8rem;color:var(--text);font-family:Syne,sans-serif;outline:none;resize:vertical"></textarea>
+      </div>
+
+      <div id="bfph-error" style="display:none;font-size:0.72rem;color:var(--red);background:rgba(255,90,90,0.08);border:1px solid var(--red);border-radius:var(--r-sm);padding:8px 10px;margin-bottom:0.75rem;line-height:1.5"></div>
+
+      <button class="btn teal" id="bfph-analyze-btn" onclick="bfAnalyzePhotos()">✨ Analyser avec l'IA</button>
+      <div id="bfph-loading" style="display:none;text-align:center;padding:1.2rem 0;font-size:0.78rem;color:var(--muted)">⏳ Analyse en cours…</div>
+    </div>
+
+    <!-- Étape 2 : résultat à valider -->
+    <div id="bfph-step-result" style="display:none">
+      <div style="font-family:Playfair Display,serif;font-size:1.2rem;font-weight:400;margin-bottom:0.9rem">Résultat de l'<em style="color:var(--teal)">estimation</em></div>
+      <div style="text-align:center;background:var(--s2);border:1.5px solid var(--teal-d);border-radius:var(--r-sm);padding:1.25rem 1rem;margin-bottom:0.9rem">
+        <div style="font-size:2.2rem;font-weight:700;color:var(--teal)"><span id="bfph-result-val">—</span>%</div>
+        <div style="font-size:0.68rem;color:var(--muted2);margin-top:2px">masse grasse estimée</div>
+        <div id="bfph-result-conf" style="font-size:0.68rem;color:var(--muted);margin-top:8px"></div>
+      </div>
+      <div id="bfph-result-note" style="font-size:0.72rem;color:var(--muted);margin-bottom:1.1rem;line-height:1.5"></div>
+      <div style="display:flex;gap:8px">
+        <button onclick="bfphRetry()" style="flex:1;padding:0.75rem;border-radius:30px;border:1.5px solid var(--border2);background:var(--s2);color:var(--text);font-family:Syne,sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent">↺ Refaire</button>
+        <button onclick="bfphValidateResult()" class="btn teal" style="flex:2">✓ Valider ce %</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -6285,7 +6344,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-08-14.4';
+const APP_BUILD_VERSION = '2026-08-14.8';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -16854,6 +16913,214 @@ function savePoidsQuick(){
   closePoidsQuickEdit();
   renderDashboard();
   toast(toastMsg, 'var(--pink)');
+}
+
+/* ════════════════════════════════════════
+   BF PHOTO — estimation IA du % de masse grasse par photos
+════════════════════════════════════════ */
+// 3 emplacements guidés (icônes + consignes de prise de vue)
+const BFPH_SLOT_DEFS = [
+  { id:'face', label:'Face', hint:'Debout de face, bras légèrement écartés du corps',
+    icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="2.3"/><path d="M12 7v7"/><path d="M12 7l-4 2.5M12 7l4 2.5"/><path d="M12 14l-3 6M12 14l3 6"/><circle cx="10.6" cy="4.1" r="0.15" fill="currentColor"/><circle cx="13.4" cy="4.1" r="0.15" fill="currentColor"/></svg>' },
+  { id:'dos', label:'Dos', hint:'Même distance et lumière, de dos cette fois',
+    icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="2.3"/><path d="M12 7v7"/><path d="M12 7l-4 2.5M12 7l4 2.5"/><path d="M12 14l-3 6M12 14l3 6"/><path d="M9.5 9.5v4M14.5 9.5v4" opacity="0.5"/></svg>' },
+  { id:'pli', label:'Pli cutané', hint:'Pince la peau du triceps (bras tendu) ou du ventre entre pouce et index, et prends la photo du pli',
+    icon:'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15c-1-2.5-1-5 .5-7.5"/><path d="M9 15c1.4 1 3.2 1.2 4.5.3"/><path d="M8 6.5c1.2-1.4 2.6-1.4 3.6-.2"/><path d="M15.5 8c1.8 1.2 2.3 3.6 1 5.8" opacity="0.55"/></svg>' },
+];
+
+let BFPH = { slots:[], poids:null, lastResult:null };
+
+function openBfPhotoPanel(){
+  const poids = parseFloat(document.getElementById('poids-quick-input')?.value);
+  if(isNaN(poids) || poids<30 || poids>300){ toast('Renseigne d\'abord un poids valide', 'var(--red)'); return; }
+  const dateInp = document.getElementById('poids-quick-date');
+  const date = (dateInp && dateInp.value) ? dateInp.value : today();
+  BFPH = { slots: BFPH_SLOT_DEFS.map(d=>({ id:d.id, full:null, thumb:null })), poids, date, lastResult:null };
+  document.getElementById('bfph-poids-label').textContent = poids.toFixed(1);
+  document.getElementById('bfph-date-label').textContent = fmtDL(date);
+  document.getElementById('bfph-comment').value = '';
+  bfphRenderSlots();
+  document.getElementById('bfph-step-photos').style.display = 'block';
+  document.getElementById('bfph-step-result').style.display = 'none';
+  document.getElementById('bfph-error').style.display = 'none';
+  document.getElementById('bfph-loading').style.display = 'none';
+  const key = localStorage.getItem('kcalos_apikey') || '';
+  document.getElementById('bfph-api-key').value = key;
+  document.getElementById('bfph-key-zone').style.display = key ? 'none' : 'block';
+  document.getElementById('bf-photo-modal').style.display = 'flex';
+  kcLockScroll();
+}
+function closeBfPhotoPanel(){
+  document.getElementById('bf-photo-modal').style.display = 'none';
+  kcUnlockScroll();
+}
+
+function bfphSlotHtml(slot){
+  const def = BFPH_SLOT_DEFS.find(d=>d.id===slot.id);
+  return `<div class="bfph-slot">
+    <div class="aiph-photo-box" id="bfph-box-${slot.id}" onclick="document.getElementById('bfph-file-${slot.id}').click()">
+      <span id="bfph-placeholder-${slot.id}" style="display:${slot.full?'none':'flex'};flex-direction:column;align-items:center">
+        <span class="bfph-slot-icon">${def.icon}</span>
+        <span class="bfph-slot-label">${def.label}</span>
+      </span>
+      <img id="bfph-preview-${slot.id}" src="${slot.full||''}" style="display:${slot.full?'block':'none'}">
+      <button type="button" class="aiph-photo-clear" id="bfph-clear-${slot.id}" style="display:${slot.full?'flex':'none'}" onclick="event.stopPropagation();bfphClearSlot('${slot.id}')">✕</button>
+    </div>
+    <input type="file" accept="image/*" id="bfph-file-${slot.id}" style="display:none" onchange="bfphHandleFile(event,'${slot.id}')">
+    <div class="bfph-slot-hint">${def.hint}</div>
+  </div>`;
+}
+function bfphRenderSlots(){
+  const grid = document.getElementById('bfph-photos-grid');
+  if(!grid) return;
+  grid.innerHTML = BFPH.slots.map(s=>bfphSlotHtml(s)).join('');
+}
+function bfphClearSlot(id){
+  const slot = BFPH.slots.find(s=>s.id===id);
+  if(slot){ slot.full = null; slot.thumb = null; }
+  const input = document.getElementById('bfph-file-'+id);
+  if(input) input.value = '';
+  const ph = document.getElementById('bfph-placeholder-'+id);
+  const img = document.getElementById('bfph-preview-'+id);
+  const clr = document.getElementById('bfph-clear-'+id);
+  if(ph) ph.style.display = 'block';
+  if(img){ img.style.display = 'none'; img.src = ''; }
+  if(clr) clr.style.display = 'none';
+}
+async function bfphHandleFile(evt, slotId){
+  const file = evt.target.files && evt.target.files[0];
+  if(!file) return;
+  const slot = BFPH.slots.find(s=>s.id===slotId);
+  if(!slot) return;
+  try{
+    const full = await aiphCompressImage(file, 1024, 0.82); // réutilise le compresseur existant (canvas)
+    slot.full = full;
+    slot.thumb = await aiphCompressImage(file, 220, 0.6);
+    const previewEl = document.getElementById('bfph-preview-'+slotId);
+    const placeholderEl = document.getElementById('bfph-placeholder-'+slotId);
+    const clearEl = document.getElementById('bfph-clear-'+slotId);
+    if(previewEl){ previewEl.src = full; previewEl.style.display = 'block'; }
+    if(placeholderEl) placeholderEl.style.display = 'none';
+    if(clearEl) clearEl.style.display = 'flex';
+  }catch(e){
+    toast('❌ Photo illisible : '+e.message, 'var(--red)');
+  }
+}
+
+function bfphBuildPrompt(poids, photosPresentes){
+  const prof = JSON.parse(localStorage.getItem('kcalos_profile')||'{}');
+  const ctxBits = [];
+  if(prof.sexe) ctxBits.push(`sexe: ${prof.sexe}`);
+  if(prof.taille) ctxBits.push(`taille: ${prof.taille} cm`);
+  const ctx = ctxBits.length ? ` (${ctxBits.join(', ')})` : '';
+  const defByLabel = { face:'Face — vue de face debout', dos:'Dos — vue de dos debout', pli:"Pli cutané — pincement de la peau (triceps ou ventre) entre pouce et index : utilise l'épaisseur du pli visible comme indicateur direct de l'épaisseur de graisse sous-cutanée" };
+  const photosDesc = photosPresentes.map((s,i)=>`Photo ${i+1} : ${defByLabel[s.id]||s.id}`).join('\n');
+  return `Tu es un expert en évaluation de la composition corporelle par analyse visuelle (méthode proche d'un coach expérimenté utilisant des repères visuels de vascularisation, définition musculaire, dépôts graisseux abdominaux/lombaires, et épaisseur de pli cutané pincé).
+Analyse les photos fournies d'une personne pesant ${poids} kg${ctx}, dans cet ordre :
+${photosDesc}
+Estime le pourcentage de masse grasse (body fat %) le plus réaliste possible, en croisant les repères visuels standards (définition abdominale, veines visibles, graisse lombaire/hanches, visage) avec l'épaisseur du pli cutané si une photo de pli est fournie.
+
+Réponds STRICTEMENT avec un JSON valide, sans aucun texte avant/après, sans balises markdown, exactement dans ce format :
+{"bf":0,"confiance":"faible|moyenne|haute","note":"remarque courte optionnelle sur les repères observés ou l'incertitude, ou chaîne vide"}`;
+}
+
+async function bfAnalyzePhotos(){
+  const errEl = document.getElementById('bfph-error');
+  errEl.style.display = 'none';
+
+  const photosPresentes = BFPH.slots.filter(s=>s.full);
+  if(!photosPresentes.length){ errEl.textContent = 'Ajoute au moins une photo.'; errEl.style.display = 'block'; return; }
+  const apiKey = (document.getElementById('bfph-api-key').value || '').trim();
+  if(!apiKey){ errEl.textContent = 'Renseigne ta clé API Anthropic.'; errEl.style.display = 'block'; return; }
+  localStorage.setItem('kcalos_apikey', apiKey);
+
+  const analyzeBtn = document.getElementById('bfph-analyze-btn');
+  const loadingEl = document.getElementById('bfph-loading');
+  analyzeBtn.disabled = true;
+  loadingEl.style.display = 'block';
+
+  try{
+    const content = photosPresentes.map(s=>({ type:'image', source:{ type:'base64', media_type:'image/jpeg', data: aiphB64Payload(s.full) } }));
+    content.push({ type:'text', text: bfphBuildPrompt(BFPH.poids, photosPresentes) });
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true',
+      },
+      body: JSON.stringify({
+        model:'claude-sonnet-5',
+        max_tokens:600,
+        messages:[{ role:'user', content }],
+      }),
+    });
+    if(!res.ok){
+      const err = await res.json().catch(()=>({}));
+      throw new Error(err?.error?.message || `Erreur API ${res.status}`);
+    }
+    const data = await res.json();
+    const text = data.content.map(b=>b.text || '').join('\n').trim();
+    const cleaned = text.replace(/^```json\s*|^```\s*|```$/gm, '').trim();
+    let parsed;
+    try{ parsed = JSON.parse(cleaned); }
+    catch(e){ throw new Error('Réponse IA illisible, réessaie.'); }
+    const bf = Number(parsed.bf);
+    if(isNaN(bf) || bf<3 || bf>60){ throw new Error("L'IA n'a pas pu estimer un % réaliste, réessaie avec des photos plus nettes."); }
+
+    BFPH.lastResult = { bf: Math.round(bf*10)/10, confiance: parsed.confiance||'', note: parsed.note||'' };
+    bfphShowResult();
+  }catch(e){
+    errEl.textContent = '❌ ' + e.message;
+    errEl.style.display = 'block';
+    toast('Erreur IA : ' + e.message, 'var(--red)');
+  }finally{
+    analyzeBtn.disabled = false;
+    loadingEl.style.display = 'none';
+  }
+}
+
+function bfphShowResult(){
+  const r = BFPH.lastResult;
+  document.getElementById('bfph-result-val').textContent = r.bf;
+  const confLbl = {faible:'Confiance faible — recadre/éclaire mieux pour affiner', moyenne:'Confiance moyenne', haute:'Confiance haute'}[r.confiance] || '';
+  document.getElementById('bfph-result-conf').textContent = confLbl;
+  document.getElementById('bfph-result-note').textContent = r.note || '';
+  document.getElementById('bfph-step-photos').style.display = 'none';
+  document.getElementById('bfph-step-result').style.display = 'block';
+}
+function bfphRetry(){
+  BFPH.lastResult = null;
+  document.getElementById('bfph-step-photos').style.display = 'block';
+  document.getElementById('bfph-step-result').style.display = 'none';
+}
+
+// Historique local des photos BF : {date, poids, photos:[thumb...], bf, confiance, note, ts}
+function bfphSaveHistory(entry){
+  const hist = JSON.parse(localStorage.getItem('kcalos_bf_photos')||'[]');
+  hist.push(entry);
+  localStorage.setItem('kcalos_bf_photos', JSON.stringify(hist));
+}
+function bfphValidateResult(){
+  const r = BFPH.lastResult;
+  if(!r) return;
+  const bfInp = document.getElementById('poids-quick-bf');
+  if(bfInp) bfInp.value = r.bf;
+  const commentaire = (document.getElementById('bfph-comment')?.value || '').trim();
+  bfphSaveHistory({
+    date: BFPH.date,
+    poids: BFPH.poids,
+    photos: BFPH.slots.filter(s=>s.thumb).map(s=>s.thumb),
+    bf: r.bf,
+    confiance: r.confiance,
+    note: r.note,
+    commentaire,
+    ts: Date.now(),
+  });
+  closeBfPhotoPanel();
+  toast('✅ '+r.bf+'% appliqué au champ masse grasse', 'var(--teal)');
 }
 
 /* ════════════════════════════════════════
