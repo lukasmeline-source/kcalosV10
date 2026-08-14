@@ -6054,6 +6054,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       </div>
       <div style="font-size:0.58rem;color:var(--muted2);max-width:90px;line-height:1.4">Mis à jour dans ton profil et le graphique corps</div>
     </div>
+    <button type="button" onclick="openBfHistoryModal()" style="width:100%;background:none;border:none;color:var(--muted);font-size:0.68rem;cursor:pointer;text-align:center;margin:-0.6rem 0 1rem;text-decoration:underline;-webkit-tap-highlight-color:transparent">📋 Historique des estimations photo</button>
     <button onclick="savePoidsQuick()" class="btn">Enregistrer →</button>
   </div>
 </div>
@@ -6106,6 +6107,24 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     </div>
 
   </div>
+</div>
+
+<!-- BF HISTORY — historique des estimations photo -->
+<div id="bf-history-modal" style="display:none;position:fixed;inset:0;z-index:850;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeBfHistoryModal()">
+  <div style="background:rgba(0,0,0,0.6);position:absolute;inset:0;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)" onclick="closeBfHistoryModal()"></div>
+  <div class="kc-modal-scroll" style="position:relative;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;background:var(--s1);border-radius:20px 20px 0 0;border-top:1px solid var(--border2);padding:1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom,0px));animation:slideUp 0.25s cubic-bezier(0.4,0,0.2,1)">
+    <button class="kc-modal-close" onclick="closeBfHistoryModal()" aria-label="Fermer">✕</button>
+    <div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1.25rem"></div>
+    <div style="font-family:Playfair Display,serif;font-size:1.2rem;font-weight:400;margin-bottom:1rem">Historique des <em style="color:var(--teal)">estimations</em></div>
+    <div id="bfh-list"></div>
+  </div>
+</div>
+
+<!-- BF PHOTO VIEW — visionneuse plein écran d'une photo d'historique -->
+<div id="bf-photo-view-modal" style="display:none;position:fixed;inset:0;z-index:900;align-items:center;justify-content:center" onclick="closeBfPhotoView()">
+  <div style="background:rgba(0,0,0,0.85);position:absolute;inset:0"></div>
+  <img id="bf-photo-view-img" src="" style="position:relative;max-width:92vw;max-height:88vh;border-radius:12px;object-fit:contain">
+  <button class="kc-modal-close" onclick="closeBfPhotoView()" aria-label="Fermer" style="position:fixed;top:16px;right:16px;z-index:901">✕</button>
 </div>
 
 <!-- PROJECTION — Modal détail -->
@@ -6344,7 +6363,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-08-14.8';
+const APP_BUILD_VERSION = '2026-08-14.9';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -17121,6 +17140,62 @@ function bfphValidateResult(){
   });
   closeBfPhotoPanel();
   toast('✅ '+r.bf+'% appliqué au champ masse grasse', 'var(--teal)');
+}
+
+/* ── Historique des estimations photo (consultation) ── */
+function bfhGetHistory(){
+  return JSON.parse(localStorage.getItem('kcalos_bf_photos')||'[]').slice().sort((a,b)=>b.ts-a.ts);
+}
+function openBfHistoryModal(){
+  bfhRenderList();
+  document.getElementById('bf-history-modal').style.display = 'flex';
+  kcLockScroll();
+}
+function closeBfHistoryModal(){
+  document.getElementById('bf-history-modal').style.display = 'none';
+  kcUnlockScroll();
+}
+function bfhEntryHtml(entry){
+  const confLbl = {faible:'Confiance faible', moyenne:'Confiance moyenne', haute:'Confiance haute'}[entry.confiance] || '';
+  const photosHtml = (entry.photos||[]).map(p=>`<img src="${p}" onclick="bfphViewPhoto('${p}')" style="width:52px;height:52px;border-radius:10px;object-fit:cover;cursor:pointer;border:1px solid var(--border)">`).join('');
+  return `<div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:0.85rem;margin-bottom:0.75rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div>
+        <span style="font-size:0.85rem;font-weight:700;color:var(--text)">${fmtDL(entry.date)}</span>
+        <span style="font-size:0.72rem;color:var(--muted);margin-left:8px">${entry.poids} kg</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:1rem;font-weight:700;color:var(--teal)">${entry.bf}%</span>
+        <button type="button" onclick="bfhDeleteEntry(${entry.ts})" aria-label="Supprimer" style="background:none;border:none;color:var(--muted2);font-size:0.9rem;cursor:pointer;padding:2px;-webkit-tap-highlight-color:transparent">✕</button>
+      </div>
+    </div>
+    ${photosHtml ? `<div style="display:flex;gap:6px;margin-bottom:8px">${photosHtml}</div>` : ''}
+    ${entry.commentaire ? `<div style="font-size:0.76rem;color:var(--text);font-style:italic;margin-bottom:4px">💬 ${entry.commentaire}</div>` : ''}
+    ${confLbl ? `<div style="font-size:0.62rem;color:var(--muted2)">${confLbl}</div>` : ''}
+  </div>`;
+}
+function bfhRenderList(){
+  const list = document.getElementById('bfh-list');
+  if(!list) return;
+  const hist = bfhGetHistory();
+  if(!hist.length){
+    list.innerHTML = `<div style="text-align:center;padding:1.5rem 0;font-size:0.8rem;color:var(--muted)">Aucune estimation enregistrée pour l'instant.</div>`;
+    return;
+  }
+  list.innerHTML = hist.map(bfhEntryHtml).join('');
+}
+function bfhDeleteEntry(ts){
+  const hist = JSON.parse(localStorage.getItem('kcalos_bf_photos')||'[]').filter(e=>e.ts!==ts);
+  localStorage.setItem('kcalos_bf_photos', JSON.stringify(hist));
+  bfhRenderList();
+}
+function bfphViewPhoto(src){
+  document.getElementById('bf-photo-view-img').src = src;
+  document.getElementById('bf-photo-view-modal').style.display = 'flex';
+}
+function closeBfPhotoView(){
+  document.getElementById('bf-photo-view-modal').style.display = 'none';
+  document.getElementById('bf-photo-view-img').src = '';
 }
 
 /* ════════════════════════════════════════
