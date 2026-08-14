@@ -2870,8 +2870,8 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
               </div>
               <div class="fb-user-lbl">Connecté en tant que</div>
               <div class="fb-user-email" id="fb-user-email"></div>
-              <div class="fb-sync-status" id="fb-sync-status" style="color:var(--teal)">✅ Synchronisé</div>
-              <div id="fb-version-display" style="font-size:0.6rem;color:var(--muted2);margin-top:2px">v.—</div>
+              <div class="fb-sync-status" id="fb-sync-status" style="color:var(--teal)">💾 Local</div>
+              <div id="fb-version-display" style="font-size:0.6rem;color:var(--muted2);margin-top:2px">—</div>
             </div>
           </div>
 
@@ -2882,7 +2882,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
             <div style="display:flex;align-items:center;gap:10px;background:var(--teal-bg);border:1.5px solid var(--teal-d);border-radius:var(--r-sm);padding:8px 12px">
               <div style="flex:1">
                 <div style="font-size:0.75rem;font-weight:600;color:var(--teal)">☁️ Envoyer au cloud</div>
-                <div style="font-size:0.65rem;color:var(--muted2);margin-top:1px">Force l'envoi de TES données vers le cloud. Se fait automatiquement à chaque sauvegarde.</div>
+                <div style="font-size:0.65rem;color:var(--muted2);margin-top:1px">Sauvegarde TES données dans le cloud. Se fait aussi automatiquement 1x/24h, en silence.</div>
               </div>
               <button onclick="fbSyncNow()" style="background:var(--teal-d);border:none;color:#111;border-radius:var(--r-sm);padding:6px 12px;font-size:0.72rem;font-weight:600;cursor:pointer;font-family:Syne,sans-serif;white-space:nowrap">⬆️ Envoyer</button>
             </div>
@@ -2891,7 +2891,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
             <div style="display:flex;align-items:center;gap:10px;background:var(--s2);border:1.5px solid var(--border2);border-radius:var(--r-sm);padding:8px 12px">
               <div style="flex:1">
                 <div style="font-size:0.75rem;font-weight:600;color:var(--text)">📲 Charger depuis le cloud</div>
-                <div style="font-size:0.65rem;color:var(--muted2);margin-top:1px">⚠️ Remplace tes données locales par celles du cloud. À utiliser sur un nouvel appareil ou en cas de problème.</div>
+                <div style="font-size:0.65rem;color:var(--muted2);margin-top:1px">⚠️ Remplace tes données locales par la dernière sauvegarde cloud. À utiliser sur un nouvel appareil ou en cas de perte du téléphone — jamais automatique.</div>
               </div>
               <button onclick="fbRestoreFromCloud()" style="background:var(--s3);border:1.5px solid var(--border2);color:var(--muted);border-radius:var(--r-sm);padding:6px 12px;font-size:0.72rem;font-weight:600;cursor:pointer;font-family:Syne,sans-serif;white-space:nowrap">⬇️ Charger</button>
             </div>
@@ -6285,7 +6285,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-08-07.5';
+const APP_BUILD_VERSION = '2026-08-14.1';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -8274,7 +8274,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v19';
+    const CACHE_NAME = 'kcalos-v20';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -13476,6 +13476,25 @@ function hideSourceInfo() {
   if (m) { m.style.display = 'none'; kcUnlockScroll(); }
 }
 
+/* ── Chargement à la demande du snapshot local de secours (off-mini.js) ──
+   Jamais chargé au démarrage : seulement quand une recherche "marques"
+   en a réellement besoin. Une fois chargé, le navigateur (et le Service
+   Worker, qui met en cache tout GET same-origin) le garde disponible
+   hors-ligne pour les recherches suivantes. */
+let _offMiniLoaded = false, _offMiniLoading = null;
+function _ensureOffMini() {
+  if (_offMiniLoaded) return Promise.resolve();
+  if (_offMiniLoading) return _offMiniLoading;
+  _offMiniLoading = new Promise(resolve => {
+    const s = document.createElement('script');
+    s.src = 'off-mini.js';
+    s.onload = () => { _offMiniLoaded = true; resolve(); };
+    s.onerror = () => resolve(); // échec silencieux : on reste sur le comportement actuel
+    document.head.appendChild(s);
+  });
+  return _offMiniLoading;
+}
+
 async function searchFood(query) {
   const sid = ++_searchId;
   const spinner   = document.getElementById('search-spinner');
@@ -13513,6 +13532,10 @@ async function searchFood(query) {
       queryFinal = querySyn !== queryNorm ? querySyn : queryNorm;
       const ciqualOnly = !_searchIncludesBrands();
       const cacheKey   = (ciqualOnly ? 'c:' : 'a:') + queryFinal.toLowerCase();
+
+      // Précharger le snapshot de secours en tâche de fond dès qu'une recherche
+      // "marques" démarre — prêt en cas de panne OFF, sans bloquer la requête réseau
+      if (!ciqualOnly) _ensureOffMini().catch(()=>{});
 
       // Aliments perso — toujours recalculés (jamais mis en cache, l'utilisateur peut
       // en créer/supprimer entre deux recherches), fusionnés juste avant l'affichage,
@@ -13603,10 +13626,26 @@ async function searchFood(query) {
       // uniquement a sa propre branche séparée plus haut — pas de mélange entre les deux.
       allProducts = [...offSal, ...offBrand];
 
+      // ── Secours local — OFF (live) n'a rien renvoyé : on retente sur le
+      // snapshot embarqué (export ponctuel Lidl/Carrefour/McDo/KFC/BK) plutôt
+      // que d'afficher directement un échec. Résultats marqués "hors-ligne".
+      let _usedOffMini = false;
+      if (!allProducts.length) {
+        try {
+          await _ensureOffMini();
+          const miniResults = (typeof _searchOffMini === 'function') ? _searchOffMini(queryFinal) : [];
+          if (miniResults.length) { allProducts = miniResults; _usedOffMini = true; }
+        } catch(_) {}
+      }
+
       // Mettre en cache (mémoire + Firestore partagé) pour éviter les appels redondants,
-      // pour cette session comme pour tous les futurs utilisateurs de l'app
-      _cacheSet(cacheKey, allProducts);
-      _fsCacheSet(cacheKey, queryFinal, allProducts); // asynchrone, non bloquant
+      // pour cette session comme pour tous les futurs utilisateurs de l'app.
+      // Jamais pour un résultat de secours local : on veut retenter le réseau
+      // OFF live à la prochaine recherche, pas figer une donnée potentiellement datée.
+      if (!_usedOffMini && allProducts.length) {
+        _cacheSet(cacheKey, allProducts);
+        _fsCacheSet(cacheKey, queryFinal, allProducts); // asynchrone, non bloquant
+      }
       } // fin else cache
       } // fin mode "toutes les bases"
     }
@@ -13749,7 +13788,7 @@ function _prodThumbImgError(imgEl, src) {
   imgEl.outerHTML = _prodThumbPlaceholder(src);
 }
 function _prodThumbPlaceholder(src) {
-  const emoji = src === 'ciqual' ? '🌿' : src === 'custom' ? '✏️' : src === 'ai-photo' ? '📝' : '🍴';
+  const emoji = src === 'ciqual' ? '🌿' : src === 'custom' ? '✏️' : src === 'ai-photo' ? '📝' : src === 'off-mini' ? '📦' : '🍴';
   return `<div class="sri-thumb-placeholder" aria-hidden="true">${emoji}</div>`;
 }
 
@@ -13773,6 +13812,7 @@ function renderSearchResults(products) {
   const SRC_LABEL = p => {
     if (p._src === 'custom') return { txt:'Perso', col:'var(--teal)', title:'Aliment personnel — créé par toi' };
     if (p._src === 'ciqual') return { txt:'CIQUAL', col:'var(--lime)', title:'Base ANSES/CIQUAL — référence France' };
+    if (p._src === 'off-mini') return { txt:'Hors-ligne', col:'#c98a2e', title:'Snapshot local de secours (Open Food Facts) — Open Food Facts était indisponible, données figées à un instant donné' };
     if ((p._frScore||0) >= 3 || p._src === 'off-fr') return { txt:'🇫🇷', col:'#4db8e8', title:'Open Food Facts · France' };
     return { txt:'OFF', col:'#7a8499', title:'Open Food Facts · mondial' };
   };
@@ -18898,10 +18938,21 @@ function woStartSession(type){
         exercises: existingSess.exercises.map(e=>({...e, sets:[...(e.sets||[])]}))
       }, {pristine: true});
     } else {
-      // Pré-charger les exos de la dernière séance passée de ce type
-      const lastSess = sessions.filter(s=>s.date<date).slice(-1)[0];
-      const paused    = new Set(woPausedGet());
-      const preloaded = lastSess?.exercises?.filter(e=>!paused.has(e.name)).map(e=>({id:e.id, name:e.name, muscle:e.muscle||woGetMuscle(e), sets:[]})) || [];
+      // Pré-charger les exos des 2 dernières séances passées de ce type (union,
+      // pas juste la toute dernière) : un exo zappé une fois par mégarde (mais
+      // pas mis en veille explicitement) ne doit pas disparaître silencieusement
+      // de la pré-saisie suivante.
+      const paused        = new Set(woPausedGet());
+      const recentSessions = sessions.filter(s=>s.date<date).slice(-2).reverse(); // plus récente d'abord
+      const seenNames = new Set();
+      const preloaded = [];
+      recentSessions.forEach(sess=>{
+        (sess.exercises||[]).forEach(e=>{
+          if(paused.has(e.name) || seenNames.has(e.name)) return;
+          seenNames.add(e.name);
+          preloaded.push({id:e.id, name:e.name, muscle:e.muscle||woGetMuscle(e), sets:[]});
+        });
+      });
       const lastPhase = localStorage.getItem('wo_last_phase') || (typeof getCurrentPhase==='function' ? getCurrentPhase() : null);
       woDraftSet({ type, date, duration:null, intensity:5, phase:lastPhase, exercises:preloaded, _pristine: true }, {pristine: true});
     }
@@ -19315,6 +19366,10 @@ function woAddExoInline(forceMuscle){
   const id = 'custom_'+ name.toLowerCase().replace(/\s+/g,'_')+'_'+Date.now();
   d.exercises.push({id, name, muscle, sets:[]});
   woDraftSet(d);
+  // Si l'exo était en veille, le fait de le rajouter manuellement le réactive :
+  // sinon il resterait exclu du pré-remplissage des séances futures malgré
+  // une utilisation bien réelle et récente (bug historique).
+  if(woPausedHas(name)) woPausedRemove(name);
   inp.value='';
   inp.focus();
   woRenderSession();
@@ -24732,14 +24787,13 @@ else setTimeout(slInit,200);
 </div>
 
 <!-- ══════════════════════════════════════════
-     MODULE FIREBASE — AUTH + CLOUD SYNC
-     Système de versionnage :
-       • Chaque session de modif → version locale +1
-       • Au démarrage : comparaison local vs cloud
-         - Cloud seul avancé  → télécharge cloud
-         - Local seul avancé  → uploade local
-         - Les deux avancés   → conflit → choix utilisateur
-         - Égaux              → en synchro, rien à faire
+     MODULE FIREBASE — AUTH + CLOUD BACKUP (local-first)
+     Le cloud n'est qu'une sauvegarde, jamais une source de vérité en direct :
+       • Aucune écriture locale n'est poussée en temps réel vers le cloud.
+       • Sauvegarde vers le cloud : manuelle (bouton) ou auto (1x/24h, silencieuse,
+         upload seul — ne touche jamais aux données locales).
+       • Restauration cloud → local : uniquement manuelle, bouton + confirmation,
+         car ça REMPLACE les données locales.
 ══════════════════════════════════════════ -->
 <script>
 (function(){
@@ -24762,98 +24816,22 @@ else setTimeout(slInit,200);
     'kcalos_eau_goal','kcalos_theme',
     'kcalos_food_custom','kcalos_food_last_qty'
   ];
-  function isSyncKey(k){ return SYNC_KEYS.includes(k) || k.startsWith('kcalos_eau_log_'); }
 
   let fbAuth, fbDb, fbUser = null;
   let fbMode = 'login';
 
-  /* ── Accès localStorage sans déclencher le patch ── */
-  const _origSetItem    = localStorage.setItem.bind(localStorage);
-  const _origGetItem    = localStorage.getItem.bind(localStorage);
-  const _origRemoveItem = localStorage.removeItem.bind(localStorage);
+  /* Horodatage de la dernière sauvegarde cloud réussie (ne concerne QUE l'upload,
+     jamais le contenu local — le local n'est jamais modifié en dehors d'une
+     restauration manuelle explicite via downloadFromCloud) */
+  const LAST_BACKUP_KEY = 'kcalos_last_backup';
+  const AUTO_BACKUP_INTERVAL_MS = 24 * 60 * 60 * 1000; // 1x/24h
 
-  /* ════════════════════════════════════════
-     SYSTÈME DE VERSION
-     kcalos_v  = version locale (entier, monte à chaque session de modif)
-     kcalos_cv = dernière version confirmée sur le cloud
-  ════════════════════════════════════════ */
-  const LOCAL_VER_KEY = 'kcalos_v';
-  const CONF_VER_KEY  = 'kcalos_cv';
-
-  function getLocalVer()   { return parseInt(_origGetItem(LOCAL_VER_KEY) || '0'); }
-  function getConfirmedVer(){ return parseInt(_origGetItem(CONF_VER_KEY)  || '0'); }
-  function setLocalVer(v)  { _origSetItem(LOCAL_VER_KEY, String(v)); }
-  function setConfirmedVer(v){ _origSetItem(CONF_VER_KEY, String(v)); }
-
-  /* Version Firestore : stockée dans users/{uid}/meta/sync */
-  async function getCloudVersion(){
-    try {
-      const doc = await fbDb.collection('users').doc(fbUser.uid).collection('meta').doc('sync').get();
-      return doc.exists ? (doc.data().version || 0) : 0;
-    } catch(e){ return -1; } // -1 = erreur réseau
-  }
-  async function setCloudVersion(v){
-    await fbDb.collection('users').doc(fbUser.uid).collection('meta').doc('sync')
-             .set({ version: v, ts: firebase.firestore.FieldValue.serverTimestamp() });
-  }
-
-  /* Bump version locale au PREMIER write d'une session */
-  let sessionVersionBumped = false;
-  function ensureVersionBumped(){
-    if(!sessionVersionBumped){
-      setLocalVer(getLocalVer() + 1);
-      sessionVersionBumped = true;
-    }
-  }
-
-  /* ── Flag "dirty" : upload non encore confirmé ── */
-  function markDirty(k) { _origSetItem('kcalos_dirty_' + k, '1'); }
-  function markClean(k) { _origRemoveItem('kcalos_dirty_' + k); }
-  function getDirtyKeys(){ return SYNC_KEYS.filter(k => _origGetItem('kcalos_dirty_' + k) === '1' && _origGetItem(k) !== null); }
-
-  /* ════════════════════════════════════════
-     PATCH localStorage.setItem
-     → Chaque écriture sync = dirty + upload immédiat
-  ════════════════════════════════════════ */
-  localStorage.setItem = function(key, value){
-    _origSetItem(key, value);
-    if(isSyncKey(key)){
-      ensureVersionBumped();
-      markDirty(key);
-      if(fbUser) cloudSaveKey(key, value);
-    }
-  };
+  function getLastBackup(){ return parseInt(localStorage.getItem(LAST_BACKUP_KEY) || '0'); }
+  function setLastBackup(ts){ localStorage.setItem(LAST_BACKUP_KEY, String(ts)); }
 
   function encodeKey(k){ return k.replace(/[^a-zA-Z0-9_-]/g,'_'); }
 
-  /* ── Mise à jour de la version méta (déclenchée après chaque upload, avec délai) ── */
-  let _metaTimer = null;
-  function scheduleMetaUpdate(){
-    clearTimeout(_metaTimer);
-    _metaTimer = setTimeout(async ()=>{
-      try {
-        const localV = getLocalVer();
-        await setCloudVersion(localV);
-        setConfirmedVer(localV);
-      } catch(e){}
-    }, 2000); // 2s après la dernière modif
-  }
-
-  /* ── Upload d'une clé ── */
-  async function cloudSaveKey(key, value){
-    if(!fbUser || !fbDb) return;
-    const val = (value !== undefined) ? value : _origGetItem(key);
-    if(val === null) return;
-    try {
-      await fbDb.collection('users').doc(fbUser.uid)
-               .collection('keys').doc(encodeKey(key))
-               .set({ v: val, k: key, ts: firebase.firestore.FieldValue.serverTimestamp() });
-      markClean(key);
-      scheduleMetaUpdate(); // ← met à jour la version cloud 2s après la dernière modif
-    } catch(e){ /* reste dirty → réessayé au démarrage */ }
-  }
-
-  /* ── Batch upload d'une liste de clés ── */
+  /* ── Batch upload d'une liste de clés vers Firestore ── */
   async function batchUpload(keys){
     if(!keys.length || !fbUser || !fbDb) return true;
     try {
@@ -24861,165 +24839,62 @@ else setTimeout(slInit,200);
       for(let i=0; i<keys.length; i+=400){
         const batch = fbDb.batch();
         keys.slice(i,i+400).forEach(k => {
-          const v = _origGetItem(k);
+          const v = localStorage.getItem(k);
           if(v !== null) batch.set(ref.doc(encodeKey(k)), { v, k, ts: firebase.firestore.FieldValue.serverTimestamp() });
         });
         await batch.commit();
-        keys.slice(i,i+400).forEach(k => markClean(k));
       }
       return true;
     } catch(e){ console.warn('[FB] batchUpload failed:', e.message); return false; }
   }
 
-  /* ── Download tout le cloud → local ── */
-  async function downloadAll(){
-    const snap = await fbDb.collection('users').doc(fbUser.uid).collection('keys').get();
-    snap.docs.forEach(doc => {
-      const d = doc.data();
-      if(d.v !== undefined) _origSetItem(d.k || doc.id, d.v);
-    });
-    SYNC_KEYS.forEach(k => markClean(k));
-  }
-
-  /* ════════════════════════════════════════
-     DÉMARRAGE — logique de versionnage
-  ════════════════════════════════════════ */
-  async function startupSync(){
-    if(!fbUser || !fbDb){ setStatus('offline'); return; }
-    setStatus('syncing');
-    try {
-      /* ── Cas : appareil sans données locales ── */
-      const hasLocalData = SYNC_KEYS.some(k => _origGetItem(k) !== null);
-      if(!hasLocalData){
-        const cloudV = await getCloudVersion();
-        if(cloudV <= 0){
-          setStatus('synced'); // rien nulle part
-          return;
-        }
-        await downloadAll();
-        setLocalVer(cloudV); setConfirmedVer(cloudV);
-        setStatus('synced');
-        if(typeof toast==='function') toast('☁️ Données chargées depuis le cloud','var(--teal)');
-        setTimeout(()=> window.location.reload(), 1400);
-        return;
-      }
-
-      /* ── Cas général : données locales présentes ── */
-      const cloudV     = await getCloudVersion();
-      if(cloudV === -1){ setStatus('error'); return; } // réseau ko
-
-      const localV     = getLocalVer();
-      const confirmedV = getConfirmedVer();
-
-      const localChanged = localV > confirmedV;          // on a modifié depuis la dernière synchro
-      const cloudChanged = cloudV > confirmedV;          // le cloud a avancé depuis la dernière synchro
-
-      updateVersionDisplay(localV, cloudV);
-
-      /* ── En synchro : rien à faire ── */
-      if(!localChanged && !cloudChanged){
-        /* Vérification dirty au cas où (upload raté non détecté) */
-        const dirty = getDirtyKeys();
-        if(dirty.length) await batchUpload(dirty);
-        setStatus('synced');
-        return;
-      }
-
-      /* ── Cloud seul avancé → on télécharge (on n'a rien modifié) ── */
-      if(!localChanged && cloudChanged){
-        await downloadAll();
-        setLocalVer(cloudV); setConfirmedVer(cloudV);
-        setStatus('synced');
-        if(typeof toast==='function') toast('☁️ Mise à jour depuis le cloud (v.'+cloudV+')','var(--teal)');
-        setTimeout(()=> window.location.reload(), 1400);
-        return;
-      }
-
-      /* ── Local seul avancé → on uploade (le cloud n'a pas bougé) ── */
-      if(localChanged && !cloudChanged){
-        const allKeys = SYNC_KEYS.filter(k => _origGetItem(k) !== null);
-        const ok = await batchUpload(allKeys);
-        if(ok){
-          await setCloudVersion(localV);
-          setConfirmedVer(localV);
-          setStatus('synced');
-          if(typeof toast==='function') toast('☁️ Données envoyées au cloud (v.'+localV+')','var(--teal)');
-        } else {
-          setStatus('error');
-        }
-        updateVersionDisplay(localV, localV);
-        return;
-      }
-
-      /* ── Les deux ont avancé → CONFLIT ── */
-      if(localChanged && cloudChanged){
-        setStatus('error');
-        const choix = confirm(
-          '⚠️ Conflit détecté !\n\n' +
-          'Local : v.' + localV + '  |  Cloud : v.' + cloudV + '\n\n' +
-          'OK = garder MES données locales\n' +
-          'Annuler = charger les données du cloud'
-        );
-        if(choix){
-          /* Local gagne */
-          const newV = Math.max(localV, cloudV) + 1;
-          setLocalVer(newV);
-          const allKeys = SYNC_KEYS.filter(k => _origGetItem(k) !== null);
-          const ok = await batchUpload(allKeys);
-          if(ok){ await setCloudVersion(newV); setConfirmedVer(newV); setStatus('synced'); }
-          else   { setStatus('error'); }
-          updateVersionDisplay(newV, newV);
-        } else {
-          /* Cloud gagne */
-          await downloadAll();
-          setLocalVer(cloudV); setConfirmedVer(cloudV);
-          setStatus('synced');
-          if(typeof toast==='function') toast('☁️ Données cloud chargées (v.'+cloudV+')','var(--teal)');
-          setTimeout(()=> window.location.reload(), 1400);
-        }
-      }
-    } catch(e){
-      setStatus('error');
-      console.warn('[FB] startupSync error', e);
-    }
-  }
-
-  /* ── Synchro manuelle complète (bouton ⬆️) ── */
-  async function syncAllToCloud(){
-    if(!fbUser || !fbDb){ setStatus('offline'); return; }
-    setStatus('syncing');
-    ensureVersionBumped();
-    const localV  = getLocalVer();
+  /* ── Sauvegarde vers le cloud (bouton ⬆️ ET auto-backup silencieux) ──
+     N'agit QUE sur le cloud, ne touche jamais aux données locales. ── */
+  async function syncAllToCloud(opts){
+    const silent = !!(opts && opts.silent);
+    if(!fbUser || !fbDb){ if(!silent) setStatus('offline'); return false; }
+    if(!silent) setStatus('syncing');
     const allKeys = [...SYNC_KEYS];
     for(let i=0; i<localStorage.length; i++){
       const k = localStorage.key(i);
       if(k && k.startsWith('kcalos_eau_log_') && !allKeys.includes(k)) allKeys.push(k);
     }
-    const ok = await batchUpload(allKeys.filter(k => _origGetItem(k) !== null));
+    const ok = await batchUpload(allKeys.filter(k => localStorage.getItem(k) !== null));
     if(ok){
-      await setCloudVersion(localV);
-      setConfirmedVer(localV);
-      setStatus('synced');
-      updateVersionDisplay(localV, localV);
-      if(typeof toast==='function') toast('☁️ Synchro terminée ! v.'+localV,'var(--teal)');
-    } else {
+      setLastBackup(Date.now());
+      updateBackupDisplay();
+      if(!silent){
+        setStatus('synced');
+        if(typeof toast==='function') toast('☁️ Sauvegarde envoyée !','var(--teal)');
+      }
+    } else if(!silent){
       setStatus('error');
-      if(typeof toast==='function') toast('❌ Erreur synchro','var(--red)');
+      if(typeof toast==='function') toast('❌ Erreur de sauvegarde','var(--red)');
     }
+    return ok;
   }
 
-  /* ── Restauration manuelle cloud → local (bouton ⬇️) ── */
+  /* ── Restauration manuelle cloud → local (bouton ⬇️) ──
+     Seul chemin qui écrit des données cloud en local. Toujours confirmé. ── */
   async function downloadFromCloud(){
     if(!fbUser || !fbDb){ if(typeof toast==='function') toast('Non connecté','var(--red)'); return; }
-    if(!confirm('⚠️ Charger les données depuis le cloud ?\n\nTes données locales seront remplacées.\n\nContinuer ?')) return;
+    if(!confirm('⚠️ Charger les données depuis le cloud ?\n\nTes données locales seront REMPLACÉES par la dernière sauvegarde cloud.\n\nContinuer ?')) return;
     setStatus('syncing');
     try {
-      const cloudV = await getCloudVersion();
-      await downloadAll();
-      setLocalVer(cloudV); setConfirmedVer(cloudV);
+      const snap = await fbDb.collection('users').doc(fbUser.uid).collection('keys').get();
+      if(snap.empty){
+        setStatus('offline');
+        if(typeof toast==='function') toast('Aucune sauvegarde cloud trouvée','var(--orange)');
+        return;
+      }
+      snap.docs.forEach(doc => {
+        const d = doc.data();
+        if(d.v !== undefined) localStorage.setItem(d.k || doc.id, d.v);
+      });
+      setLastBackup(Date.now());
       setStatus('synced');
-      updateVersionDisplay(cloudV, cloudV);
-      if(typeof toast==='function') toast('☁️ Données cloud chargées ! v.'+cloudV,'var(--teal)');
+      updateBackupDisplay();
+      if(typeof toast==='function') toast('☁️ Données cloud chargées !','var(--teal)');
       setTimeout(()=> window.location.reload(), 1400);
     } catch(e){
       setStatus('error');
@@ -25027,20 +24902,33 @@ else setTimeout(slInit,200);
     }
   }
 
-  /* ── Affichage version dans l'UI ── */
-  function updateVersionDisplay(localV, cloudV){
+  /* ── Auto-backup silencieux : upload seul, 1x/24h max, jamais de download ── */
+  async function maybeAutoBackup(){
+    if(!fbUser || !fbDb) return;
+    if(Date.now() - getLastBackup() < AUTO_BACKUP_INTERVAL_MS){
+      updateBackupDisplay();
+      setStatus('synced');
+      return;
+    }
+    await syncAllToCloud({ silent:true });
+    if(!getLastBackup()) setStatus('offline'); // premier backup jamais réussi
+  }
+
+  /* ── Affichage "dernière sauvegarde" dans l'UI ── */
+  function updateBackupDisplay(){
     const el = document.getElementById('fb-version-display');
     if(!el) return;
-    if(localV === cloudV) el.textContent = 'v.' + localV + ' ✓';
-    else if(localV > cloudV) el.textContent = 'local v.' + localV + ' · cloud v.' + cloudV;
-    else el.textContent = 'local v.' + localV + ' · cloud v.' + cloudV + ' ↑';
+    const last = getLastBackup();
+    if(!last){ el.textContent = 'Aucune sauvegarde cloud'; return; }
+    const d = new Date(last);
+    el.textContent = 'Dernière sauvegarde : ' + d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
   }
 
   /* ── Statut UI ── */
   function setStatus(s){
     const el = document.getElementById('fb-sync-status');
     if(!el) return;
-    const M = { syncing:['⏳ Synchro…','var(--orange)'], synced:['✅ Synchronisé','var(--teal)'], error:['❌ Erreur','var(--red)'], offline:['⚡ Local','var(--muted2)'] };
+    const M = { syncing:['⏳ Sauvegarde…','var(--orange)'], synced:['✅ Sauvegardé','var(--teal)'], error:['❌ Erreur','var(--red)'], offline:['💾 Local (pas encore sauvegardé)','var(--muted2)'] };
     const [txt, col] = M[s] || M.offline;
     el.textContent = txt; el.style.color = col;
   }
@@ -25060,7 +24948,7 @@ else setTimeout(slInit,200);
       if(nm) nm.textContent=user.displayName||'(prénom non renseigné)';
       const b=document.getElementById('account-bubble');
       if(b) b.title='Mon compte · '+(user.displayName||user.email);
-      updateVersionDisplay(getLocalVer(), getConfirmedVer());
+      updateBackupDisplay();
     } else {
       if(loginV) loginV.style.display='block';
       if(userV)  userV.style.display='none';
@@ -25137,7 +25025,7 @@ else setTimeout(slInit,200);
     if(typeof toast==='function') toast('👋 Déconnecté','var(--muted)');
   };
 
-  window.fbSyncNow          = function(){ syncAllToCloud(); };
+  window.fbSyncNow          = function(){ syncAllToCloud({ silent:false }); };
   window.fbRestoreFromCloud = function(){ downloadFromCloud(); };
 
   window.fbEditName = function(){
@@ -25184,7 +25072,7 @@ else setTimeout(slInit,200);
         fbUser=user;
         window.fbUser = user; // exposé pour le cache partagé food_search_cache
         updateAuthUI(user);
-        if(user) await startupSync();
+        if(user) await maybeAutoBackup();
       });
     }catch(e){
       console.error('[FB] init error',e);
