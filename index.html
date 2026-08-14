@@ -6285,7 +6285,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-08-14.1';
+const APP_BUILD_VERSION = '2026-08-14.3';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -8274,7 +8274,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v20';
+    const CACHE_NAME = 'kcalos-v22';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -13282,13 +13282,13 @@ function _hideSearchHistDrop() {
 }
 
 /* ════════════════════════════════════════
-   RECHERCHE ALIMENTAIRE — Architecture robuste
-   1. search.openfoodfacts.org/search (Search-a-licious) — recherche plein texte,
-      source principale. Remplace /cgi/search.pl, hors service (503) depuis avril 2026.
-   2. /cgi/search.pl France + Monde — filet de secours (repris automatiquement
-      si OFF rétablit un jour ce endpoint legacy)
-   3. /api/v2/search brands  — recherche par marque exacte (Lidl, Herta…)
-   Code-barres → /api/v2/product/{bc}
+   RECHERCHE ALIMENTAIRE — Architecture
+   - Recherche texte ("toutes les bases") : locale, sur off-mini.js (snapshot
+     Lidl/Carrefour/McDo/KFC/BK, chargé à la demande). L'appel réseau OFF
+     (Search-a-licious + /api/v2/search) a été retiré : trop instable en usage
+     réel malgré les filets de secours (retry, cache) qui avaient été ajoutés.
+   - Recherche texte ("CIQUAL uniquement") : locale, sur CIQUAL_DB (ANSES).
+   - Code-barres : reste sur le réseau, /api/v2/product/{bc} — fiable en usage réel.
 ════════════════════════════════════════ */
 
 // Normalise un produit OFF brut → objet interne uniforme
@@ -13531,11 +13531,6 @@ async function searchFood(query) {
       const querySyn   = _applySynonyms(queryNorm);
       queryFinal = querySyn !== queryNorm ? querySyn : queryNorm;
       const ciqualOnly = !_searchIncludesBrands();
-      const cacheKey   = (ciqualOnly ? 'c:' : 'a:') + queryFinal.toLowerCase();
-
-      // Précharger le snapshot de secours en tâche de fond dès qu'une recherche
-      // "marques" démarre — prêt en cas de panne OFF, sans bloquer la requête réseau
-      if (!ciqualOnly) _ensureOffMini().catch(()=>{});
 
       // Aliments perso — toujours recalculés (jamais mis en cache, l'utilisateur peut
       // en créer/supprimer entre deux recherches), fusionnés juste avant l'affichage,
@@ -13546,107 +13541,15 @@ async function searchFood(query) {
       if (ciqualOnly) {
         allProducts = _searchCiqual(queryFinal);
 
-      // ══ MODE "TOUTES LES BASES" — Open Food Facts (marques) uniquement ══
+      // ══ MODE "TOUTES LES BASES" (marques) — recherche locale sur off-mini ══
+      // L'appel réseau OFF (Search-a-licious + v2 marques) pour la recherche texte
+      // est retiré : trop instable en pratique (pannes fréquentes). Le snapshot
+      // local (18 827 produits Lidl/Carrefour/McDo/KFC/BK) donne un résultat plus
+      // fiable et instantané. Le réseau OFF reste utilisé pour le code-barres
+      // (branche isBarcode ci-dessus), qui fonctionne bien.
       } else {
-      // 1. Cache mémoire → réponse instantanée si déjà cherché (cette session)
-      const cached = _cacheGet(cacheKey);
-      // 2. Cache partagé Firestore → réponse quasi instantanée si déjà cherché
-      //    par n'importe quel utilisateur de l'app, même après un rechargement
-      const fsCached = cached ? null : await _fsCacheGet(cacheKey);
-      if (cached || fsCached) {
-        allProducts = cached || fsCached;
-        if (!cached) _cacheSet(cacheKey, fsCached); // remonter aussi en cache mémoire
-      } else {
-
-      const qc = encodeURIComponent(queryFinal.replace(/\s+/g,' ').trim());
-      const FIELDS = 'product_name,product_name_fr,brands,nutriments,serving_size,serving_quantity,countries_tags,code,nutriscore_grade,image_front_small_url,image_small_url';
-      const queryLower     = queryFinal.toLowerCase();
-      const looksLikeBrand = _FR_BRANDS.has(queryLower) || queryFinal.split(' ').length <= 2;
-
-      // NB : les endpoints /cgi/search.pl (fr + monde) sont hors service (503) depuis
-      // avril 2026 côté Open Food Facts — retirés d'ici. Les garder ne servait qu'à
-      // consommer 2 requêtes "gratuites" sur les 10/min autorisées par IP pour rien à
-      // chaque recherche, ce qui faisait atteindre le quota deux fois plus vite et
-      // aggravait les échecs aux heures de forte charge côté OFF (midi/soir).
-      let _offAllFailed = false;
-      const [rSal, rBrand] = await Promise.allSettled([
-        // OFF Search-a-licious — moteur plein texte actuel, source principale
-        fetch(
-          `https://search.openfoodfacts.org/search?q=${qc}&langs=fr,en&page_size=30&fields=${FIELDS}`,
-          { headers: { 'User-Agent': 'KcalosApp/1.0 (melinelukas@gmail.com)' } }
-        ).then(r => r.ok ? r.json() : Promise.reject('search-a-licious')),
-
-        // OFF v2 par marque — "lidl", "carrefour", "herta"… (tag de marque exact)
-        looksLikeBrand
-          ? fetch(
-              `https://world.openfoodfacts.org/api/v2/search?brands_tags=${qc}&countries_tags_en=France&fields=${FIELDS}&page_size=20&sort_by=unique_scans_n`,
-              { headers: { 'User-Agent': 'KcalosApp/1.0 (melinelukas@gmail.com)' } }
-            ).then(r => r.ok ? r.json() : Promise.reject('v2-brand'))
-          : Promise.reject('skip-brand'),
-      ]);
-
-      // Résultats OFF — Search-a-licious est prioritaire ; la recherche par marque
-      // vient en complément, sans doublons (exclusion par code déjà vu).
-      const offSal   = (rSal.status === 'fulfilled' && Array.isArray(rSal.value?.hits))
-        ? rSal.value.hits.map(p=>_normalizeOFFProduct(p,'off-fr')).filter(p=>p.product_name) : [];
-      const offBrand = (rBrand.status === 'fulfilled' && rBrand.value?.products)
-        ? (() => { const ex=new Set(offSal.map(p=>p.code).filter(Boolean));
-            return rBrand.value.products.filter(p=>!ex.has(p.code||'')).map(p=>_normalizeOFFProduct(p,'off-fr')).filter(p=>p.product_name); })() : [];
-
-      // On retente une fois après une courte pause si Search-a-licious a explicitement
-      // échoué (503 / erreur réseau) OU s'il a répondu 200 OK mais sans le moindre hit —
-      // ce dernier cas est une dégradation silencieuse d'OFF sous forte charge (l'ES répond
-      // "vide" au lieu d'une erreur claire), ce qui produisait à tort le message "produit
-      // non trouvé" au lieu du message de panne, y compris pour des recherches courantes.
-      const _salLooksEmpty = rSal.status === 'fulfilled' && offSal.length === 0;
-      if (rSal.status === 'rejected' || _salLooksEmpty) {
-        await new Promise(res => setTimeout(res, 900));
-        try {
-          const retry = await fetch(
-            `https://search.openfoodfacts.org/search?q=${qc}&langs=fr,en&page_size=30&fields=${FIELDS}`,
-            { headers: { 'User-Agent': 'KcalosApp/1.0 (melinelukas@gmail.com)' } }
-          );
-          if (retry.ok) {
-            const data = await retry.json();
-            if (Array.isArray(data?.hits) && data.hits.length) {
-              const ex = new Set(offBrand.map(p=>p.code).filter(Boolean));
-              offSal.push(...data.hits.map(p=>_normalizeOFFProduct(p,'off-fr')).filter(p=>p.product_name && !ex.has(p.code||'')));
-            }
-            // 200 OK confirmé au retry avec toujours 0 hit → probablement un vrai "pas de
-            // résultat", pas une panne ; on ne force _offAllFailed que si ça a vraiment échoué.
-          } else {
-            _offAllFailed = (rBrand.status !== 'fulfilled') && offSal.length === 0;
-          }
-        } catch(_) {
-          _offAllFailed = (rBrand.status !== 'fulfilled') && offSal.length === 0;
-        }
-      }
-
-      // Mode "toutes les bases" = marques uniquement (Open Food Facts). Le mode CIQUAL
-      // uniquement a sa propre branche séparée plus haut — pas de mélange entre les deux.
-      allProducts = [...offSal, ...offBrand];
-
-      // ── Secours local — OFF (live) n'a rien renvoyé : on retente sur le
-      // snapshot embarqué (export ponctuel Lidl/Carrefour/McDo/KFC/BK) plutôt
-      // que d'afficher directement un échec. Résultats marqués "hors-ligne".
-      let _usedOffMini = false;
-      if (!allProducts.length) {
-        try {
-          await _ensureOffMini();
-          const miniResults = (typeof _searchOffMini === 'function') ? _searchOffMini(queryFinal) : [];
-          if (miniResults.length) { allProducts = miniResults; _usedOffMini = true; }
-        } catch(_) {}
-      }
-
-      // Mettre en cache (mémoire + Firestore partagé) pour éviter les appels redondants,
-      // pour cette session comme pour tous les futurs utilisateurs de l'app.
-      // Jamais pour un résultat de secours local : on veut retenter le réseau
-      // OFF live à la prochaine recherche, pas figer une donnée potentiellement datée.
-      if (!_usedOffMini && allProducts.length) {
-        _cacheSet(cacheKey, allProducts);
-        _fsCacheSet(cacheKey, queryFinal, allProducts); // asynchrone, non bloquant
-      }
-      } // fin else cache
+        await _ensureOffMini();
+        allProducts = (typeof _searchOffMini === 'function') ? _searchOffMini(queryFinal) : [];
       } // fin mode "toutes les bases"
     }
 
@@ -18735,7 +18638,12 @@ function woRenderVolumeTable(){
   let prevWeekSets = 0;
   allSessionsFlat.filter(s=>s.date>=pwStart && s.date<=pwEnd).forEach(sess=>{
     (sess.exercises||[]).forEach(exo=>{
-      if(paused.has(exo.name)) return;
+      // Pas de filtre "paused" ici : ce total est un compte FACTUEL de ce qui a
+      // été fait la semaine dernière. "paused" est un état courant sans date —
+      // mettre un exercice en pause aujourd'hui ne doit pas effacer rétroactivement
+      // des séries réellement réalisées la semaine passée (contrairement au calcul
+      // "Moyenne · 4 sem." ci-dessous, qui lui projette le volume courant et doit
+      // donc exclure ce qui n'est plus fait).
       prevWeekSets += (exo.sets||[]).filter(s=>!s.skipped).length;
     });
   });
@@ -20024,47 +19932,24 @@ function mrSearchIngredient(val){
     if(res) res.classList.add('show');
     try {
       const qRaw = val.trim().replace(/\s+/g,' ');
-      const qc   = encodeURIComponent(qRaw);
-      const MR_FIELDS = 'product_name,product_name_fr,brands,nutriments,serving_quantity,countries_tags,code';
 
-      // /cgi/search.pl (fr + monde) est hors service (503) depuis avril 2026 côté OFF —
-      // retiré d'ici, il ne servait qu'à gaspiller 2 requêtes sur le quota 10/min par IP.
-      let rSal = await Promise.allSettled([
-        fetch(
-          `https://search.openfoodfacts.org/search?q=${qc}&langs=fr,en&page_size=25&fields=${MR_FIELDS}`,
-          { headers: { 'User-Agent': 'KcalosApp/1.0 (melinelukas@gmail.com)' } }
-        ).then(r=>r.ok ? r.json() : Promise.reject()),
-      ]).then(r=>r[0]);
-
-      // Un essai supplémentaire si la requête a échoué (503 / réseau) OU si elle a répondu
-      // 200 OK sans le moindre hit (dégradation silencieuse d'OFF sous forte charge, midi/soir) —
-      // sinon on affichait à tort "Aucun résultat" pour une recherche courante.
-      const _salEmpty = rSal.status === 'fulfilled' && !(Array.isArray(rSal.value?.hits) && rSal.value.hits.length);
-      if (rSal.status === 'rejected' || _salEmpty) {
-        await new Promise(r=>setTimeout(r,900));
-        rSal = await fetch(
-          `https://search.openfoodfacts.org/search?q=${qc}&langs=fr,en&page_size=25&fields=${MR_FIELDS}`,
-          { headers: { 'User-Agent': 'KcalosApp/1.0 (melinelukas@gmail.com)' } }
-        ).then(r=>r.ok ? r.json() : Promise.reject())
-         .then(v=>({status:'fulfilled', value:v}), ()=>({status:'rejected'}));
-      }
-
+      // Recherche locale (CIQUAL + off-mini) — plus d'appel réseau OFF ici non plus,
+      // même raison que searchFood : trop instable en pratique.
+      await _ensureOffMini();
       if(sid !== _mrIngSearchId) return;
       if(spin) spin.style.display='none';
 
-      let products = [];
-      if(rSal.status==='fulfilled' && Array.isArray(rSal.value?.hits))
-        products = rSal.value.hits.map(p=>_normalizeOFFProduct(p,'off-fr'));
+      let products = [
+        ..._searchCiqual(qRaw),
+        ...(typeof _searchOffMini === 'function' ? _searchOffMini(qRaw) : []),
+      ];
       products = products.filter(p=>p.product_name);
 
       // Déduplication + tri France en tête
       products = _dedupeProducts(products);
       products.sort((a,b)=>(b._frScore||0)-(a._frScore||0));
       if(!products.length){
-        const msg = (rSal.status === 'rejected')
-          ? 'Open Food Facts indisponible — réessaie dans un instant'
-          : 'Aucun résultat';
-        res.innerHTML = `<div class="mr-ing-res-item" style="color:var(--muted2);cursor:default">${msg}</div>`;
+        res.innerHTML = `<div class="mr-ing-res-item" style="color:var(--muted2);cursor:default">Aucun résultat</div>`;
         return;
       }
       res.innerHTML = products.slice(0,12).map(p=>{
