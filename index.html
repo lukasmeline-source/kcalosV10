@@ -6360,7 +6360,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-08-14.10';
+const APP_BUILD_VERSION = '2026-08-14.13';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -17678,6 +17678,7 @@ function woShowScreen(name){
   const bubble = document.getElementById('account-bubble');
   if(bubble) bubble.style.display = name==='session' ? 'none' : '';
   hidePWABanner?.();
+  if(name!=='session') woClearChronoInterval();
 }
 
 /* ════════════════════════════════════════
@@ -18341,6 +18342,32 @@ function woMatchedProgress(curSets, prevSets){
   }
   const pct = validPairs > 0 ? Math.round(pctSum) : null;
   return {curSum, prevSum, pct};
+}
+
+/* ── Progression série par série "en profondeur" : pour chaque série de la séance
+   courante, on ne se limite pas à la dernière occurrence de l'exercice — si elle
+   n'avait pas assez de séries (ex: 1 série au lieu de 2), on remonte dans l'historique
+   jusqu'à trouver la dernière fois où CETTE série précise (même index) a été exécutée.
+   occs : occurrences passées {date, sets}, triées ancien → récent. ── */
+function woMatchedProgressDeep(curSets, occs){
+  const cs = (curSets||[]).filter(s=>!s.skipped);
+  if(!cs.length || !occs || !occs.length) return {pct:null};
+  let pctSum=0, validPairs=0;
+  for(let i=0;i<cs.length;i++){
+    const cw=parseFloat(cs[i].weight)||0, cr=parseFloat(cs[i].reps)||0;
+    const curEpley = cr ? (cw||1)*(1+cr/30) : 0;
+    if(!curEpley) continue;
+    for(let oi=occs.length-1; oi>=0; oi--){
+      const ps = (occs[oi].sets||[]).filter(s=>!s.skipped);
+      if(ps.length > i){
+        const pw=parseFloat(ps[i].weight)||0, pr=parseFloat(ps[i].reps)||0;
+        const prevEpley = pr ? (pw||1)*(1+pr/30) : 0;
+        if(prevEpley>0){ pctSum += (curEpley-prevEpley)/prevEpley*100; validPairs++; }
+        break; // une seule comparaison par série : la plus récente occurrence qui l'avait
+      }
+    }
+  }
+  return { pct: validPairs>0 ? Math.round(pctSum) : null };
 }
 
 /* ── Agréger sessions par période (week|month) ── */
@@ -19280,7 +19307,9 @@ function woRenderSession(){
   st('wo-sess-exo-count', activeExos);
   st('wo-sess-set-count', totalSets);
   st('wo-sess-volume', Math.round(totalVol).toLocaleString('fr-FR'));
-  st('wo-sess-duration', draft.duration ? draft.duration+' min' : '—');
+  if(draft.duration){ woClearChronoInterval(); st('wo-sess-duration', draft.duration+' min'); }
+  else if(draft.startedAt){ woStartChronoDisplay(); }
+  else { woClearChronoInterval(); st('wo-sess-duration', '—'); }
   st('wo-live-kcal', liveKcal);
 
   // ── Exercise list ──
@@ -19297,13 +19326,18 @@ function woRenderSession(){
 
   // Chaque exo est comparé à SA dernière occurrence, tous types de séance confondus
   // (ex : pompes faites en Push ET en Upper → l'une sert de référence à l'autre).
+  // Comparaison "en profondeur" série par série : cf woMatchedProgressDeep.
   let globalPct = null;
   if(draft.exercises.length){
     const indivPcts=[];
     draft.exercises.forEach(exo=>{
-      const prevExo = woLastExoOccurrence(allSessionsAll, draft.date, exo);
-      if(!prevExo) return;
-      const mp = woMatchedProgress(exo.sets||[], prevExo.sets||[]);
+      const occs = allSessionsAll.map(sess=>{
+        if(sess.date >= draft.date) return null;
+        const found = sess.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
+        return found && found.sets?.length ? {date:sess.date, sets:found.sets} : null;
+      }).filter(Boolean).sort((a,b)=>a.date.localeCompare(b.date));
+      if(!occs.length) return;
+      const mp = woMatchedProgressDeep(exo.sets||[], occs);
       if(mp.pct !== null) indivPcts.push(mp.pct);
     });
     if(indivPcts.length){
@@ -19351,11 +19385,13 @@ function woRenderSession(){
       const pCol = h.phase ? WO_PHASE_COLORS[h.phase] : null;
       const colBg   = pCol ? pCol+'28' : 'var(--s2)';
       const colDate = pCol ? pCol       : 'var(--muted2)';
-      // % évolution : cette séance vs la précédente (hi-1 = plus ancienne, à gauche) — appariement série par série
-      const hOlder = histDisplay[hi-1];
+      // % évolution : cette séance vs ce qui a été fait avant elle — appariement
+      // série par série "en profondeur" (cf woMatchedProgressDeep), pas juste vs
+      // la colonne juste à gauche qui peut avoir moins de séries.
       let evolStr = '', evolColor = 'var(--muted2)';
-      if(hOlder){
-        const mp = woMatchedProgress(h.sets, hOlder.sets);
+      const occsBeforeH = history.filter(x=>x.date < h.date);
+      if(occsBeforeH.length){
+        const mp = woMatchedProgressDeep(h.sets, occsBeforeH);
         if(mp.pct !== null){
           evolStr  = (mp.pct>=0?'+':'')+mp.pct+'%';
           evolColor = mp.pct>0?'var(--lime)':mp.pct<0?'var(--red)':'var(--muted2)';
@@ -19378,10 +19414,11 @@ function woRenderSession(){
     const isLivePRWeight = hasCurrent && hasHistory && liveMaxW > allTimeMaxW && liveMaxW > 0;
     const isLivePR1RM    = hasCurrent && hasHistory && live1RM > allTimeMax1RM && live1RM > 0;
     const isLivePR  = isLivePRWeight || isLivePR1RM;
-    // % AUJ vs séance la plus récente (histAll[0]) — appariement série par série
+    // % AUJ vs historique — appariement série par série "en profondeur" : si la
+    // dernière séance n'avait pas assez de séries, on remonte plus loin par série.
     let todayEvolStr = '', todayEvolColor = 'var(--muted2)';
     if(hasCurrent && hasHistory && history.length > 0){
-      const mp = woMatchedProgress(currentSets, history.slice(-1)[0].sets);
+      const mp = woMatchedProgressDeep(currentSets, history);
       if(mp.pct !== null){
         todayEvolStr  = (mp.pct>=0?'+':'')+mp.pct+'%';
         todayEvolColor = mp.pct>0?'var(--lime)':mp.pct<0?'var(--red)':'var(--muted2)';
@@ -19477,11 +19514,32 @@ function woRenderSession(){
 }
 
 /* ── Draft CRUD ── */
+/* ── Chrono auto en direct (affiché dans le pill "Durée" tant qu'aucune durée n'est validée) ── */
+function woClearChronoInterval(){
+  if(window._woChronoInterval){ clearInterval(window._woChronoInterval); window._woChronoInterval=null; }
+}
+function woStartChronoDisplay(){
+  woClearChronoInterval();
+  const tick = ()=>{
+    const d = woDraftGet();
+    const el = document.getElementById('wo-sess-duration');
+    if(!d || !d.startedAt || d.duration || !el){ woClearChronoInterval(); return; }
+    const elapsedSec = Math.floor((Date.now()-d.startedAt)/1000);
+    const h = Math.floor(elapsedSec/3600), m = Math.floor((elapsedSec%3600)/60), s = elapsedSec%60;
+    el.textContent = h>0 ? `⏱ ${h}h${m.toString().padStart(2,'0')}` : `⏱ ${m}:${s.toString().padStart(2,'0')}`;
+  };
+  tick();
+  window._woChronoInterval = setInterval(tick, 1000);
+}
+
 function woDraftAddSet(ei){
   const d=woDraftGet(); if(!d||!d.exercises[ei]) return;
   const prev=d.exercises[ei].sets?.slice(-1)[0];
   d.exercises[ei].sets = d.exercises[ei].sets||[];
   d.exercises[ei].sets.push({reps:prev?.reps||10, weight:prev?.weight||0});
+  // Chrono auto : on horodate la toute première série de la séance (silencieux,
+  // sert de base au calcul automatique de durée proposé à la fin — cf woFinishSession).
+  if(!d.startedAt) d.startedAt = Date.now();
   woDraftSet(d);
   woRenderSession();
 }
@@ -19813,10 +19871,22 @@ function woFinishSession(){
 function openWoDurPanel(pendingFinish){
   const panel=document.getElementById('wo-dur-panel');
   if(!panel) return;
-  // Titre dynamique selon contexte
+  const draft=woDraftGet();
+  // Calcul auto : temps écoulé entre la 1ère série saisie (draft.startedAt) et maintenant
+  let autoMin = null;
+  if(pendingFinish && draft?.startedAt && !draft.duration){
+    autoMin = Math.round((Date.now()-draft.startedAt)/60000);
+    if(autoMin<1) autoMin=1;
+    if(autoMin>600) autoMin=600; // hors plage réaliste → laisser l'utilisateur corriger
+  }
+  // Titre + message dynamiques selon contexte
   const titleEl=document.getElementById('wo-dur-panel-title');
   if(titleEl){
-    if(pendingFinish){
+    if(autoMin!=null){
+      const h=Math.floor(autoMin/60), m=autoMin%60;
+      const dureeTxt = h>0 ? `${h}h${m.toString().padStart(2,'0')}` : `${m} min`;
+      titleEl.innerHTML=`⏱ Durée calculée automatiquement <span style="font-size:0.72rem;color:var(--muted2);font-weight:400">(${dureeTxt} depuis ta 1ère série — modifie si besoin)</span>`;
+    } else if(pendingFinish){
       titleEl.innerHTML='⏱ Durée de la séance <span style="font-size:0.72rem;color:var(--muted2);font-weight:400">(requis pour terminer)</span>';
     } else {
       titleEl.textContent='Durée de la séance';
@@ -19826,9 +19896,11 @@ function openWoDurPanel(pendingFinish){
   const okBtn=document.getElementById('wo-dur-ok-btn');
   if(okBtn) okBtn.onclick = pendingFinish ? woSaveDurAndFinish : woSaveDur;
   panel.style.display='block';
-  const draft=woDraftGet();
   const inp=document.getElementById('wo-dur-input');
-  if(inp && draft?.duration) inp.value=draft.duration;
+  if(inp){
+    if(draft?.duration) inp.value=draft.duration;
+    else if(autoMin!=null) inp.value=autoMin;
+  }
   setTimeout(()=>inp?.focus(),80);
 }
 function closeWoDurPanel(){
