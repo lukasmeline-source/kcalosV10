@@ -6360,7 +6360,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-08-14.13';
+const APP_BUILD_VERSION = '2026-08-26.1';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -13752,22 +13752,62 @@ function _showNoResultWithSuggestions(query, el) {
   el.innerHTML = html;
 }
 
-/* ── Vignette produit : photo OFF si dispo, sinon placeholder par source ── */
-function _prodThumbHtml(image, name, src) {
+/* ── Vignette produit : photo OFF si dispo, sinon placeholder par source ──
+   `pid` (optionnel) pose un id sur la vignette pour permettre son remplacement
+   à chaud plus tard (cf. _hydrateOffMiniThumbs, résultats off-mini sans photo). */
+function _prodThumbHtml(image, name, src, pid) {
   const alt = (name || 'Aliment').replace(/"/g, '&quot;');
   if (image) {
     const safeImg = String(image).replace(/"/g, '&quot;');
     const safeSrc = String(src || '').replace(/'/g, '');
-    return `<img class="sri-thumb" src="${safeImg}" alt="${alt}" loading="lazy" onerror="_prodThumbImgError(this,'${safeSrc}')">`;
+    const idAttr = pid ? ` id="prod-thumb-${pid}"` : '';
+    return `<img class="sri-thumb"${idAttr} src="${safeImg}" alt="${alt}" loading="lazy" onerror="_prodThumbImgError(this,'${safeSrc}')">`;
   }
-  return _prodThumbPlaceholder(src);
+  return _prodThumbPlaceholder(src, pid);
 }
 function _prodThumbImgError(imgEl, src) {
-  imgEl.outerHTML = _prodThumbPlaceholder(src);
+  const pid = (imgEl.id || '').replace('prod-thumb-', '') || null;
+  imgEl.outerHTML = _prodThumbPlaceholder(src, pid);
 }
-function _prodThumbPlaceholder(src) {
+function _prodThumbPlaceholder(src, pid) {
   const emoji = src === 'ciqual' ? '🌿' : src === 'custom' ? '✏️' : src === 'ai-photo' ? '📝' : src === 'off-mini' ? '📦' : '🍴';
-  return `<div class="sri-thumb-placeholder" aria-hidden="true">${emoji}</div>`;
+  const idAttr = pid ? ` id="prod-thumb-${pid}"` : '';
+  return `<div class="sri-thumb-placeholder"${idAttr} aria-hidden="true">${emoji}</div>`;
+}
+
+/* Cache mémoire (durée de la session) des photos déjà récupérées par code-barre,
+   pour éviter de refaire l'appel réseau si le même produit ressort plus tard. */
+const _offMiniImgCache = new Map();
+
+/* Complète après coup les vignettes des résultats "Hors-ligne" (off-mini) qui
+   n'ont pas de photo stockée localement, via le même endpoint OFF fiable que
+   la recherche code-barres. Best-effort et non bloquant : la recherche texte
+   reste 100% locale/instantanée, seule la photo arrive en différé si dispo ;
+   échec silencieux sinon (le placeholder 📦 reste affiché). */
+function _hydrateOffMiniThumbs(list) {
+  const MAX = 15; // limite le nombre d'appels réseau simultanés déclenchés par une recherche
+  list.slice(0, MAX).forEach(async ({ pid, code }) => {
+    if (!code) return;
+    try {
+      let img = _offMiniImgCache.get(code);
+      if (img === undefined) {
+        const r = await fetch(
+          `https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=image_front_small_url,image_small_url`,
+          { headers: { 'User-Agent': 'KcalosApp/1.0 (melinelukas@gmail.com)' } }
+        );
+        const data = await r.json();
+        img = (data.status === 1 && data.product)
+          ? (data.product.image_front_small_url || data.product.image_small_url || '')
+          : '';
+        _offMiniImgCache.set(code, img);
+      }
+      if (!img) return;
+      const el = document.getElementById('prod-thumb-' + pid);
+      if (el) el.outerHTML = `<img class="sri-thumb" id="prod-thumb-${pid}" src="${img}" alt="" loading="lazy" onerror="_prodThumbImgError(this,'off-mini')">`;
+      const prod = _getProd(pid);
+      if (prod) prod.image = img; // pour que la vignette du panneau quantité l'utilise aussi si sélectionné après coup
+    } catch (e) { /* échec silencieux : réseau indispo, on garde le placeholder */ }
+  });
 }
 
 /* ── Rendu des résultats de recherche ── */
@@ -13795,6 +13835,7 @@ function renderSearchResults(products) {
     return { txt:'OFF', col:'#7a8499', title:'Open Food Facts · mondial' };
   };
 
+  const offMiniToHydrate = []; // résultats off-mini sans photo : {pid, code} à compléter après coup
   const items = deduped.slice(0, 35).map((p, idx) => {
     const nm   = p.product_name || '';
     const br   = p.brands ? p.brands.split(',')[0].trim() : '';
@@ -13839,7 +13880,10 @@ function renderSearchResults(products) {
 
     const srcBadge = `<span style="font-size:0.55rem;padding:1px 5px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);color:${src.col};background:rgba(255,255,255,0.05);flex-shrink:0;white-space:nowrap" title="${src.title}">${src.txt}</span>`;
     const isFavFlg = getFavs().some(f => f.name === nm);
-    const thumbHtml = _prodThumbHtml(prodObj.image, nm, p._src);
+    if (p._src === 'off-mini' && !prodObj.image && p.code) {
+      offMiniToHydrate.push({ pid, code: p.code });
+    }
+    const thumbHtml = _prodThumbHtml(prodObj.image, nm, p._src, pid);
     const delBtn = p._src === 'custom'
       ? `<button onclick="event.stopPropagation();deleteCustomFood('${nm.replace(/'/g,"\\'")}')" aria-label="Supprimer cet aliment personnalisé" title="Supprimer cet aliment personnalisé"
           style="flex-shrink:0;background:none;border:none;cursor:pointer;padding:4px 6px;color:var(--muted2);font-size:0.9rem;line-height:1;-webkit-tap-highlight-color:transparent">🗑</button>`
@@ -13865,6 +13909,7 @@ function renderSearchResults(products) {
   }).join('');
 
   el.innerHTML = items;
+  if (offMiniToHydrate.length) _hydrateOffMiniThumbs(offMiniToHydrate);
 
   if (deduped.length >= 25) {
     el.innerHTML += `<div style="text-align:center;padding:0.75rem;font-size:0.7rem;color:var(--muted2)">Affichage des 30 premiers résultats</div>`;
