@@ -4761,6 +4761,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <div class="clegend" style="color:var(--orange)" data-idx="0" data-grp="corps" onclick="toggleDS(0,this)"><div class="cl-dot" style="background:var(--orange)"></div>Poids</div>
       <div class="clegend" style="color:#a080e8" data-idx="1" data-grp="corps" onclick="toggleDS(1,this)"><div class="cl-dot" style="background:#a080e8"></div>Masse sèche</div>
       <div class="clegend" style="color:#e84040" data-idx="2" data-grp="corps" onclick="toggleDS(2,this)"><div class="cl-dot" style="background:#e84040"></div>Masse grasse</div>
+      <div class="clegend" style="color:#4ac8f0" data-idx="9" data-grp="corps" onclick="toggleDS(9,this)"><div class="cl-dot" style="background:#4ac8f0"></div>BF %</div>
     </div>
 
     <!-- Carte secondaire : projection -->
@@ -6360,7 +6361,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-08-26.1';
+const APP_BUILD_VERSION = '2026-08-26.3';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -7417,10 +7418,16 @@ function loadChart(){
   const mmApport=movingAvg(apport);
   const stepsData=filt.map(d=>d.steps||null);
 
-  const bfVal = parseFloat(document.getElementById('c-bf')?.value) ||
+  // Masse sèche / masse grasse : BF réellement enregistré à chaque date (d.bf),
+  // reporté tant qu'aucune nouvelle valeur n'est saisie. Évite de réécrire tout
+  // l'historique du graphique quand on met à jour le BF (sinon un point sans
+  // bf propre retombait sur le BF courant du profil, y compris pour le passé).
+  const profileBfFallback = parseFloat(document.getElementById('c-bf')?.value) ||
                 parseFloat(JSON.parse(localStorage.getItem('kcalos_profile')||'{}').bf||'0') || 20;
-  const leanMass=poids.map(p=>p?+(p*(1-bfVal/100)).toFixed(1):null);
-  const fatMass=poids.map(p=>p?+(p*(bfVal/100)).toFixed(1):null);
+  let _lastKnownBf7420 = null;
+  const bfPerPoint = filt.map(d=>{ if(d.bf) _lastKnownBf7420=parseFloat(d.bf); return _lastKnownBf7420!==null?_lastKnownBf7420:profileBfFallback; });
+  const leanMass=poids.map((p,i)=>p?+(p*(1-bfPerPoint[i]/100)).toFixed(1):null);
+  const fatMass=poids.map((p,i)=>p?+(p*(bfPerPoint[i]/100)).toFixed(1):null);
   const xs=poids.map((_,i)=>i);
   const {slope,int}=linReg(xs,poids);
   const trend=xs.map(x=>poids.some(v=>v!==null)?+(slope*x+int).toFixed(2):null);
@@ -15421,9 +15428,19 @@ function loadChartCorps(){
   const filt=fitness.filter(d=>new Date(d.date)>=cutoff).sort((a,b)=>a.date.localeCompare(b.date));
   const labels=filt.map(d=>fmtDL(d.date));
   const poids=filt.map(d=>d.poids||null);
-  const bfVal = parseFloat(JSON.parse(localStorage.getItem('kcalos_profile')||'{}').bf||'0') || 20;
-  const leanMass=poids.map(p=>p?+(p*(1-bfVal/100)).toFixed(1):null);
-  const fatMass=poids.map(p=>p?+(p*(bfVal/100)).toFixed(1):null);
+  // Masse sèche / masse grasse : BF réellement enregistré à chaque date (d.bf),
+  // reporté tant qu'aucune nouvelle valeur n'est saisie. Évite de réécrire tout
+  // l'historique du graphique quand on met à jour le BF (sinon un point sans
+  // bf propre retombait sur le BF courant du profil, y compris pour le passé).
+  const profileBfFallback = parseFloat(profile.bf||'0') || 20;
+  let _lastKnownBf15424 = null;
+  const bfPerPoint = filt.map(d=>{ if(d.bf) _lastKnownBf15424=parseFloat(d.bf); return _lastKnownBf15424!==null?_lastKnownBf15424:profileBfFallback; });
+  const leanMass=poids.map((p,i)=>p?+(p*(1-bfPerPoint[i]/100)).toFixed(1):null);
+  const fatMass=poids.map((p,i)=>p?+(p*(bfPerPoint[i]/100)).toFixed(1):null);
+  // Courbe BF% : uniquement les vraies valeurs saisies (pas la version reportée
+  // utilisée pour la masse grasse en kg), pour ne pas donner l'illusion d'une
+  // mesure là où il n'y en a pas. spanGaps relie les points malgré les trous.
+  const bfPct = filt.map(d=>d.bf?parseFloat(d.bf):null);
   const xs=poids.map((_,i)=>i);
   const ma7=movingAvg(poids,7);
 
@@ -15568,6 +15585,7 @@ function loadChartCorps(){
       {label:'_mm',data:[],yAxisID:'y',borderColor:'transparent',hidden:true},
       {label:'_tr',data:[],yAxisID:'y2',borderColor:'transparent',hidden:true},
       {label:'_pas',data:[],yAxisID:'y',borderColor:'transparent',hidden:true},
+      ds(9,'BF (%)',bfPct,bfPct,'#4ac8f0','y3',true),
     ]},
     options:_chartOpts(tickC,gridC,'kg','y2')
   });
@@ -15920,15 +15938,16 @@ function _chartOpts(tickC,gridC,unit,mainY){
         titleFont:{family:'Syne',size:11},bodyFont:{family:'Syne',size:11},
         callbacks:{label:c=>{
           if(c.raw===null||c.raw===undefined||c.dataset.label?.startsWith('_')) return null;
-          const isKg=c.dataset.label.includes('kg')||c.dataset.label.includes('Poids')||c.dataset.label.includes('Masse')||c.dataset.label.includes('Tendance');
-          const u=isKg?' kg':' kcal';
+          const isPct=c.dataset.label.includes('%');
+          const isKg=!isPct&&(c.dataset.label.includes('kg')||c.dataset.label.includes('Poids')||c.dataset.label.includes('Masse')||c.dataset.label.includes('Tendance'));
+          const u=isPct?' %':isKg?' kg':' kcal';
           // Courbes corps (Poids/Masse sèche/Masse grasse) : le point tracé est un écart
           // à la moyenne (voir loadChartCorps), mais on affiche la vraie valeur absolue
           // stockée dans dataset._raw pour rester lisible dans le tooltip.
           const raw = c.dataset._raw ? c.dataset._raw[c.dataIndex] : c.raw;
           if(raw===null||raw===undefined) return null;
           const sign=(c.dataset.label.includes('Balance')&&raw>0)?'+':'';
-          const val=isKg?raw.toLocaleString('fr-FR',{minimumFractionDigits:1,maximumFractionDigits:1}):Math.round(raw).toLocaleString('fr-FR');
+          const val=(isKg||isPct)?raw.toLocaleString('fr-FR',{minimumFractionDigits:1,maximumFractionDigits:1}):Math.round(raw).toLocaleString('fr-FR');
           return `  ${c.dataset.label} : ${sign}${val}${u}`;
         }}
       }
@@ -15938,6 +15957,7 @@ function _chartOpts(tickC,gridC,unit,mainY){
       x:{display:false},
       y:{display:false},
       y2:{display:false},
+      y3:{display:false},
     }
   };
 }
