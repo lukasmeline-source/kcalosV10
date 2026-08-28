@@ -921,7 +921,9 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 @keyframes widgetFadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 /* Cascade : chaque widget apparaît avec un délai plus marqué après le précédent,
    assez lent pour que l'effet soit visible sans devenir lourd. */
-.widget-block:nth-child(1){animation-delay:0s}
+/* Le 1er widget doit être visible immédiatement (pas de fade ni délai) pour
+   éviter toute impression de latence à l'arrivée sur le dashboard. */
+.widget-block:nth-child(1){animation:none;opacity:1}
 .widget-block:nth-child(2){animation-delay:0.1s}
 .widget-block:nth-child(3){animation-delay:0.2s}
 .widget-block:nth-child(4){animation-delay:0.3s}
