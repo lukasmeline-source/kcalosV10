@@ -1706,6 +1706,7 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 .meal-circle-wrap{
   display:flex;flex-direction:column;align-items:center;gap:6px;
   cursor:pointer;-webkit-tap-highlight-color:transparent;
+  -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;
   position:relative;width:100%;
 }
 .meal-circle{
@@ -1773,6 +1774,9 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 }
 .ap-back-btn:active{background:var(--s3)}
 .ap-sub-title{font-size:1rem;font-weight:600;color:var(--text);flex:1;text-align:center}
+.ap-sub-title.mrud-title-clickable{cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:0.3rem;width:100%}
+.ap-sub-title.mrud-title-clickable::after{content:'';width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin-top:-3px}
+.ap-sub-title.mrud-title-clickable:active{opacity:0.6}
 .ap-sub-body{padding:0.85rem 1rem;padding-bottom:calc(80px + env(safe-area-inset-bottom,0))}
 
 /* AI Photo panel — boîtes de capture */
@@ -1842,6 +1846,33 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
   padding:2.5rem 1rem;text-align:center;
   font-size:0.8rem;color:var(--muted2);font-style:italic;
 }
+
+/* ── Suggestions repas (aliments fréquents / repas précédent) ──
+   Purement indicatif : n'ajoute rien tant que l'utilisateur ne tape pas dessus. */
+.meal-sugg-wrap{margin-bottom:1rem}
+.meal-sugg-label{
+  display:flex;align-items:center;gap:5px;margin:0 0 0.5rem 2px;
+  font-size:0.64rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted2);
+}
+.meal-sugg-chips{
+  display:flex;gap:7px;overflow-x:auto;padding-bottom:2px;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;
+}
+.meal-sugg-chips::-webkit-scrollbar{display:none}
+.meal-sugg-chip{
+  flex-shrink:0;min-width:96px;max-width:150px;
+  padding:0.55rem 0.8rem;border-radius:14px;
+  background:var(--s1);border:1px solid var(--border);
+  cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all var(--trans);
+}
+.meal-sugg-chip:active{background:var(--teal-bg);border-color:var(--teal-d);transform:scale(0.96)}
+.meal-sugg-chip-prev{background:var(--teal-bg);border-color:var(--teal-d)}
+.meal-sugg-chip-prev .meal-sugg-chip-name{color:var(--teal)}
+.meal-sugg-chip-name{
+  font-size:0.74rem;font-weight:600;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.meal-sugg-chip-meta{font-size:0.62rem;color:var(--muted2);margin-top:2px}
 
 /* Add food button */
 .btn-add-food{
@@ -4419,9 +4450,10 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <div class="mr-use-detail-panel" id="mr-use-detail-panel">
   <div class="ap-sub-header">
     <button class="ap-back-btn" onclick="mrCloseUseDetail()">‹</button>
-    <div class="ap-sub-title" id="mrud-title">Repas</div>
+    <div class="ap-sub-title" id="mrud-title" onclick="mrudTitleTap()">Repas</div>
     <div style="width:38px"></div>
   </div>
+  <input type="date" id="mrud-date-picker" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px" onchange="mrudSetPrevDate(this.value)">
   <div class="ap-sub-body">
     <div class="meal-summary-strip">
       <div class="mss-item"><div class="mss-val" id="mrud-kcal">0</div><div class="mss-lbl">kcal</div></div>
@@ -4454,6 +4486,13 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <div class="mss-item"><div class="mss-val" id="mss-prot">0g</div><div class="mss-lbl">Protéines</div></div>
       <div class="mss-item"><div class="mss-val" id="mss-gluc">0g</div><div class="mss-lbl">Glucides</div></div>
       <div class="mss-item"><div class="mss-val" id="mss-lip">0g</div><div class="mss-lbl">Lipides</div></div>
+    </div>
+    <div class="meal-sugg-wrap" id="meal-sugg-wrap" style="display:none">
+      <div class="meal-sugg-label" id="meal-sugg-label">
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1v3M8 12v3M1 8h3M12 8h3M3.5 3.5l2 2M10.5 10.5l2 2M12.5 3.5l-2 2M5.5 10.5l-2 2"/></svg>
+        Suggestions
+      </div>
+      <div class="meal-sugg-chips" id="meal-sugg-chips"></div>
     </div>
     <div id="meal-food-list"><div class="mfi-empty">Aucun aliment ajouté</div></div>
   </div>
@@ -6389,7 +6428,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-08-28.12';
+const APP_BUILD_VERSION = '2026-09-01.5';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -8886,6 +8925,7 @@ function openMealDetail(mealKey) {
   if (title) title.innerHTML = MEAL_LABELS[mealKey] || mealKey;
   renderMealFoodList();
   updateMealSummaryStrip();
+  renderMealSuggestions();
 
   panel.classList.add('open');
   kcLockScroll();
@@ -8935,6 +8975,7 @@ function deleteFoodItem(idx) {
   updateMealSummaryStrip();
   renderMealCards();
   renderApDayBanner();
+  renderMealSuggestions();
   toast('Aliment supprimé', 'var(--muted)');
 }
 
@@ -8948,6 +8989,263 @@ function updateMealSummaryStrip() {
   if (p) p.textContent = t.prot + 'g';
   if (g) g.textContent = t.gluc + 'g';
   if (l) l.textContent = t.lip + 'g';
+}
+
+/* ── Vider un repas entier d'un appui long sur sa bulle (écran journal) ──
+   Évite de supprimer les aliments un par un quand la saisie a été faite
+   à tort sur le mauvais repas/jour. */
+function clearMealItems(date, mealKey) {
+  const all = JSON.parse(localStorage.getItem('kcalos_meals') || '{}');
+  if (all[date]?.[mealKey]?.length) {
+    all[date][mealKey] = [];
+    localStorage.setItem('kcalos_meals', JSON.stringify(all));
+    return true;
+  }
+  return false;
+}
+
+function mealCircleLongPressAction(mealKey) {
+  const items = getMealItems(AP.date, mealKey);
+  if (!items.length) return;
+  const kcal = Math.round(items.reduce((s, it) => s + (it.kcal||0), 0));
+  const label = (MEAL_LABELS[mealKey] || mealKey).replace(/<[^>]+>/g,'').trim();
+  const plur = items.length > 1 ? 's' : '';
+  if (!confirm(`Vider "${label}" ?\n${items.length} aliment${plur} · ${fmt(kcal)} kcal seront supprimés.`)) return;
+  clearMealItems(AP.date, mealKey);
+  if (AP.currentMeal === mealKey) {
+    renderMealFoodList();
+    updateMealSummaryStrip();
+    renderMealSuggestions();
+  }
+  renderMealCards();
+  renderApDayBanner();
+  toast(`"${label}" vidé`, 'var(--muted)');
+}
+
+function initMealCircleLongPress() {
+  const LONG_PRESS_MS = 550;
+  const MOVE_TOLERANCE = 12;
+  document.querySelectorAll('.meal-circle-wrap[data-meal]').forEach(wrap => {
+    let timer = null, startX = 0, startY = 0, fired = false;
+    const clearTimer = () => { if (timer) { clearTimeout(timer); timer = null; } };
+    const start = (x, y) => {
+      fired = false; startX = x; startY = y; clearTimer();
+      timer = setTimeout(() => {
+        fired = true; timer = null;
+        if (navigator.vibrate) navigator.vibrate(15);
+        mealCircleLongPressAction(wrap.dataset.meal);
+      }, LONG_PRESS_MS);
+    };
+    const move = (x, y) => {
+      if (!timer) return;
+      if (Math.abs(x - startX) > MOVE_TOLERANCE || Math.abs(y - startY) > MOVE_TOLERANCE) clearTimer();
+    };
+    wrap.addEventListener('touchstart', e => { const t = e.touches[0]; start(t.clientX, t.clientY); }, { passive: true });
+    wrap.addEventListener('touchmove',  e => { const t = e.touches[0]; move(t.clientX, t.clientY); }, { passive: true });
+    wrap.addEventListener('touchend', clearTimer);
+    wrap.addEventListener('touchcancel', clearTimer);
+    wrap.addEventListener('mousedown', e => start(e.clientX, e.clientY));
+    wrap.addEventListener('mousemove', e => move(e.clientX, e.clientY));
+    wrap.addEventListener('mouseup', clearTimer);
+    wrap.addEventListener('mouseleave', clearTimer);
+    wrap.addEventListener('contextmenu', e => e.preventDefault());
+    // Empêche l'ouverture du détail du repas juste après un appui long déclenché
+    wrap.addEventListener('click', e => {
+      if (fired) { e.preventDefault(); e.stopImmediatePropagation(); fired = false; }
+    }, true);
+  });
+}
+document.addEventListener('DOMContentLoaded', initMealCircleLongPress);
+
+
+/* ── Suggestions repas ──
+   Deux types de suggestions, purement indicatives (aucun ajout automatique) :
+   1) "Repas précédent" : le dernier jour où ce créneau a été rempli, en un tap pour tout reprendre.
+   2) "Souvent ajoutés ici" : les aliments les plus fréquents sur CE créneau (hors jour courant),
+      en un tap chacun pour l'ajouter directement (avec la grammage de la dernière occurrence).
+   Un aliment est considéré "fréquent" à partir de 2 occurrences pour éviter le bruit. */
+function _suggFoodKey(name, brand) {
+  return (name||'').toLowerCase().trim() + '|' + (brand||'').toLowerCase().trim();
+}
+
+function getPreviousMealLog(mealKey) {
+  const all = JSON.parse(localStorage.getItem('kcalos_meals') || '{}');
+  const dates = Object.keys(all)
+    .filter(d => d < AP.date && all[d][mealKey] && all[d][mealKey].length)
+    .sort().reverse();
+  if (!dates.length) return null;
+  return { date: dates[0], items: all[dates[0]][mealKey] };
+}
+
+function getFrequentFoodsForMeal(mealKey, limit) {
+  limit = limit || 6;
+  const all = JSON.parse(localStorage.getItem('kcalos_meals') || '{}');
+  const stats = {};
+  Object.keys(all).forEach(date => {
+    if (date === AP.date) return; // le jour en cours ne compte pas comme "historique"
+    const items = (all[date][mealKey]) || [];
+    items.forEach(it => {
+      const key = _suggFoodKey(it.name, it.brand);
+      if (!stats[key]) stats[key] = { count: 0, lastTs: 0, sample: null };
+      stats[key].count++;
+      if ((it.ts||0) >= stats[key].lastTs) { stats[key].lastTs = it.ts||0; stats[key].sample = it; }
+    });
+  });
+  const currentKeys = getMealItems(AP.date, mealKey).map(it => _suggFoodKey(it.name, it.brand));
+  return Object.values(stats)
+    .filter(s => s.count >= 2 && s.sample && !currentKeys.includes(_suggFoodKey(s.sample.name, s.sample.brand)))
+    .sort((a, b) => b.count - a.count || b.lastTs - a.lastTs)
+    .slice(0, limit)
+    .map(s => s.sample);
+}
+
+function renderMealSuggestions() {
+  const wrap    = document.getElementById('meal-sugg-wrap');
+  const chipsEl = document.getElementById('meal-sugg-chips');
+  if (!wrap || !AP.currentMeal) return;
+
+  const prev = getPreviousMealLog(AP.currentMeal);
+  const freq = getFrequentFoodsForMeal(AP.currentMeal);
+
+  // Liste unifiée affichée sur une seule ligne : le repas précédent d'abord (même gabarit
+  // de chip que les autres), puis les aliments fréquents sur ce créneau.
+  const chips = [];
+  if (prev) chips.push({ type: 'prev', data: prev });
+  freq.forEach(it => chips.push({ type: 'freq', data: it }));
+  AP._suggChipCache = chips;
+
+  if (!chips.length) {
+    wrap.style.display = 'none';
+    chipsEl.innerHTML = '';
+    return;
+  }
+
+  chipsEl.innerHTML = chips.map((c, i) => {
+    if (c.type === 'prev') {
+      const kcal = Math.round(c.data.items.reduce((s, it) => s + (it.kcal||0), 0));
+      return `
+        <div class="meal-sugg-chip meal-sugg-chip-prev" onclick="onSuggChipTap(${i})">
+          <div class="meal-sugg-chip-name">↻ Repas précédent</div>
+          <div class="meal-sugg-chip-meta">${c.data.items.length} alim. · ${fmt(kcal)} kcal</div>
+        </div>`;
+    }
+    const it = c.data;
+    return `
+      <div class="meal-sugg-chip" onclick="onSuggChipTap(${i})">
+        <div class="meal-sugg-chip-name">${it.name}</div>
+        <div class="meal-sugg-chip-meta">${it.grams||100}g · ${fmt(it.kcal||0)} kcal</div>
+      </div>`;
+  }).join('');
+
+  wrap.style.display = '';
+}
+
+/* Dispatch du tap sur une chip de suggestion (repas précédent ou aliment fréquent) */
+function onSuggChipTap(i) {
+  const c = AP._suggChipCache && AP._suggChipCache[i];
+  if (!c) return;
+  if (c.type === 'prev') mrOpenUseDetailFromPrevMeal(c.data);
+  else addSuggestedFood(c.data);
+}
+
+/* Ajout en un tap d'un aliment suggéré (fréquent sur ce créneau) */
+function addSuggestedFood(it) {
+  if (!it) return;
+  const item = {
+    name: it.name, brand: it.brand || '', grams: it.grams || 100,
+    kcal: it.kcal||0, prot: it.prot||0, gluc: it.gluc||0, lip: it.lip||0,
+    sucres: it.sucres||0, fibres: it.fibres||0, sodium: it.sodium||0,
+    potassium: it.potassium||0, satfat: it.satfat||0,
+    image: it.image || '', _src: it._src || '', ts: Date.now(),
+  };
+  saveMealItem(AP.date, AP.currentMeal, item);
+  renderMealFoodList();
+  updateMealSummaryStrip();
+  renderApDayBanner();
+  renderMealCards();
+  renderMealSuggestions();
+  toast(`${item.name} ajouté · ${fmt(item.kcal)} kcal`, 'var(--lime)');
+}
+
+/* Reprise du repas précédemment loggé sur ce créneau : ouvre l'écran "Adapter ce repas"
+   (le même que pour un repas type sauvegardé) afin de laisser ajuster les quantités pour
+   aujourd'hui avant confirmation — rien n'est ajouté tant que l'utilisateur n'a pas validé. */
+// Un aliment du journal (contrairement à un ingrédient de "repas type") ne stocke que les
+// valeurs pour son grammage d'origine, pas les valeurs pour 100g (kcal100, prot100…) : on les
+// recalcule ici pour que l'ajustement de grammage dans l'écran "Adapter ce repas" reste juste.
+function _mrudNormalizeLoggedItems(items) {
+  return items.map(i => {
+    const grams = i.grams || 100;
+    const r100 = grams > 0 ? 100 / grams : 0;
+    return {
+      ...i,
+      kcal100:      i.kcal100      ?? Math.round((i.kcal||0)      * r100),
+      prot100:      i.prot100      ?? Math.round((i.prot||0)      * r100 * 10) / 10,
+      gluc100:      i.gluc100      ?? Math.round((i.gluc||0)      * r100 * 10) / 10,
+      lip100:       i.lip100       ?? Math.round((i.lip||0)       * r100 * 10) / 10,
+      sucres100:    i.sucres100    ?? Math.round((i.sucres||0)    * r100 * 10) / 10,
+      fibres100:    i.fibres100    ?? Math.round((i.fibres||0)    * r100 * 10) / 10,
+      sodium100:    i.sodium100    ?? Math.round((i.sodium||0)    * r100 * 10) / 10,
+      potassium100: i.potassium100 ?? Math.round((i.potassium||0) * r100 * 10) / 10,
+      satfat100:    i.satfat100    ?? Math.round((i.satfat||0)    * r100 * 10) / 10,
+    };
+  });
+}
+
+function _mrudSetTitleForDate(dateStr) {
+  const dateLabel = new Date(dateStr).toLocaleDateString('fr-FR', { day:'numeric', month:'long' });
+  const titleEl = document.getElementById('mrud-title');
+  if (titleEl) titleEl.textContent = `Repas du ${dateLabel}`;
+}
+
+function mrOpenUseDetailFromPrevMeal(prev) {
+  if (!prev || !prev.items || !prev.items.length) return;
+  MR.useDetailId = null;
+  MR.useDetailFromPrevMeal = true;
+  MR.useDetailPrevDate = prev.date;
+  MR.useDetailIngredients = _mrudNormalizeLoggedItems(prev.items);
+  _mrudSetTitleForDate(prev.date);
+  const btnEl = document.getElementById('mrud-choose-btn');
+  if (btnEl) {
+    btnEl.textContent = AP.currentMeal
+      ? `Ajouter au ${(MEAL_LABELS[AP.currentMeal] || AP.currentMeal).replace(/<[^>]+>/g,'').trim()} →`
+      : 'Choisir le repas du jour →';
+  }
+  mrRenderUseDetail();
+  document.getElementById('mrud-title')?.classList.add('mrud-title-clickable');
+  document.getElementById('mr-use-detail-panel')?.classList.add('open');
+  kcLockScroll();
+}
+
+/* Tap sur le titre "Repas du [date]" (uniquement disponible en mode "repas précédent") :
+   ouvre un sélecteur de date natif pour choisir un autre jour et reprendre le repas loggé
+   sur ce créneau à cette date-là, si un existe. */
+function mrudTitleTap() {
+  if (!MR.useDetailFromPrevMeal) return;
+  const picker = document.getElementById('mrud-date-picker');
+  if (!picker) return;
+  picker.value = MR.useDetailPrevDate || AP.date;
+  // On ne propose que des jours strictement antérieurs au jour du journal en cours.
+  const maxD = new Date(AP.date + 'T00:00:00');
+  maxD.setDate(maxD.getDate() - 1);
+  picker.max = maxD.toISOString().slice(0, 10);
+  picker.showPicker ? picker.showPicker() : picker.click();
+}
+
+/* Changement de date via le picker : recharge le repas loggé sur ce créneau à la date choisie
+   (si aucun n'existe ce jour-là, on prévient et on garde l'affichage précédent). */
+function mrudSetPrevDate(val) {
+  if (!val || !AP.currentMeal) return;
+  const items = getMealItems(val, AP.currentMeal);
+  if (!items.length) {
+    const dateLabel = new Date(val).toLocaleDateString('fr-FR', { day:'numeric', month:'long' });
+    toast(`Aucun repas loggé le ${dateLabel} sur ce créneau`, 'var(--red)');
+    return;
+  }
+  MR.useDetailPrevDate = val;
+  MR.useDetailIngredients = _mrudNormalizeLoggedItems(items);
+  _mrudSetTitleForDate(val);
+  mrRenderUseDetail();
 }
 
 /* ══════════ AI PHOTO — estimation macros par photo ══════════ */
@@ -14742,6 +15040,7 @@ function confirmAddFood() {
   updateMealSummaryStrip();
   renderApDayBanner();
   renderMealCards();
+  renderMealSuggestions();
 
   toast(isEditing ? `${f.name} modifié · ${fmt(item.kcal)} kcal` : `${f.name} · ${fmt(item.kcal)} kcal`, isEditing ? 'var(--teal)' : 'var(--lime)');
 
@@ -20439,6 +20738,7 @@ const MR = {
   ingSearchId: 0,
   useDetailId: null,          // id du template en cours d'adaptation ponctuelle
   useDetailIngredients: [],   // copie de travail des ingrédients (modifiable sans jamais toucher le template)
+  useDetailFromPrevMeal: false, // true si l'écran "Adapter ce repas" a été ouvert depuis la suggestion "repas précédent" (pas un template)
   ingSearchTarget: 'edit',    // 'edit' (template MR.editIngredients) | 'usedetail' (copie de travail MR.useDetailIngredients)
   subTab: 'repas',            // 'repas' | 'aliments' — switch dans l\'onglet "Mes repas"
 };
@@ -20859,8 +21159,44 @@ function mrSelectMealSlot(el){
   MR.useMealSlot = el.dataset.meal;
 }
 function mrConfirmUse(){
-  const id = MR.useTemplateId;
   const slot = MR.useMealSlot;
+  // Cas "repas précédent" : pas de template Mes Repas associé, on ajoute directement
+  // la copie de travail (quantités éventuellement ajustées) au créneau du jour.
+  if (MR.useDetailFromPrevMeal) {
+    if (!slot || !MR.useDetailIngredients.length) { mrCloseUseModal(); return; }
+    let totalKcalPrev = 0;
+    MR.useDetailIngredients.forEach(ing => {
+      const item = {
+        name:  ing.name,
+        brand: ing.brand || '',
+        grams: ing.grams,
+        kcal:  ing.kcal || 0,
+        prot:  ing.prot || 0,
+        gluc:  ing.gluc || 0,
+        lip:   ing.lip  || 0,
+        sucres:    ing.sucres    || 0,
+        fibres:    ing.fibres    || 0,
+        sodium:    ing.sodium    || 0,
+        potassium: ing.potassium || 0,
+        satfat:    ing.satfat    || 0,
+        image: ing.image || '', _src: ing._src || '',
+        ts:    Date.now(),
+      };
+      saveMealItem(AP.date, slot, item);
+      totalKcalPrev += ing.kcal || 0;
+    });
+    mrCloseUseModal();
+    mrCloseUseDetail();
+    closeSearchPanel();
+    renderMealCards();
+    renderApDayBanner();
+    renderMealSuggestions();
+    openMealDetail(slot);
+    const mealNamePrev = MEAL_LABELS[slot]?.replace(/<[^>]+>/g,'').trim() || slot;
+    toast(`✓ Repas repris → ${mealNamePrev} · ${Math.round(totalKcalPrev)} kcal`, 'var(--lime)');
+    return;
+  }
+  const id = MR.useTemplateId;
   const t = mrGetAll().find(x => x.id === id);
   if(!t || !slot){ mrCloseUseModal(); return; }
   // Si on vient de l'écran "Adapter ce repas", on utilise la copie de travail (quantités ajustées
@@ -20903,9 +21239,10 @@ function mrOpenUseDetail(id){
   const t = mrGetAll().find(x => x.id === id);
   if(!t) return;
   MR.useDetailId = id;
+  MR.useDetailFromPrevMeal = false;
   MR.useDetailIngredients = t.ingredients.map(i => ({...i}));
   const titleEl = document.getElementById('mrud-title');
-  if(titleEl) titleEl.textContent = t.name;
+  if(titleEl){ titleEl.textContent = t.name; titleEl.classList.remove('mrud-title-clickable'); }
   const btnEl = document.getElementById('mrud-choose-btn');
   if(btnEl){
     btnEl.textContent = AP.currentMeal
@@ -20922,6 +21259,9 @@ function mrCloseUseDetail(){
   kcUnlockScroll();
   MR.useDetailId = null;
   MR.useDetailIngredients = [];
+  MR.useDetailFromPrevMeal = false;
+  MR.useDetailPrevDate = null;
+  document.getElementById('mrud-title')?.classList.remove('mrud-title-clickable');
   // Refresh the list if we're on the mesrepas tab in search panel
   if(document.getElementById('stab-mesrepas')?.classList.contains('active')){
     mrRenderSearchResults();
@@ -20969,13 +21309,16 @@ function mrudRemoveIngredient(idx){
 
 // Étape 2 : ajouter au repas du jour déjà sélectionné (AP.currentMeal), sinon demander lequel
 function mrUseDetailChooseMeal(){
-  if(!MR.useDetailId) return;
+  if(!MR.useDetailId && !MR.useDetailFromPrevMeal) return;
   if(AP.currentMeal){
-    MR.useTemplateId = MR.useDetailId;
+    if(!MR.useDetailFromPrevMeal) MR.useTemplateId = MR.useDetailId;
     MR.useMealSlot = AP.currentMeal;
     mrConfirmUse();
     return;
   }
+  // Pas de créneau déjà ouvert : le cas "repas précédent" n'a pas de template associé,
+  // donc pas de sélecteur de repas dédié à proposer — on ne peut pas continuer.
+  if(MR.useDetailFromPrevMeal) return;
   mrOpenUse(MR.useDetailId);
 }
 
