@@ -5532,10 +5532,10 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
         </div>
       </div>
 
-      <!-- Graphique combiné : barres = variation vs la période précédente (par type),
-           ligne = progression cumulée depuis le début (par type). Légende cliquable. -->
-      <div class="chart-wrap" style="height:210px;margin-bottom:0.3rem"><canvas id="wo-prog-chart"></canvas></div>
-      <div style="font-size:0.6rem;color:var(--muted2);text-align:center;margin-bottom:0.5rem">Barres = vs période précédente · Ligne = cumulé depuis le début</div>
+      <!-- Graphique : une courbe par type de séance, position = cumulé depuis le
+           début (axe Y). Le tooltip au survol n'indique que la variation vs la
+           période précédente, pour rester simple. Légende cliquable. -->
+      <div class="chart-wrap" style="height:210px;margin-bottom:0.6rem"><canvas id="wo-prog-chart"></canvas></div>
       <div class="clegend-row" id="wo-prog-legend"></div>
 
       <!-- Repères rapides -->
@@ -6408,7 +6408,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-09-02.2';
+const APP_BUILD_VERSION = '2026-09-02.4';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -18785,10 +18785,16 @@ function woSessVol(sess){
 function woWeekKey(dateStr){
   const d = new Date(dateStr+'T12:00');
   const day = d.getDay()||7;
-  d.setDate(d.getDate()-day+1);
+  d.setDate(d.getDate()-day+1); // Lundi de la semaine de dateStr
   const y = d.getFullYear();
-  const start = new Date(y,0,1);
-  const w = Math.ceil(((d-start)/86400000+1)/7);
+  // Même référence que woWeekLabel ci-dessous (lundi on/avant le 1er janvier),
+  // pour que clé générée ici et date reconstruite dans woWeekLabel concordent
+  // toujours — avant, cette fonction comptait les semaines depuis le 1er
+  // janvier brut (sans tenir compte de son jour de semaine), ce qui décalait
+  // systématiquement l'étiquette affichée par rapport à la vraie semaine.
+  const jan1 = new Date(y,0,1);
+  const week1Monday = new Date(jan1.getTime() - ((jan1.getDay()||7)-1)*86400000);
+  const w = Math.floor((d-week1Monday)/86400000/7) + 1;
   return `${y}-W${String(w).padStart(2,'0')}`;
 }
 // Label court d\'une semaine
@@ -19202,22 +19208,21 @@ function woRenderProgAll(period){
   if(exoBody) exoBody.innerHTML = woBuildExoHtml(typesArr);
 }
 
-// Isoler/masquer une courbe via la légende (cache à la fois la barre "variation
-// période" et la ligne "cumulé" associées à ce type de séance)
+// Isoler/masquer une courbe via la légende
 function woToggleDS(tid, el){
   const hide = !el.classList.contains('off');
   el.classList.toggle('off', hide);
   window._woDsHidden[tid] = hide;
   const chart = window._woMainChart;
   if(!chart) return;
-  chart.data.datasets.filter(d=>d.__tid===tid).forEach(ds=>{ ds.hidden = hide; });
-  chart.update('none');
+  const ds = chart.data.datasets.find(d=>d.__tid===tid);
+  if(ds){ ds.hidden = hide; chart.update('none'); }
 }
 
-// Graphique principal : pour chaque type de séance, une barre (variation de la
-// période vs la précédente, pour CE type) + une ligne (progression cumulée depuis
-// le début) sur le même axe X — permet de lire en un coup d'œil "est-ce que ça a
-// progressé cette semaine ?" (barre) ET "où j'en suis globalement ?" (ligne).
+// Graphique principal : une ligne par type de séance, position = progression
+// cumulée depuis le début (se lit sur l'axe Y). Le tooltip, lui, n'affiche QUE
+// la variation vs la période précédente (pas le cumulé, déjà visible via la
+// hauteur de la courbe) pour rester simple à lire au survol.
 window._woMainChart = null;
 function woRenderMainProgChart(labels, datasets){
   const canvas = document.getElementById('wo-prog-chart');
@@ -19226,30 +19231,18 @@ function woRenderMainProgChart(labels, datasets){
   const isLight = document.body.classList.contains('light-mode');
   const gridC = isLight?'rgba(0,0,0,0.06)':'rgba(255,255,255,0.04)';
   const tickC = isLight?'#6b7280':'#404d60';
-  const zeroC = isLight?'rgba(0,0,0,0.18)':'rgba(255,255,255,0.14)';
-
-  const barDatasets = datasets.map(d=>{
-    const col = _cssVar(d.color);
-    return {
-      type:'bar', label:d.label+' (variation)', data:d.delta,
-      backgroundColor:col+'55', borderColor:col+'55', borderRadius:3,
-      barPercentage:0.55, categoryPercentage:0.7,
-      hidden: !!window._woDsHidden[d.tid], __tid:d.tid, __kind:'delta', order:2
-    };
-  });
-  const lineDatasets = datasets.map(d=>{
-    const col = _cssVar(d.color);
-    return {
-      type:'line', label:d.label+' (cumulé)', data:d.data,
-      borderColor:col, backgroundColor:col+'18',
-      borderWidth:2, pointRadius:0, pointHoverRadius:4, pointHitRadius:10,
-      tension:0.35, fill:false, spanGaps:true,
-      hidden: !!window._woDsHidden[d.tid], __tid:d.tid, __kind:'cumul', order:1
-    };
-  });
 
   window._woMainChart = new Chart(canvas.getContext('2d'),{
-    data:{labels, datasets:[...lineDatasets, ...barDatasets]},
+    type:'line',
+    data:{labels, datasets: datasets.map(d=>{
+      const col = _cssVar(d.color); // Chart.js/canvas ne comprend pas var(--xxx)
+      return {
+        label:d.label, data:d.data, borderColor:col, backgroundColor:col+'18',
+        borderWidth:2, pointRadius:0, pointHoverRadius:4, pointHitRadius:10,
+        tension:0.35, fill:false, spanGaps:true,
+        hidden: !!window._woDsHidden[d.tid], __tid:d.tid, __delta:d.delta
+      };
+    })},
     options:{
       responsive:true, maintainAspectRatio:false,
       interaction:{mode:'index', intersect:false},
@@ -19261,16 +19254,16 @@ function woRenderMainProgChart(labels, datasets){
           titleColor:isLight?'#111':'#f0ede6', bodyColor:'#6b7a90', padding:8,
           titleFont:{family:'DM Sans',size:10}, bodyFont:{family:'DM Sans',size:11},
           callbacks:{label:c=>{
-            if(c.raw===null||c.raw===undefined) return null;
-            const tag = c.dataset.__kind==='delta' ? 'vs préc.' : 'cumulé';
-            return `  ${c.dataset.label.replace(/ \(.*\)$/,'')} ${tag} : ${c.raw>0?'+':''}${c.raw}%`;
+            const delta = c.dataset.__delta?.[c.dataIndex];
+            if(delta===null || delta===undefined) return null;
+            return `  ${c.dataset.label} vs période préc. : ${delta>0?'+':''}${delta}%`;
           }}
         }
       },
       layout:{padding:{top:6,right:4,bottom:2,left:4}},
       scales:{
         x:{display:true, ticks:{color:tickC,font:{family:'DM Sans',size:9},maxRotation:0,autoSkip:true,maxTicksLimit:6}, grid:{display:false}},
-        y:{display:true, ticks:{color:tickC,font:{family:'DM Sans',size:9},callback:v=>v+'%'}, grid:{color:v=>v.tick.value===0?zeroC:gridC}}
+        y:{display:true, ticks:{color:tickC,font:{family:'DM Sans',size:9},callback:v=>v+'%'}, grid:{color:gridC}}
       }
     }
   });
