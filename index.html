@@ -468,11 +468,26 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 #page-apports .ap-date-nav{margin-bottom:0.9rem}
 #page-apports .ap-date-label{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
 
-/* Tendances : pas de point vert devant les titres de carte, typographie DM Sans (cohérent avec Progression/Sommeil) */
+/* Tendances : typographie DM Sans partout (cohérent avec Progression/Sommeil), cartes épurées
+   sans bordure dure, header façon "hero" et KPI façon sub-card — même vocabulaire visuel que
+   #page-progression, sans toucher au JS (voir style-apple-health.md) */
+#ap-panel-tendances{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
 #ap-panel-tendances .card-title{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
 #ap-panel-tendances .card-title::before{display:none}
 #ap-panel-tendances .clegend-row{margin-top:0.5rem}
 #ap-panel-tendances .mc-title{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
+#ap-panel-tendances .mini-chart-wrap canvas{max-height:none}
+#ap-panel-tendances .card{border:none;box-shadow:var(--shadow-card)}
+#ap-panel-tendances .hero-lbl{display:block;margin-bottom:0.7rem}
+#ap-panel-tendances #nak-kpi-row{grid-template-columns:repeat(3,1fr);margin-bottom:0.85rem}
+#ap-panel-tendances .sub-card{background:var(--s2);text-align:center;position:relative;overflow:hidden}
+#ap-panel-tendances .goal-card{border:none;background:var(--s2)}
+#ap-panel-tendances .food-row-badge{border:none}
+#ap-panel-tendances .fh-toggle-btn{border:none;background:var(--s2)}
+@media(max-width:380px){
+  #ap-panel-tendances #nak-kpi-row{gap:0.4rem}
+  #ap-panel-tendances .sub-card{padding:0.55rem 0.4rem}
+}
 .fh-toggle-btn{display:flex;align-items:center;justify-content:center;gap:5px;width:100%;margin-top:0.6rem;padding:0.55rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--teal);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.72rem;font-weight:600;cursor:pointer;transition:all var(--trans);-webkit-tap-highlight-color:transparent}
 .fh-toggle-btn:active{background:var(--s1);transform:scale(0.98)}
 
@@ -3778,8 +3793,8 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-          <span style="font-size:0.58rem;color:var(--orange);background:rgba(251,146,60,0.1);border:1px solid rgba(251,146,60,0.3);border-radius:var(--r-pill);padding:2px 8px;white-space:nowrap">⚠ Indicatif</span>
-          <button onclick="glycemiaShowInfo()" style="width:22px;height:22px;border-radius:50%;background:var(--s3);border:1px solid var(--border2);color:var(--muted);cursor:pointer;font-size:0.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;-webkit-tap-highlight-color:transparent" title="Détail du calcul">ℹ</button>
+          <span style="font-size:0.58rem;color:var(--orange);background:rgba(251,146,60,0.12);border-radius:var(--r-pill);padding:2px 8px;white-space:nowrap">⚠ Indicatif</span>
+          <button onclick="glycemiaShowInfo()" style="width:22px;height:22px;border-radius:50%;background:var(--s3);border:none;color:var(--muted);cursor:pointer;font-size:0.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;-webkit-tap-highlight-color:transparent" title="Détail du calcul">ℹ</button>
         </div>
       </div>
 
@@ -3787,23 +3802,11 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <div style="position:relative;height:190px;margin-bottom:0.6rem"><canvas id="glycemiaChart"></canvas></div>
 
       <!-- Légende -->
-      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:0.65rem">
-        <div style="display:flex;align-items:center;gap:5px">
-          <div style="width:18px;height:3px;background:var(--lime);border-radius:2px"></div>
-          <span style="font-size:0.58rem;color:var(--muted2)">Normal (70–140)</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:5px">
-          <div style="width:18px;height:3px;background:var(--red);border-radius:2px"></div>
-          <span style="font-size:0.58rem;color:var(--muted2)">Élevé (&gt;140 mg/dL)</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:5px">
-          <div style="width:18px;height:0;border-top:1px dashed var(--blue)"></div>
-          <span style="font-size:0.58rem;color:var(--muted2)">Optimal sensi. insuline (&lt;110 mg/dL)</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:5px">
-          <div style="width:18px;height:3px;background:rgba(251,146,60,0.7);border-radius:2px;border-top:1px dashed rgba(251,146,60,0.7)"></div>
-          <span style="font-size:0.58rem;color:var(--muted2)">Bas (&lt;70 mg/dL)</span>
-        </div>
+      <div class="clegend-row">
+        <div class="clegend" style="color:var(--muted2);cursor:default"><div class="cl-dot" style="background:var(--lime)"></div>Normal</div>
+        <div class="clegend" style="color:var(--muted2);cursor:default"><div class="cl-dot" style="background:var(--red)"></div>Élevé</div>
+        <div class="clegend" style="color:var(--muted2);cursor:default"><div class="cl-dot" style="background:var(--blue)"></div>Sensi. optimale</div>
+        <div class="clegend" style="color:var(--muted2);cursor:default"><div class="cl-dot" style="background:rgba(251,146,60,0.8)"></div>Bas</div>
       </div>
 
       <!-- Badges pics -->
@@ -3815,9 +3818,9 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 
     <!-- ── Carte Sodium / Potassium ── -->
     <div id="nak-card" class="card" style="margin-bottom:0.9rem">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.75rem;flex-wrap:wrap">
-        <div style="flex:1;min-width:0">
-          <div class="card-title" style="margin-bottom:2px">Balance Sodium · Potassium</div>
+      <div class="hero-row">
+        <div>
+          <div class="hero-lbl" style="margin-bottom:2px">Balance Sodium · Potassium</div>
           <div style="font-size:0.62rem;color:var(--muted)">Depuis aliments enregistrés · OMS : Na &lt;2 g/j · K &gt;3,5 g/j</div>
         </div>
         <!-- Onglets Semaine / Jour -->
@@ -3827,36 +3830,34 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
         </div>
       </div>
       <!-- KPI row -->
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;margin-bottom:0.85rem">
-        <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:0.6rem 0.5rem;text-align:center;position:relative;overflow:hidden">
-          <div style="position:absolute;top:0;left:0;right:0;height:2.5px;background:#e85c5c"></div>
-          <div style="font-size:0.5rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted2);margin-bottom:2px">Sodium moy./j</div>
-          <div style="font-family:Playfair Display,serif;font-size:1.15rem;color:#e85c5c;line-height:1" id="nak-na-avg">—</div>
-          <div style="font-size:0.5rem;color:var(--muted2)">mg</div>
+      <div class="sub-card-row" id="nak-kpi-row">
+        <div class="sub-card">
+          <div class="sub-card-lbl">Sodium moy./j</div>
+          <div class="sub-card-val" style="font-size:1.1rem;color:#e85c5c" id="nak-na-avg">—</div>
+          <div class="sub-card-sub">mg</div>
         </div>
-        <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:0.6rem 0.5rem;text-align:center;position:relative;overflow:hidden">
-          <div style="position:absolute;top:0;left:0;right:0;height:2.5px;background:#a78bfa"></div>
-          <div style="font-size:0.5rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted2);margin-bottom:2px">Potassium moy./j</div>
-          <div style="font-family:Playfair Display,serif;font-size:1.15rem;color:#a78bfa;line-height:1" id="nak-k-avg">—</div>
-          <div style="font-size:0.5rem;color:var(--muted2)">mg</div>
+        <div class="sub-card">
+          <div class="sub-card-lbl">Potassium moy./j</div>
+          <div class="sub-card-val" style="font-size:1.1rem;color:#a78bfa" id="nak-k-avg">—</div>
+          <div class="sub-card-sub">mg</div>
         </div>
-        <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:0.6rem 0.5rem;text-align:center;position:relative;overflow:hidden">
+        <div class="sub-card">
           <div id="nak-ratio-bar" style="position:absolute;top:0;left:0;right:0;height:2.5px;background:var(--muted2)"></div>
-          <div style="font-size:0.5rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted2);margin-bottom:2px">Ratio K:Na</div>
-          <div style="font-family:Playfair Display,serif;font-size:1.15rem;line-height:1" id="nak-ratio">—</div>
-          <div style="font-size:0.5rem;color:var(--muted2)">idéal &gt;1</div>
+          <div class="sub-card-lbl">Ratio K:Na</div>
+          <div class="sub-card-val" style="font-size:1.1rem" id="nak-ratio">—</div>
+          <div class="sub-card-sub">idéal &gt;1</div>
         </div>
       </div>
       <!-- Label date vue jour -->
       <div id="nak-day-label" style="display:none;font-size:0.65rem;color:var(--muted);margin-bottom:0.5rem;text-align:center"></div>
       <!-- Graphique -->
-      <div style="position:relative;height:200px;margin-bottom:0.65rem"><canvas id="nakChart"></canvas></div>
+      <div class="chart-wrap" style="height:200px;margin-bottom:0.65rem"><canvas id="nakChart"></canvas></div>
       <!-- Légende -->
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:0.5rem">
-        <div style="display:flex;align-items:center;gap:5px"><div style="width:16px;height:3px;background:#e85c5c;border-radius:2px"></div><span style="font-size:0.58rem;color:var(--muted2)">Sodium</span></div>
-        <div style="display:flex;align-items:center;gap:5px"><div style="width:16px;height:3px;background:#a78bfa;border-radius:2px"></div><span style="font-size:0.58rem;color:var(--muted2)">Potassium</span></div>
-        <div style="display:flex;align-items:center;gap:5px"><div style="width:16px;height:2px;background:rgba(232,92,92,0.5);border-top:1.5px dashed rgba(232,92,92,0.6)"></div><span style="font-size:0.58rem;color:var(--muted2)">Seuil Na OMS (2000)</span></div>
-        <div style="display:flex;align-items:center;gap:5px"><div style="width:16px;height:2px;background:rgba(167,139,250,0.5);border-top:1.5px dashed rgba(167,139,250,0.6)"></div><span style="font-size:0.58rem;color:var(--muted2)">Cible K OMS (3500)</span></div>
+      <div class="clegend-row">
+        <div class="clegend" style="color:var(--muted2);cursor:default"><div class="cl-dot" style="background:#e85c5c"></div>Sodium</div>
+        <div class="clegend" style="color:var(--muted2);cursor:default"><div class="cl-dot" style="background:#a78bfa"></div>Potassium</div>
+        <div class="clegend" style="color:var(--muted2);cursor:default"><div class="cl-dot" style="background:rgba(232,92,92,0.6)"></div>Seuil Na OMS (2000)</div>
+        <div class="clegend" style="color:var(--muted2);cursor:default"><div class="cl-dot" style="background:rgba(167,139,250,0.6)"></div>Cible K OMS (3500)</div>
       </div>
       <!-- Analyse -->
       <div id="nak-analysis" style="border-top:1px solid var(--border);padding-top:0.65rem;display:none"></div>
@@ -3871,7 +3872,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <div class="card">
         <div class="mini-chart-wrap" style="margin-top:0">
           <div class="mc-title">Apports &amp; dépenses cette semaine (kcal)</div>
-          <div style="position:relative;height:220px"><canvas id="weekChart"></canvas></div>
+          <div style="position:relative;height:190px"><canvas id="weekChart"></canvas></div>
           <div class="clegend-row">
             <div class="clegend" style="color:#5bc8f0;cursor:default"><div class="cl-dot" style="background:#5bc8f0"></div>Apport</div>
             <div class="clegend" style="color:#c8f04a;cursor:default"><div class="cl-dot" style="background:#c8f04a"></div>Dépense</div>
@@ -4864,7 +4865,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     <div class="clegend-row" id="ts-grp-calories">
       <div class="clegend" style="color:var(--lime)" data-idx="3" data-grp="cal" onclick="toggleDS(3,this)"><div class="cl-dot" style="background:var(--lime)"></div>Dépense</div>
       <div class="clegend" style="color:var(--blue)" data-idx="4" data-grp="cal" onclick="toggleDS(4,this)"><div class="cl-dot" style="background:var(--blue)"></div>Apport</div>
-      <div class="clegend" style="color:var(--pink)" data-idx="5" data-grp="cal" onclick="toggleDS(5,this)"><div class="cl-dot" style="background:var(--pink)"></div>Balance</div>
+      <div class="clegend" style="color:var(--muted)" data-idx="5" data-grp="cal" onclick="toggleDS(5,this)"><div class="cl-dot" style="background:linear-gradient(135deg,#3ecf76 50%,#e84040 50%)"></div>Balance</div>
     </div>
 
     <!-- Cartes secondaires -->
@@ -6408,7 +6409,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-09-02.4';
+const APP_BUILD_VERSION = '2026-09-02.9';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -15997,6 +15998,28 @@ function loadChartCalories(){
     borderWidth:dashed?1.5:2,borderDash:dashed?[5,4]:[],
     pointRadius:0,pointHoverRadius:5,pointHitRadius:12,tension,fill,spanGaps:true,hidden:false,
   });
+  // Balance : vert au-dessus de 0 (surplus), rouge en dessous (déficit).
+  // On peint la courbe/zone avec un dégradé vertical du canvas dont la
+  // rupture de couleur est calée exactement sur le pixel de la valeur 0
+  // (recalculé à chaque frame via getPixelForValue) : la transition suit
+  // donc précisément le croisement de la courbe avec l'axe zéro, quelle
+  // que soit sa forme — contrairement à une coloration par segment qui
+  // change de couleur par palier entre deux points de données.
+  const balSurplus='#3ecf76', balDeficit='#e84040';
+  const balZeroGradient=(context,posColor,negColor)=>{
+    const {chart}=context;
+    const {ctx:c,chartArea,scales}=chart;
+    if(!chartArea) return posColor; // pas encore mis en page (1er appel)
+    const zeroY=scales.y.getPixelForValue(0);
+    const top=chartArea.top, bottom=chartArea.bottom;
+    const ratio=Math.min(Math.max((zeroY-top)/(bottom-top),0),1);
+    const gradient=c.createLinearGradient(0,top,0,bottom);
+    gradient.addColorStop(0,posColor);
+    gradient.addColorStop(ratio,posColor);
+    gradient.addColorStop(Math.min(ratio+0.001,1),negColor);
+    gradient.addColorStop(1,negColor);
+    return gradient;
+  };
   chartInstCal=new Chart(canvas.getContext('2d'),{
     type:'line',
     data:{labels,datasets:[
@@ -16005,7 +16028,10 @@ function loadChartCalories(){
       {label:'_fg',data:[],yAxisID:'y2',borderColor:'transparent',hidden:true},
       ds('Dépense (kcal)',depense,'#c8f04a'),
       ds('Apport (kcal)',apport,'#5bc8f0'),
-      {...ds('Balance (kcal)',balance,'#e060c8',false,true),backgroundColor:'rgba(224,96,200,0.07)'},
+      {...ds('Balance (kcal)',balance,balSurplus,false,true),
+        fill:{target:{value:0}},
+        borderColor:(ctx)=>balZeroGradient(ctx,balSurplus,balDeficit),
+        backgroundColor:(ctx)=>balZeroGradient(ctx,'rgba(62,207,118,0.14)','rgba(232,64,64,0.14)')},
       {label:'_mm',data:[],yAxisID:'y',borderColor:'transparent',hidden:true},
       {label:'_tr',data:[],yAxisID:'y',borderColor:'transparent',hidden:true},
       {label:'_st',data:[],yAxisID:'y',borderColor:'transparent',hidden:true},
@@ -18557,16 +18583,13 @@ function _renderGlycemiaAnalysis({ maxGlyc, minGlyc, timeHigh, timeNorm, glucTot
 
   el.style.display = '';
   el.innerHTML = `<div style="font-size:0.6rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted2);margin-bottom:0.65rem">Analyse de la journée</div>` +
-    items.map(it => `<div style="display:flex;gap:9px;margin-bottom:0.75rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border)">
+    items.map((it,i) => `<div style="display:flex;gap:9px;${i<items.length-1?'margin-bottom:0.75rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border)':''}">
       <div style="font-size:1rem;flex-shrink:0;line-height:1.3">${it.icon}</div>
       <div>
         <div style="font-size:0.73rem;font-weight:600;color:${it.color};margin-bottom:3px">${it.title}</div>
         <div style="font-size:0.65rem;color:var(--muted);line-height:1.6">${it.text}</div>
       </div>
-    </div>`).join('') +
-    `<div style="font-size:0.58rem;color:var(--muted2);line-height:1.5;padding-top:0.1rem;border-top:1px solid var(--border);margin-top:-0.1rem">
-      ⚠ Ces analyses sont <strong>indicatives et non médicales</strong>. Elles reposent sur un modèle simplifié ne tenant pas compte de l\'index glycémique réel des aliments, des fibres, de l\'activité physique, du microbiome ou des variations individuelles.
-    </div>`;
+    </div>`).join('');
 }
 
 /* ── Modal info détail du calcul ── */
