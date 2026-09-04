@@ -3413,8 +3413,22 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     <div class="db-lbl" style="color:var(--pink-d)"><span class="ico" style="margin-right:5px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><line x1="3" y1="13" x2="3" y2="7"/><line x1="7" y1="13" x2="7" y2="4.5"/><line x1="11" y1="13" x2="11" y2="8.5"/><line x1="1" y1="13" x2="15" y2="13"/></svg></span> <span id="db-baldiet-title">Balance période diète</span></div>
     <div><span class="db-val" id="db-baldiet-val" style="color:var(--pink)">—</span><span class="db-unit" style="color:var(--pink-d)">kcal/j</span></div>
     <div class="db-sub" id="db-baldiet-sub" style="color:var(--pink-d)">Depuis le début de la phase</div>
+    <div id="db-baldiet-spark" style="margin-top:0.6rem"></div>
   </div>
   </div><!-- /widget-baldiet -->
+
+  <!-- ══ WIDGET: Poids prédit vs réel sur la période de diète (défaut: visible, pleine largeur) ══ -->
+  <div class="widget-block" id="widget-baldietweight" data-widget="baldietweight" data-size="full" data-visible="true">
+  <button class="widget-delete-btn" onclick="widgetDelete('baldietweight')" title="Supprimer">×</button>
+  <button class="widget-resize-btn" onclick="widgetResize('baldietweight')" title="Changer la taille">⇔</button>
+
+  <div class="db-card db-card-full" style="background:var(--orange-bg);border-color:rgba(240,160,48,0.2);cursor:pointer" onclick="openBalDietWeightModal()" title="Voir le détail du calcul">
+    <div class="db-lbl" style="color:var(--orange-d)"><span class="ico" style="margin-right:5px"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><line x1="8" y1="2" x2="8" y2="13"/><line x1="3" y1="13" x2="13" y2="13"/><line x1="2" y1="4" x2="14" y2="4"/><path d="M2 4l-1.8 4.3a1.9 1.9 0 003.6 0L2 4z"/><path d="M14 4l-1.8 4.3a1.9 1.9 0 003.6 0L14 4z"/></svg></span> Poids : prédit vs réel</div>
+    <div id="db-baldietweight-body" style="margin-top:0.5rem">
+      <div style="font-size:0.72rem;color:var(--muted2)">Pas encore assez de données (balance + pesées) pour comparer.</div>
+    </div>
+  </div>
+  </div><!-- /widget-baldietweight -->
 
 
   <!-- ══ WIDGET: Analyse intelligente (défaut: visible) ══ -->
@@ -6258,6 +6272,26 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   </div>
 </div>
 
+<!-- POIDS PRÉDIT VS RÉEL — Modal détail (courbe mesurée + courbe théorique sur la période de diète) -->
+<div id="baldietweight-modal" style="display:none;position:fixed;inset:0;z-index:800;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeBalDietWeightModal()">
+  <div style="background:rgba(0,0,0,0.55);position:absolute;inset:0;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)" onclick="closeBalDietWeightModal()"></div>
+  <div class="kc-modal-scroll" style="position:relative;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;background:var(--s1);border-radius:20px 20px 0 0;border-top:1px solid var(--border2);padding:1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom,0px));animation:slideUp 0.25s cubic-bezier(0.4,0,0.2,1)">
+    <button class="kc-modal-close" onclick="closeBalDietWeightModal()" aria-label="Fermer">✕</button>
+    <div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1.25rem"></div>
+    <div style="font-family:Playfair Display,serif;font-size:1.2rem;font-weight:400;margin-bottom:0.25rem">Poids : <em style="color:var(--orange)">prédit vs réel</em></div>
+    <div id="baldietweight-modal-sub" style="font-size:0.7rem;color:var(--muted);margin-bottom:1rem">Depuis le début de la phase en cours</div>
+
+    <!-- Graphique -->
+    <div style="position:relative;height:220px;margin-bottom:1.1rem;background:var(--s2);border:1px solid var(--border);border-radius:14px;padding:0.75rem">
+      <canvas id="baldietweight-chart"></canvas>
+    </div>
+
+    <!-- Détail du calcul -->
+    <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted2);margin-bottom:0.6rem">Comment c'est calculé</div>
+    <div id="baldietweight-detail" style="background:var(--s2);border:1px solid var(--border2);border-radius:14px;padding:0.9rem 1rem;margin-bottom:1.1rem"></div>
+  </div>
+</div>
+
 </main>
 </div>
 
@@ -6467,7 +6501,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-09-03.3';
+const APP_BUILD_VERSION = '2026-09-03.9';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -16698,19 +16732,90 @@ function computeLast30BalanceDetail(fitness, food, profile){
 
 /* Helper: détail jour par jour de la balance sur la période de la phase (diet/
    surplus/maintien) en cours, du jour de début (cf getCurrentPhaseStartDate)
-   jusqu'à hier inclus (même règle que balance 7j : aujourd'hui toujours exclu
-   car pas terminé). Retourne startDate:null si aucune phase n'est connue. */
-function computeDietPeriodBalanceDetail(fitness, food, profile){
-  const startDate = getCurrentPhaseStartDate();
-  if(!startDate) return { days: [], includedBalances: [], avg: null, startDate: null };
+   jusqu'à AUJOURD'HUI inclus. Contrairement à balance 7j/30j (qui excluent
+   volontairement le jour en cours pour ne pas faire bouger une petite moyenne
+   à chaque repas saisi), ici la période peut courir sur des semaines/mois :
+   un seul jour partiel a un impact négligeable sur la moyenne, et de toute
+   façon il reste auto-exclu tant qu'il n'a pas d'apport ET de dépense fiables
+   (cf computeBalanceDayDetail → autoValid). Retourne startDate:null si aucune
+   phase n'est connue. */
+/* Helper générique : détail jour par jour de la balance sur une période
+   [startDate, endDate]. Si ongoing=true, endDate est inclus tel quel
+   (période en cours, ex: phase actuelle → aujourd'hui). Si ongoing=false,
+   endDate est exclu (convention reportBuildPhasePeriods : "end" = date de
+   début de la phase SUIVANTE, donc le dernier jour réel de cette période
+   est endDate-1). Utilisé à la fois par la balance période diète (phase en
+   cours) et par le résumé des phases passées dans le compte rendu. */
+function computeBalanceDetailForPeriod(fitness, food, profile, startDate, endDate, ongoing){
   const dates = [];
   const start = new Date(startDate+'T00:00:00');
-  const end = new Date(); end.setDate(end.getDate()-1);
+  const end = new Date(endDate+'T00:00:00');
+  if(!ongoing) end.setDate(end.getDate()-1);
   for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
     dates.push(d.toISOString().split('T')[0]);
   }
-  const detail = computeBalanceDetailForDates(dates, fitness, food, profile);
+  return computeBalanceDetailForDates(dates, fitness, food, profile);
+}
+
+function computeDietPeriodBalanceDetail(fitness, food, profile){
+  const startDate = getCurrentPhaseStartDate();
+  if(!startDate) return { days: [], includedBalances: [], avg: null, startDate: null };
+  const todayStr = new Date().toISOString().split('T')[0];
+  const detail = computeBalanceDetailForPeriod(fitness, food, profile, startDate, todayStr, true);
   return { ...detail, startDate };
+}
+
+/* Poids moyen autour d'une date (±windowDays), pour lisser le bruit court
+   terme d'une pesée isolée (rétention d'eau, digestion, cycle...). Si aucune
+   pesée dans la fenêtre, on retombe sur la pesée valide la plus proche
+   (avant ou après). Retourne null si aucune pesée n'existe du tout. */
+function getWeightNear(fitness, dateStr, windowDays){
+  windowDays = windowDays || 3;
+  const target = new Date(dateStr+'T00:00:00');
+  const withWeight = fitness.filter(f=>f.poids).map(f=>({ date:f.date, poids:parseFloat(f.poids) }));
+  if(!withWeight.length) return null;
+  const inWindow = withWeight.filter(f=>Math.abs((new Date(f.date+'T00:00:00')-target)/86400000) <= windowDays);
+  if(inWindow.length) return inWindow.reduce((s,f)=>s+f.poids,0) / inWindow.length;
+  const sorted = withWeight.slice().sort((a,b)=>Math.abs(new Date(a.date+'T00:00:00')-target) - Math.abs(new Date(b.date+'T00:00:00')-target));
+  return sorted[0].poids;
+}
+
+/* Compare la variation de poids THÉORIQUE (déduite de la balance cumulée sur
+   la période de diète, règle standard ≈7700 kcal/kg) à la variation RÉELLE
+   mesurée sur la balance. Retourne null si pas assez de données (pas de
+   phase, pas de balance calculable, ou pas de pesées). */
+function computeDietWeightPrediction(balDietDetail, fitness){
+  if(!balDietDetail?.startDate || balDietDetail.avg===null) return null;
+  const startWeight = getWeightNear(fitness, balDietDetail.startDate, 3);
+  const todayStr = new Date().toISOString().split('T')[0];
+  const nowWeight = getWeightNear(fitness, todayStr, 3);
+  if(startWeight===null || nowWeight===null) return null;
+
+  const cumBalance = balDietDetail.includedBalances.reduce((s,b)=>s+b, 0);
+  const predictedDeltaKg = cumBalance / 7700; // ≈7700 kcal par kg de masse grasse (approximation standard)
+  const actualDeltaKg = nowWeight - startWeight;
+  return {
+    startWeight, nowWeight,
+    predictedDeltaKg, actualDeltaKg,
+    diffKg: actualDeltaKg - predictedDeltaKg,
+    days: balDietDetail.days.length
+  };
+}
+
+/* Variante générique de computeDietWeightPrediction, pour n'importe quelle
+   période (pas seulement la phase en cours) — utilisée par le résumé des
+   phases passées dans le compte rendu. endDate = dernier jour réel de la
+   période (déjà calculé dans balDetail.days, cf computeBalanceDetailForPeriod). */
+function computeWeightPredictionForPeriod(balDetail, fitness, endDate){
+  if(!balDetail?.startDate || balDetail.avg===null || !endDate) return null;
+  const startWeight = getWeightNear(fitness, balDetail.startDate, 3);
+  const endWeight = getWeightNear(fitness, endDate, 3);
+  if(startWeight===null || endWeight===null) return null;
+  const cumBalance = balDetail.includedBalances.reduce((s,b)=>s+b, 0);
+  const predictedDeltaKg = cumBalance / 7700;
+  const actualDeltaKg = endWeight - startWeight;
+  return { startWeight, endWeight, predictedDeltaKg, actualDeltaKg, diffKg: actualDeltaKg - predictedDeltaKg, days: balDetail.days.length };
+
 }
 
 /* Helper: compute TDEE components for a day */
@@ -17096,6 +17201,8 @@ function renderDashboard(){
   } else {
     set('db-baldiet-val','—'); set('db-baldiet-sub','Aucune phase définie');
   }
+  renderBalDietSparkline(balDietDetail);
+  renderBalDietWeight(computeDietWeightPrediction(balDietDetail, fitness));
 
 
   // Insights
@@ -17385,6 +17492,103 @@ function renderBalDietSheet(){
       <button onclick="toggleBalDietDay('${d.date}')" style="font-size:0.62rem;padding:3px 9px;border-radius:20px;cursor:pointer;font-family:Syne,sans-serif;white-space:nowrap;${btnStyle}">${btnLabel}</button>
     </div>`;
   }).join('');
+}
+
+/* Mini-graphe (sparkline) de la balance jour par jour sur la période de diète,
+   affiché directement dans le widget dashboard (sans ouvrir le sheet de détail).
+   Une barre par jour, vers le haut si surplus / vers le bas si déficit, grisée
+   et semi-transparente si le jour est exclu de la moyenne. Bornée aux 60
+   derniers jours de la période pour rester lisible sur les longues phases. */
+/* Mini-graphe de la balance période diète, affiché directement dans le widget
+   dashboard (sans ouvrir le sheet de détail). Courbe CUMULÉE (déficit/surplus
+   qui s'accumule jour après jour) plutôt qu'un histogramme jour par jour :
+   plus lisible d'un coup d'œil ("ça descend" = déficit global, "ça monte" =
+   surplus global) qu'une oscillation de barres autour de zéro. Seuls les
+   jours "included" (cf computeBalanceDayDetail) contribuent au cumul — un
+   jour exclu/non fiable laisse la courbe plate ce jour-là plutôt que de la
+   fausser. Bornée aux 60 derniers jours de la période pour rester lisible
+   sur les longues phases (le cumul repart alors du début de cette fenêtre,
+   pas du tout début de la phase).
+   Historique : v1 était un histogramme de balance/jour, jugé peu lisible par
+   l'utilisateur ("je ne comprends pas la lecture") → remplacé par ce cumul. */
+function renderBalDietSparkline(detail){
+  const el = document.getElementById('db-baldiet-spark');
+  if(!el) return;
+  if(!detail.startDate || !detail.days.length){ el.innerHTML=''; return; }
+
+  const MAX_DAYS = 60;
+  const days = detail.days.length > MAX_DAYS ? detail.days.slice(-MAX_DAYS) : detail.days;
+
+  let cum = 0;
+  const points = days.map(d=>{ if(d.included) cum += d.balance; return cum; });
+  const finalCum = points[points.length-1] || 0;
+  const maxAbs = Math.max(500, ...points.map(v=>Math.abs(v)));
+
+  const W = 100, H = 40, midY = H/2;
+  const stepX = days.length>1 ? W/(days.length-1) : 0;
+  const toY = v => midY - (v/maxAbs)*(H/2-3);
+  const lineColor = finalCum>200 ? 'var(--orange)' : finalCum<-200 ? 'var(--blue)' : 'var(--teal)';
+
+  const linePts = points.map((v,i)=>`${(i*stepX).toFixed(2)},${toY(v).toFixed(1)}`).join(' ');
+  const areaPts = `0,${midY.toFixed(1)} ${linePts} ${W.toFixed(1)},${midY.toFixed(1)}`;
+
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px">
+      <span style="font-size:0.58rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em">Cumul sur la période</span>
+      <span style="font-size:0.72rem;font-weight:700;color:${lineColor}">${finalCum>=0?'+':''}${fmt(finalCum)} kcal</span>
+    </div>
+    <svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="display:block;overflow:visible">
+      <line x1="0" y1="${midY}" x2="${W}" y2="${midY}" stroke="var(--border2)" stroke-width="0.6" stroke-dasharray="2,2" vector-effect="non-scaling-stroke"></line>
+      <polygon points="${areaPts}" fill="${lineColor}" opacity="0.15"></polygon>
+      <polyline points="${linePts}" fill="none" stroke="${lineColor}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"></polyline>
+    </svg>
+    <div style="display:flex;justify-content:space-between;font-size:0.56rem;color:var(--muted2);margin-top:2px">
+      <span>${days[0].label}</span>
+      <span>0 · maintien</span>
+      <span>${days[days.length-1].label}</span>
+    </div>`;
+}
+
+/* Affiche la comparaison poids prédit (déduit de la balance cumulée, règle
+   ≈7700 kcal/kg) vs poids réel mesuré (pesées lissées ±3j), dans le widget
+   dashboard "Poids : prédit vs réel". */
+function renderBalDietWeight(pred){
+  const body = document.getElementById('db-baldietweight-body');
+  if(!body) return;
+  if(!pred){
+    body.innerHTML = '<div style="font-size:0.72rem;color:var(--muted2)">Pas encore assez de données (balance + pesées) pour comparer.</div>';
+    return;
+  }
+  const fmt1 = v => (v>=0?'+':'')+v.toFixed(1);
+  const predColor = pred.predictedDeltaKg<=0 ? 'var(--teal)' : 'var(--orange)';
+  const actualColor = pred.actualDeltaKg<=0 ? 'var(--teal)' : 'var(--orange)';
+
+  let interp;
+  if(pred.days<7){
+    interp = `Comparaison encore peu fiable si tôt dans la phase (${pred.days} j) — à affiner avec le temps.`;
+  } else if(Math.abs(pred.predictedDeltaKg)<0.1){
+    interp = `Balance quasi neutre sur la période : peu de variation prédite par le calcul.`;
+  } else if((pred.predictedDeltaKg<0)===(pred.actualDeltaKg<0)){
+    const ratio = Math.round((pred.actualDeltaKg/pred.predictedDeltaKg)*100);
+    interp = `Tu as ${pred.actualDeltaKg<=0?'perdu':'pris'} ${ratio}% de ce que prédit le calcul (écart : ${fmt1(pred.diffKg)} kg).`;
+  } else {
+    interp = `Ton poids réel évolue dans le sens opposé à ce que prédit la balance (écart : ${fmt1(pred.diffKg)} kg) — vérifie tes pesées ou ta saisie des repas.`;
+  }
+
+  body.innerHTML = `
+    <div style="display:flex;gap:0.8rem">
+      <div style="flex:1">
+        <div style="font-size:0.6rem;text-transform:uppercase;letter-spacing:.05em;color:var(--orange-d)">Prédit (calcul)</div>
+        <div style="font-size:1.15rem;font-weight:700;color:${predColor}">${fmt1(pred.predictedDeltaKg)} kg</div>
+      </div>
+      <div style="width:1px;background:var(--border2)"></div>
+      <div style="flex:1">
+        <div style="font-size:0.6rem;text-transform:uppercase;letter-spacing:.05em;color:var(--orange-d)">Réel (pesées)</div>
+        <div style="font-size:1.15rem;font-weight:700;color:${actualColor}">${fmt1(pred.actualDeltaKg)} kg</div>
+      </div>
+    </div>
+    <div style="font-size:0.68rem;color:var(--muted2);margin-top:0.6rem;line-height:1.4">${interp}</div>
+  `;
 }
 
 function renderDashboardInsights(){
@@ -18150,6 +18354,128 @@ function renderProjectionModal(){
     `;
   } else {
     detailEl.innerHTML = `<div style="color:var(--muted);font-size:0.75rem;text-align:center;padding:0.75rem 0">Pas assez de données (poids + apport + dépense) sur les 7 derniers jours pour calculer une projection fiable.</div>`;
+  }
+}
+
+/* Trajectoire théorique jour par jour de la balance période diète, pour
+   comparer visuellement au poids réellement mesuré (modal "Poids : prédit
+   vs réel"). Contrairement à "Projection semaine" (qui PROJETTE le poids
+   FUTUR à partir de la balance moyenne des 7 derniers jours), cette
+   trajectoire est un calcul RÉTROSPECTIF : elle rejoue, jour après jour
+   depuis le début de la phase, ce que la balance réellement enregistrée
+   prédisait comme poids — pour voir a posteriori où le poids réel a suivi
+   ou divergé du calcul. */
+function computeDietWeightTrajectory(balDietDetail, fitness){
+  if(!balDietDetail?.startDate) return null;
+  const startWeight = getWeightNear(fitness, balDietDetail.startDate, 3);
+  if(startWeight===null) return null;
+  let cum = 0;
+  const predicted = balDietDetail.days.map(d=>{
+    if(d.included) cum += d.balance;
+    return { date:d.date, label:fmtDL(d.date), predictedWeight:+(startWeight + cum/7700).toFixed(2) };
+  });
+  const measured = balDietDetail.days.map(d=>{
+    const fitD = fitness.find(f=>f.date===d.date);
+    return { date:d.date, label:fmtDL(d.date), poids: fitD?.poids!=null ? +fitD.poids : null };
+  });
+  return { startWeight, predicted, measured };
+}
+
+/* ════════════════════════════════════════
+   POIDS PRÉDIT VS RÉEL — Modal détail
+   Courbe mesurée + courbe théorique sur la période de diète en cours,
+   pour visualiser où le poids réel a suivi ou divergé du calcul de balance.
+════════════════════════════════════════ */
+function openBalDietWeightModal(){
+  const modal = document.getElementById('baldietweight-modal');
+  if(!modal) return;
+  modal.style.display = 'flex';
+  kcLockScroll();
+  renderBalDietWeightModal();
+}
+function closeBalDietWeightModal(){
+  const modal = document.getElementById('baldietweight-modal');
+  if(modal){ modal.style.display = 'none'; kcUnlockScroll(); }
+}
+function renderBalDietWeightModal(){
+  const fitness = DB.getFitness();
+  const food = DB.getFood();
+  const profile = JSON.parse(localStorage.getItem('kcalos_profile')||'{}');
+
+  const balDietDetail = computeDietPeriodBalanceDetail(fitness, food, profile);
+  const subEl = document.getElementById('baldietweight-modal-sub');
+  const detailEl = document.getElementById('baldietweight-detail');
+  const ctx = document.getElementById('baldietweight-chart')?.getContext('2d');
+
+  if(!balDietDetail.startDate){
+    if(subEl) subEl.textContent = 'Aucune phase (déficit / surplus / maintien) définie';
+    if(detailEl) detailEl.innerHTML = `<div style="color:var(--muted);font-size:0.75rem;text-align:center;padding:0.75rem 0">Choisis une phase dans ton profil pour activer ce suivi.</div>`;
+    if(window._balDietWeightChartInst){ window._balDietWeightChartInst.destroy(); window._balDietWeightChartInst=null; }
+    return;
+  }
+  if(subEl) subEl.textContent = `Depuis le début de la phase, le ${fmtD(balDietDetail.startDate)}`;
+
+  const traj = computeDietWeightTrajectory(balDietDetail, fitness);
+  const pred = computeDietWeightPrediction(balDietDetail, fitness);
+
+  if(ctx){
+    if(window._balDietWeightChartInst) window._balDietWeightChartInst.destroy();
+    if(traj){
+      const labels = traj.predicted.map(p=>p.label);
+      const measuredData = traj.measured.map(m=>m.poids);
+      const predictedData = traj.predicted.map(p=>p.predictedWeight);
+      window._balDietWeightChartInst = new Chart(ctx,{
+        type:'line',
+        data:{ labels, datasets:[
+          { label:'Poids mesuré', data: measuredData, borderColor:'#f0a84a', backgroundColor:'#f0a84a22', borderWidth:2, pointRadius:3, pointHoverRadius:5, tension:0.3, spanGaps:true, fill:false },
+          { label:'Poids théorique (calcul balance)', data: predictedData, borderColor:'#40d9b0', backgroundColor:'transparent', borderWidth:2, borderDash:[6,4], pointRadius:0, tension:0.3, spanGaps:true, fill:false }
+        ]},
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          interaction:{mode:'index',intersect:false},
+          plugins:{
+            legend:{ display:true, position:'top', labels:{ color:'#8b96a8', font:{family:'DM Sans',size:10}, boxWidth:10, usePointStyle:true } },
+            tooltip:{
+              backgroundColor:'#1a2030', borderColor:'rgba(255,255,255,0.1)', borderWidth:1,
+              titleColor:'#f0ede6', bodyColor:'#6b7a90', padding:10,
+              callbacks:{ label:c=> c.raw===null? null : `  ${c.dataset.label} : ${c.raw.toFixed(1)} kg` }
+            }
+          },
+          scales:{
+            x:{ ticks:{ color:'#8b96a8', font:{size:9}, maxRotation:0, autoSkip:true, maxTicksLimit:7 }, grid:{ color:'rgba(255,255,255,0.05)' } },
+            y:{ ticks:{ color:'#8b96a8', font:{size:9} }, grid:{ color:'rgba(255,255,255,0.05)' } }
+          }
+        }
+      });
+    } else {
+      window._balDietWeightChartInst = null;
+    }
+  }
+
+  if(!detailEl) return;
+  const row = (label,val,color)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;font-size:0.78rem"><span style="color:var(--muted)">${label}</span><strong style="color:${color||'var(--text)'}">${val}</strong></div>`;
+  if(pred){
+    const predSign = pred.predictedDeltaKg>=0?'+':'';
+    const actSign = pred.actualDeltaKg>=0?'+':'';
+    const diffSign = pred.diffKg>=0?'+':'';
+    detailEl.innerHTML = `
+      ${row('Balance moyenne (période)', (balDietDetail.avg>=0?'+':'')+Math.round(balDietDetail.avg)+' kcal/j')}
+      ${row('Jours exploitables', balDietDetail.includedBalances.length+' / '+balDietDetail.days.length)}
+      <div style="height:1px;background:var(--border2);margin:0.5rem 0"></div>
+      <div style="font-size:0.68rem;color:var(--muted2);line-height:1.6;margin-bottom:0.5rem">
+        Poids théorique(jour) = poids de départ + (Σ balance des jours pris en compte jusqu'à ce jour) ÷ 7700<br>
+        <span style="color:var(--text)">Le même principe que "Projection semaine", mais rejoué a posteriori jour par jour avec la balance réellement enregistrée sur toute la phase, au lieu de projeter le futur depuis la moyenne des 7 derniers jours.</span>
+      </div>
+      <div style="height:1px;background:var(--border2);margin:0.5rem 0"></div>
+      ${row('Poids de départ', pred.startWeight.toFixed(1)+' kg')}
+      ${row('Poids actuel', pred.nowWeight.toFixed(1)+' kg')}
+      ${row('Variation prédite (calcul)', predSign+pred.predictedDeltaKg.toFixed(1)+' kg', 'var(--teal)')}
+      ${row('Variation réelle (pesées)', actSign+pred.actualDeltaKg.toFixed(1)+' kg', 'var(--orange)')}
+      ${row('Écart', diffSign+pred.diffKg.toFixed(1)+' kg')}
+      <div style="font-size:0.6rem;color:var(--muted2);margin-top:0.5rem;line-height:1.5">Estimation théorique basée sur le principe 7700 kcal ≈ 1 kg de masse. Écarts fréquents : rétention d'eau, hydratation, cycle digestif, sodium, précision des estimations caloriques — ne remplace pas une tendance sur plusieurs semaines.</div>
+    `;
+  } else {
+    detailEl.innerHTML = `<div style="color:var(--muted);font-size:0.75rem;text-align:center;padding:0.75rem 0">Pas assez de données (balance + pesées) sur la période pour comparer.</div>`;
   }
 }
 
@@ -22742,6 +23068,25 @@ function reportBuildPhasePeriods() {
 // sélecteur de compte rendu, ou null si aucune. Cf bouton crayon des cartes.
 let REPORT_EDITING_INDEX = null;
 
+/* Résumé "balance moyenne réelle · poids réel" d'une période de phase, pour
+   comparer les phases d'un coup d'œil dans la liste du compte rendu sans
+   avoir à ouvrir le rapport détaillé de chacune. Réutilise exactement les
+   mêmes calculs que le widget dashboard "Balance période diète" / "Poids
+   prédit vs réel" (computeBalanceDetailForPeriod, computeWeightPredictionForPeriod).
+   Retourne null si la période n'a pas assez de données (balance non
+   calculable) — on masque alors juste ce résumé plutôt que d'afficher un
+   "—" peu utile. */
+function reportPhaseSummary(p, fitness, food, profile){
+  const balDetail = computeBalanceDetailForPeriod(fitness, food, profile, p.start, p.end, p.ongoing);
+  if(balDetail.avg===null) return null;
+  const balTxt = (balDetail.avg>=0?'+':'')+Math.round(balDetail.avg)+' kcal/j';
+  const endDateForWeight = balDetail.days.length ? balDetail.days[balDetail.days.length-1].date : p.start;
+  const weightPred = computeWeightPredictionForPeriod({ ...balDetail, startDate:p.start }, fitness, endDateForWeight);
+  if(!weightPred) return balTxt;
+  const poidsTxt = (weightPred.actualDeltaKg>=0?'+':'')+weightPred.actualDeltaKg.toFixed(1)+' kg';
+  return balTxt + ' · ' + poidsTxt;
+}
+
 function renderReportPhaseList() {
   var box = document.getElementById('report-phase-list');
   if (!box) return;
@@ -22750,18 +23095,26 @@ function renderReportPhaseList() {
     box.innerHTML = '<div style="font-size:0.7rem;color:var(--muted2);padding:0.3rem 0 0.1rem">Aucune phase enregistrée pour l\'instant — définis un objectif calorique pour en créer une.</div>';
     return;
   }
+  var fitness = DB.getFitness();
+  var food = DB.getFood();
+  var profile = JSON.parse(localStorage.getItem('kcalos_profile') || '{}');
   box.innerHTML = periods.map(function(p) {
     var col = (typeof WO_PHASE_COLORS !== 'undefined' && WO_PHASE_COLORS[p.phase]) || 'var(--teal)';
     var lbl = REPORT_PHASE_LABELS[p.phase] || p.phase;
     var range = p.ongoing ? (fmtDL(p.start) + ' → en cours') : (fmtDL(p.start) + ' → ' + fmtDL(p.end));
     var editing = REPORT_EDITING_INDEX === p.histIndex;
+    var summary = reportPhaseSummary(p, fitness, food, profile);
+    var rightCol = '<span style="text-align:right;flex-shrink:0">'
+      + '<span style="display:block;font-size:0.65rem;color:var(--muted2)">' + fmt(p.kcalGoal) + ' kcal obj.</span>'
+      + (summary ? '<span style="display:block;font-size:0.68rem;color:' + col + ';font-weight:600;margin-top:1px">' + summary + '</span>' : '')
+      + '</span>';
     var html = '<div style="display:flex;align-items:stretch;gap:6px">'
       + '<button onclick="reportGenerateFromPhase(\'' + p.start + '\',\'' + p.end + '\',\'' + p.phase + '\')" '
       + 'style="flex:1;min-width:0;display:flex;align-items:center;gap:10px;padding:0.65rem 0.8rem;border-radius:var(--r-sm);border:1.5px solid ' + col + '4d;background:var(--s2);cursor:pointer;text-align:left;font-family:Syne,sans-serif;-webkit-tap-highlight-color:transparent">'
       + '<span style="width:9px;height:9px;border-radius:50%;background:' + col + ';flex-shrink:0"></span>'
       + '<span style="flex:1;min-width:0"><span style="font-size:0.78rem;font-weight:600;color:' + col + '">' + lbl + '</span>'
       + '<span style="display:block;font-size:0.65rem;color:var(--muted)">' + range + '</span></span>'
-      + '<span style="font-size:0.68rem;color:var(--muted2);flex-shrink:0">' + fmt(p.kcalGoal) + ' kcal</span>'
+      + rightCol
       + '</button>'
       + '<button onclick="event.stopPropagation();reportToggleEditPeriod(' + p.histIndex + ')" aria-label="Modifier cette période" '
       + 'style="width:36px;flex-shrink:0;border-radius:var(--r-sm);border:1.5px solid ' + (editing ? col + '4d' : 'var(--border)') + ';background:' + (editing ? 'var(--s3)' : 'var(--s2)') + ';color:' + (editing ? col : 'var(--muted)') + ';cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent">'
@@ -23686,6 +24039,7 @@ function renderSeanceReportHtml(start, end, label, r) {
     { id:'chart7j',   name:'Graphique 7 jours',     desc:'Courbe apports & dépenses',          icon:'📈', defaultOn:true,  locked:false, defaultSize:'full'  },
     { id:'balance7j', name:'Balance 7j & 30j',      desc:'Moyenne hebdo + mensuelle',         icon:'⚖️', defaultOn:true,  locked:false, defaultSize:'half'  },
     { id:'baldiet',   name:'Balance période diète',  desc:'Moyenne depuis le début de la phase en cours', icon:'⚖️', defaultOn:true,  locked:false, defaultSize:'full'  },
+    { id:'baldietweight', name:'Poids prédit vs réel', desc:'Compare la variation de poids théorique et mesurée', icon:'⚖️', defaultOn:true,  locked:false, defaultSize:'full'  },
     { id:'insights',  name:'Analyse intelligente',  desc:'Recommandations IA locale',          icon:'🧠', defaultOn:true,  locked:false, defaultSize:'full'  },
     { id:'eau',         name:'Hydratation',       desc:'Saisie ml/verre/L + courbe journée', icon:'💧', defaultOn:false, locked:false, defaultSize:'half' },
     { id:'sommeil',     name:'Sommeil',            desc:'Score, durée, phases — depuis le suivi', icon:'🌙', defaultOn:false, locked:false, defaultSize:'full' },
