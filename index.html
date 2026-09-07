@@ -2782,6 +2782,36 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 .eau-qbtn{padding:0.45rem 0.2rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--teal);font-family:Syne,sans-serif;font-size:0.78rem;font-weight:600;cursor:pointer;text-align:center;transition:background var(--trans);line-height:1.3;-webkit-tap-highlight-color:transparent}
 .eau-qbtn span{font-size:0.52rem;color:var(--muted2);display:block;font-weight:400}
 .eau-qbtn:active,.eau-qbtn:hover{background:var(--teal-bg);border-color:var(--teal-d)}
+
+/* ── Widget Eau : header + hero bouteille (épuré, focus sur l'animation) ── */
+.eau-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.35rem}
+.eau-count{font-size:0.72rem;font-weight:600;color:var(--teal);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
+.eau-count .eau-unit{font-size:0.58rem;color:var(--teal-d);font-weight:500;margin-left:1px}
+.eau-count .eau-goal-txt{font-size:0.56rem;color:var(--muted2);font-weight:500}
+.eau-count.eau-full{color:var(--lime)}
+
+/* Hero : bouteille centrée, seule vraie pièce visuelle du widget */
+.eau-hero{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0.3rem 0 0.85rem}
+.eau-bottle-wrap{position:relative;width:64px;height:108px;flex-shrink:0;transition:filter 0.4s ease}
+.eau-bottle-outline{position:absolute;inset:0;pointer-events:none}
+.eau-bottle-fill{position:absolute;inset:0;-webkit-clip-path:url(#eauBottleClip);clip-path:url(#eauBottleClip);background:var(--s2);box-shadow:inset 0 1px 0 rgba(255,255,255,0.05)}
+.eau-bottle-water{position:absolute;left:-2px;right:-2px;bottom:0;height:0%;opacity:0;transition:height 0.7s cubic-bezier(0.34,1.56,0.64,1),opacity 0.3s ease;background:linear-gradient(180deg,var(--blue) 0%,var(--teal) 100%)}
+.eau-bottle-sheen{position:absolute;left:9px;top:23px;bottom:12px;width:6px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,0.22),rgba(255,255,255,0.02));pointer-events:none}
+.eau-wave{position:absolute;left:0;top:-6px;width:200%;height:12px}
+.eau-wave svg{display:block;width:100%;height:100%}
+.eau-wave-back{animation:eauWaveScroll 5.5s linear infinite reverse;opacity:0.55}
+.eau-wave-front{animation:eauWaveScroll 3.8s linear infinite;opacity:0.9}
+@keyframes eauWaveScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.eau-bottle-wrap.eau-bump{animation:eauBump var(--trans-spring)}
+@keyframes eauBump{0%{transform:scale(1)}35%{transform:scale(1.07)}100%{transform:scale(1)}}
+.eau-drop{position:absolute;left:50%;bottom:8px;width:6px;height:6px;border-radius:50% 50% 50% 0;background:var(--teal);transform:translateX(-50%) rotate(45deg);opacity:0;pointer-events:none}
+.eau-drop.go{animation:eauDropRise 0.9s ease-out forwards}
+@keyframes eauDropRise{0%{opacity:0;transform:translate(-50%,0) rotate(45deg) scale(0.6)}15%{opacity:0.9}100%{opacity:0;transform:translate(-50%,-70px) rotate(45deg) scale(1)}}
+/* Badge % accroché au bas de la bouteille */
+.eau-pct-badge{margin-top:-9px;background:var(--s2);border:1px solid var(--border2);border-radius:var(--r-pill);padding:1px 8px;font-size:0.6rem;font-weight:700;color:var(--teal);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;white-space:nowrap;transition:color var(--trans),border-color var(--trans)}
+/* Objectif atteint : léger halo autour de la bouteille + badge doré */
+.eau-bottle-wrap.eau-full{filter:drop-shadow(0 0 7px var(--teal))}
+.eau-pct-badge.eau-full{color:var(--lime);border-color:var(--lime-d)}
 /* ── Widget Sommeil phases ── */
 .sl-ph-bar{height:7px;border-radius:4px;overflow:hidden;display:flex;gap:1px;margin:5px 0 3px}
 /* ── Macros restantes ── */
@@ -3469,27 +3499,52 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   <div class="widget-block" id="widget-eau" data-widget="eau" data-size="half" data-visible="false" style="margin-top:0.85rem">
   <button class="widget-delete-btn" onclick="widgetDelete('eau')" title="Supprimer">×</button>
   <button class="widget-resize-btn" onclick="widgetResize('eau')" title="Changer la taille">⇔</button>
-  <div class="db-card db-card-full" onclick="if(event.target===this||event.target.closest('.db-lbl')||event.target.closest('#db-eau-curve')||event.target.closest('#db-eau-msg'))openEauSheet()" style="cursor:pointer">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem">
+  <div class="db-card db-card-full" onclick="if(event.target===this||event.target.closest('.db-lbl')||event.target.closest('.eau-hero'))openEauSheet()" style="cursor:pointer">
+    <div class="eau-top">
       <div class="db-lbl"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" style="margin-right:5px;vertical-align:middle"><path d="M8 2c0 0-5 5-5 9a5 5 0 0010 0C13 7 8 2 8 2z"/></svg>Hydratation</div>
-      <div style="font-size:0.72rem;font-weight:600;color:var(--teal);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">
-        <span id="db-eau-ml">0</span><span style="font-size:0.58rem;color:var(--teal-d)"> ml</span>
-        <span style="font-size:0.56rem;color:var(--muted2)"> / <span id="db-eau-goal">2000</span></span>
+      <div class="eau-count" id="db-eau-count">
+        <span id="db-eau-ml">0</span><span class="eau-unit">ml</span><span class="eau-goal-txt"> / <span id="db-eau-goal">2000</span></span>
       </div>
     </div>
-    <div style="height:5px;background:var(--s3);border-radius:3px;overflow:hidden;margin-bottom:0.55rem">
-      <div id="db-eau-bar" style="height:100%;background:linear-gradient(90deg,var(--teal),var(--blue));border-radius:3px;transition:width .4s ease;width:0%"></div>
+    <!-- Hero : bouteille qui se remplit avec des vagues animées au fil des saisies -->
+    <div class="eau-hero">
+      <div class="eau-bottle-wrap" id="eau-bottle-wrap">
+        <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+          <defs>
+            <clipPath id="eauBottleClip" clipPathUnits="userSpaceOnUse">
+              <rect x="24" y="0" width="16" height="7" rx="2"/>
+              <polygon points="26,7 38,7 46,21 18,21"/>
+              <rect x="9" y="19" width="46" height="88" rx="16"/>
+            </clipPath>
+          </defs>
+        </svg>
+        <svg class="eau-bottle-outline" viewBox="0 0 64 108" aria-hidden="true">
+          <rect x="24" y="0" width="16" height="7" rx="2" fill="none" stroke="var(--border2)" stroke-width="1.6"/>
+          <polygon points="26,7 38,7 46,21 18,21" fill="none" stroke="var(--border2)" stroke-width="1.6" stroke-linejoin="round"/>
+          <rect x="9" y="19" width="46" height="88" rx="16" fill="none" stroke="var(--border2)" stroke-width="1.6"/>
+        </svg>
+        <div class="eau-bottle-fill">
+          <div class="eau-bottle-water" id="eau-bottle-water">
+            <div class="eau-wave eau-wave-back">
+              <svg viewBox="0 0 40 10" preserveAspectRatio="none"><path d="M0,5 Q5,0 10,5 T20,5 T30,5 T40,5 V10 H0 Z" fill="var(--teal)"/></svg>
+            </div>
+            <div class="eau-wave eau-wave-front">
+              <svg viewBox="0 0 40 10" preserveAspectRatio="none"><path d="M0,4 Q5,9 10,4 T20,4 T30,4 T40,4 V10 H0 Z" fill="var(--blue)"/></svg>
+            </div>
+          </div>
+          <div class="eau-bottle-sheen"></div>
+        </div>
+        <div class="eau-drop" id="eau-drop"></div>
+      </div>
+      <div class="eau-pct-badge" id="eau-bottle-pct">0%</div>
     </div>
-    <canvas id="db-eau-curve" height="36" style="width:100%;display:block;margin-bottom:0.6rem"></canvas>
-    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:0.5rem">
+    <!-- Boutons de saisie rapide (logique : eauQuickAdd / openEauSheet) -->
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px">
       <button class="eau-qbtn" onclick="eauQuickAdd(150)">+150<span>ml</span></button>
       <button class="eau-qbtn" onclick="eauQuickAdd(250)">+250<span>ml</span></button>
       <button class="eau-qbtn" onclick="eauQuickAdd(500)">+500<span>ml</span></button>
       <button class="eau-qbtn" onclick="eauQuickAdd(800)">+800<span>ml</span></button>
       <button class="eau-qbtn" onclick="openEauSheet()" style="color:var(--muted);grid-column:span 1">+…<span>autre</span></button>
-    </div>
-    <div id="db-eau-msg" style="font-size:0.62rem;color:var(--muted2);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">
-      Reste <strong id="db-eau-reste" style="color:var(--teal)">2000</strong> ml à boire
     </div>
   </div>
   </div><!-- /widget-eau -->
@@ -5207,8 +5262,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 /* Nak bar transition */
 #db-nak-na-fill, #db-nak-k-fill { transition: width 0.6s cubic-bezier(0.34,1.56,0.64,1); }
 
-/* Eau bar transition */
-#db-eau-bar { transition: width 0.6s cubic-bezier(0.34,1.56,0.64,1); }
+/* Eau : transition du niveau d'eau gérée dans .eau-bottle-water (règle "Widget Eau : bouteille animée") */
 
 /* Balance7j: value pops on render */
 @keyframes valuePop { 0%{transform:scale(0.85);opacity:0} 70%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
@@ -5552,7 +5606,10 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
           <div class="hero-lbl">Progression totale cumulée (force)</div>
           <div class="hero-val-row">
             <div class="hero-val" id="wo-prog-hero-val">—</div>
+            <button onclick="document.getElementById('wo-prog-hero-info').style.display=document.getElementById('wo-prog-hero-info').style.display==='none'?'':'none'"
+              style="background:var(--s2);border:1px solid var(--border2);color:var(--muted);border-radius:50%;width:18px;height:18px;cursor:pointer;font-size:0.62rem;font-weight:700;font-family:inherit;flex-shrink:0;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;padding:0;align-self:center">!</button>
           </div>
+          <div id="wo-prog-hero-info" style="display:none;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:0.75rem;margin-top:0.5rem;font-size:0.65rem;color:var(--muted);line-height:1.75"></div>
           <div class="hero-underline"></div>
         </div>
         <div class="range-tabs">
@@ -5561,9 +5618,18 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
         </div>
       </div>
 
-      <!-- Graphique : une courbe par type de séance, position = cumulé depuis le
-           début (axe Y). Le tooltip au survol n'indique que la variation vs la
-           période précédente, pour rester simple. Légende cliquable. -->
+      <!-- Dimension du graphique : par type de séance (défaut) ou par groupe
+           musculaire — même moteur de calcul (woMatchedProgress/Epley), juste
+           regroupé différemment. -->
+      <div class="range-tabs" style="margin-bottom:0.6rem">
+        <button class="range-tab active" id="wo-prog-view-type" onclick="woSwitchProgView('type')">Par séance</button>
+        <button class="range-tab" id="wo-prog-view-muscle" onclick="woSwitchProgView('muscle')">Par muscle</button>
+      </div>
+
+      <!-- Graphique : une courbe par type de séance (ou par muscle selon la vue
+           choisie ci-dessus), position = cumulé depuis le début (axe Y). Le
+           tooltip au survol n'indique que la variation vs la période précédente,
+           pour rester simple. Légende cliquable. -->
       <div class="chart-wrap" style="height:210px;margin-bottom:0.6rem"><canvas id="wo-prog-chart"></canvas></div>
       <div class="clegend-row" id="wo-prog-legend"></div>
 
@@ -6501,7 +6567,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-09-03.9';
+const APP_BUILD_VERSION = '2026-09-07.11';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -7152,7 +7218,7 @@ function loadTrendGoalsFromProfile(){
   // ── 1. Calculer la dépense moyenne sur les 7 derniers jours depuis la DB ──
   const fitness = DB.getFitness();
   const today7 = [];
-  for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); today7.push(d.toISOString().split('T')[0]); }
+  for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); today7.push(toLocalDateStr(d)); }
   const recentDeps = today7.map(d=>{ const f=fitness.find(x=>x.date===d); return (f&&f.calories&&f.calories>500)?f.calories:null; }).filter(Boolean);
   const avgDep = recentDeps.length ? Math.round(recentDeps.reduce((a,b)=>a+b,0)/recentDeps.length) : 0;
 
@@ -7416,7 +7482,7 @@ function renderWeekChart(){
   const food=DB.getFood();
   const fitness=DB.getFitness();
   const days=[];
-  for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); days.push(d.toISOString().split('T')[0]); }
+  for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); days.push(toLocalDateStr(d)); }
   const apports=days.map(d=>{ const f=food.find(x=>x.date===d); return f?f.kcal:null; });
   const depenses=days.map(d=>{ const f=fitness.find(x=>x.date===d); return f?f.calories:null; });
   const ctx=document.getElementById('weekChart').getContext('2d');
@@ -7734,12 +7800,12 @@ function normalizeDate(raw){
   // Unix ms timestamp (13 digits) — Samsung Health day_time
   if(/^\d{13}$/.test(s)){
     const d=new Date(parseInt(s));
-    if(!isNaN(d)&&d.getFullYear()>2000) return d.toISOString().split('T')[0];
+    if(!isNaN(d)&&d.getFullYear()>2000) return toLocalDateStr(d);
   }
   // Unix s timestamp (10 digits)
   if(/^\d{10}$/.test(s)){
     const d=new Date(parseInt(s)*1000);
-    if(!isNaN(d)&&d.getFullYear()>2000) return d.toISOString().split('T')[0];
+    if(!isNaN(d)&&d.getFullYear()>2000) return toLocalDateStr(d);
   }
   // YYYY-MM-DD
   if(/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0,10);
@@ -7749,7 +7815,7 @@ function normalizeDate(raw){
   // MM/DD/YYYY
   const m2=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
   if(m2) return `${m2[3]}-${m2[1].padStart(2,'0')}-${m2[2].padStart(2,'0')}`;
-  try{const d=new Date(s);if(!isNaN(d)&&d.getFullYear()>2000)return d.toISOString().split('T')[0];}catch(e){}
+  try{const d=new Date(s);if(!isNaN(d)&&d.getFullYear()>2000)return toLocalDateStr(d);}catch(e){}
   return null;
 }
 
@@ -7854,7 +7920,7 @@ function parseCSV(text){
 function trimAppleHealthXML(text, monthsBack){
   const cutoff=new Date();
   cutoff.setMonth(cutoff.getMonth()-monthsBack);
-  const cutoffStr=cutoff.toISOString().split('T')[0];
+  const cutoffStr=toLocalDateStr(cutoff);
   let kept=0, removed=0;
   const trimmed=text.replace(/<Record\b[^>]*?(?:\/>|>[\s\S]*?<\/Record>)/g, m=>{
     const sd=m.match(/\bstartDate="([^"]+)"/);
@@ -8503,7 +8569,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v24';
+    const CACHE_NAME = 'kcalos-v25';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -8704,7 +8770,7 @@ function stepsRefreshDateUI(){
 function stepsChangeDay(delta){
   const d = new Date(SP.date + 'T12:00:00');
   d.setDate(d.getDate() + delta);
-  const newDate = d.toISOString().split('T')[0];
+  const newDate = toLocalDateStr(d);
   if(newDate > today()) return; // no future
   SP.date = newDate;
   stepsRefreshDateUI();
@@ -8868,7 +8934,7 @@ function apRefreshDateUI() {
 function apChangeDay(delta) {
   const dt = new Date(AP.date + 'T12:00:00');
   dt.setDate(dt.getDate() + delta);
-  AP.date = dt.toISOString().split('T')[0];
+  AP.date = toLocalDateStr(dt);
   apRefreshDateUI();
   renderMealCards();
   renderApDayBanner();
@@ -15455,7 +15521,7 @@ function tmgGetObjectif(kcalGoal){
    (sommeil, glycemie, Na/K, seances, apports) — aucune nouvelle saisie.
 ══════════════════════════════════════ */
 function tmgComputeRecap(){
-  const todayStr = (typeof today==='function') ? today() : new Date().toISOString().split('T')[0];
+  const todayStr = (typeof today==='function') ? today() : toLocalDateStr(new Date());
   const checks = [];
 
   // 1. Sommeil (derniere nuit enregistree) → renvoie vers la page Sommeil
@@ -16704,6 +16770,18 @@ function computeBalanceDetailForDates(dates, fitness, food, profile){
   return { days, includedBalances, avg };
 }
 
+/* Convertit un objet Date en chaîne AAAA-MM-JJ en heure LOCALE (pas UTC) —
+   contrairement à Date.toISOString() qui, pour tout fuseau UTC+ (ex: France,
+   UTC+1/+2), fait basculer une date minuit locale sur le jour précédent
+   (15/01 00:00 CET → 14/01 23:00 UTC → toISOString() donne "...-01-14").
+   Toutes les boucles de date de la balance (7j/30j/période diète) DOIVENT
+   utiliser cette fonction pour rester alignées avec today() et les dates
+   stockées (fitness/food), qui sont elles aussi en heure locale — sinon la
+   saisie du jour même "disparaît" des calculs (décalage d'un jour entier). */
+function toLocalDateStr(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
 /* Helper: détail jour par jour de la balance sur les 7 derniers jours. */
 function computeLast7BalanceDetail(fitness, food, profile){
   const dates = [];
@@ -16714,7 +16792,7 @@ function computeLast7BalanceDetail(fitness, food, profile){
   // les 7 derniers jours COMPLETS (hier inclus).
   for(let i=7;i>=1;i--){
     const d=new Date(); d.setDate(d.getDate()-i);
-    dates.push(d.toISOString().split('T')[0]);
+    dates.push(toLocalDateStr(d));
   }
   return computeBalanceDetailForDates(dates, fitness, food, profile);
 }
@@ -16725,7 +16803,7 @@ function computeLast30BalanceDetail(fitness, food, profile){
   const dates = [];
   for(let i=30;i>=1;i--){
     const d=new Date(); d.setDate(d.getDate()-i);
-    dates.push(d.toISOString().split('T')[0]);
+    dates.push(toLocalDateStr(d));
   }
   return computeBalanceDetailForDates(dates, fitness, food, profile);
 }
@@ -16752,16 +16830,22 @@ function computeBalanceDetailForPeriod(fitness, food, profile, startDate, endDat
   const end = new Date(endDate+'T00:00:00');
   if(!ongoing) end.setDate(end.getDate()-1);
   for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
-    dates.push(d.toISOString().split('T')[0]);
+    dates.push(toLocalDateStr(d));
   }
   return computeBalanceDetailForDates(dates, fitness, food, profile);
 }
 
+/* Helper: détail jour par jour de la balance sur la période de la phase (diet/
+   surplus/maintien) en cours, du jour de début (cf getCurrentPhaseStartDate)
+   jusqu'à HIER inclus. Même règle qu'aujourd'hui pour balance 7j/30j :
+   aujourd'hui est toujours exclu (jour pas terminé, la moyenne ne doit pas
+   bouger en direct à chaque repas saisi). Retourne startDate:null si aucune
+   phase n'est connue. */
 function computeDietPeriodBalanceDetail(fitness, food, profile){
   const startDate = getCurrentPhaseStartDate();
   if(!startDate) return { days: [], includedBalances: [], avg: null, startDate: null };
-  const todayStr = new Date().toISOString().split('T')[0];
-  const detail = computeBalanceDetailForPeriod(fitness, food, profile, startDate, todayStr, true);
+  const todayStr = today();
+  const detail = computeBalanceDetailForPeriod(fitness, food, profile, startDate, todayStr, false);
   return { ...detail, startDate };
 }
 
@@ -16787,7 +16871,7 @@ function getWeightNear(fitness, dateStr, windowDays){
 function computeDietWeightPrediction(balDietDetail, fitness){
   if(!balDietDetail?.startDate || balDietDetail.avg===null) return null;
   const startWeight = getWeightNear(fitness, balDietDetail.startDate, 3);
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = today();
   const nowWeight = getWeightNear(fitness, todayStr, 3);
   if(startWeight===null || nowWeight===null) return null;
 
@@ -17226,7 +17310,7 @@ function renderDashboardWeekChart(fitness, food){
   const days=[], labels=[], apports=[], depenses=[];
   for(let i=6;i>=0;i--){
     const d=new Date(); d.setDate(d.getDate()-i);
-    const ds=d.toISOString().split('T')[0];
+    const ds=toLocalDateStr(d);
     days.push(ds);
     labels.push(fmtD(ds));
     const a = getDayApport(ds, food||DB.getFood());
@@ -18260,7 +18344,7 @@ function renderProjectionModal(){
   const poidsHist = [];
   for(let i=HIST_DAYS-1;i>=0;i--){
     const d = new Date(); d.setDate(d.getDate()-i);
-    const ds = d.toISOString().split('T')[0];
+    const ds = toLocalDateStr(d);
     const fitD = fitness.find(x=>x.date===ds);
     histLabels.push(fmtDL(ds));
     poidsHist.push(fitD?.poids ?? null);
@@ -18284,7 +18368,7 @@ function renderProjectionModal(){
   if(lastPoids!==null && kgPerDay!==null){
     for(let i=0;i<=horizon;i++){
       const d = new Date(); d.setDate(d.getDate()+i);
-      projDatesLabels.push(fmtDL(d.toISOString().split('T')[0]));
+      projDatesLabels.push(fmtDL(toLocalDateStr(d)));
       projValues.push(+(lastPoids + kgPerDay*i).toFixed(2));
     }
   }
@@ -19253,7 +19337,7 @@ function woInit(){
 function woPickerChangeDay(delta){
   const d = new Date(WO2.pickerDate+'T12:00:00');
   d.setDate(d.getDate()+delta);
-  const nd = d.toISOString().split('T')[0];
+  const nd = toLocalDateStr(d);
   if(nd > today()) return;
   WO2.pickerDate = nd;
   woRefreshPickerDateUI();
@@ -19381,6 +19465,21 @@ function woSwitchProgTab(period){
     if(!btn) return;
     btn.classList.toggle('active', t===period);
   });
+  woRenderProgAll(period);
+}
+
+/* ── Dimension du graphique de progression : par type de séance ou par muscle ── */
+window._woProgMode = window._woProgMode || 'type';
+function woSwitchProgView(mode){
+  window._woProgMode = mode;
+  const btnT = document.getElementById('wo-prog-view-type');
+  const btnM = document.getElementById('wo-prog-view-muscle');
+  if(btnT) btnT.classList.toggle('active', mode==='type');
+  if(btnM) btnM.classList.toggle('active', mode==='muscle');
+  // Les clés de courbes masquées via la légende (tid de type ou nom de muscle)
+  // ne correspondent pas d'une dimension à l'autre : on repart légende visible.
+  window._woDsHidden = {};
+  const period = document.getElementById('wo-prog-tab-month')?.classList.contains('active') ? 'month' : 'week';
   woRenderProgAll(period);
 }
 
@@ -19761,6 +19860,77 @@ function woBuildProgSeries(period){
   return {typesArr, labels, datasets};
 }
 
+// % d'une séance limité aux exos d'UN groupe musculaire — même principe que
+// woSessPairPct (comparaison à la dernière occurrence de chaque exo, tous
+// types de séance confondus), simplement filtré par muscle (woGetMuscle).
+function woSessPairPctByMuscle(curSess, allSorted, muscle){
+  if(!curSess) return null;
+  const indivPcts = [];
+  curSess.exercises?.forEach(exo=>{
+    if(woGetMuscle(exo)!==muscle) return;
+    const refExo = woLastExoOccurrence(allSorted, curSess.date, exo, curSess);
+    if(!refExo) return;
+    const mp = woMatchedProgress(exo.sets||[], refExo.sets||[]);
+    if(mp.pct !== null) indivPcts.push(mp.pct);
+  });
+  return indivPcts.length ? Math.round(indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length) : null;
+}
+
+// Construit les séries (une par groupe musculaire) alignées sur un axe X commun —
+// même structure que woBuildProgSeries, mais un muscle peut être travaillé dans
+// plusieurs types de séance (ex : Pectoraux en Push ET en Upper), donc on regroupe
+// ici TOUTES les séances (tous types confondus) contenant au moins un exo de ce
+// muscle, dans l'ordre chronologique, puis on chaîne (woChainPct) comme d'habitude.
+function woBuildProgSeriesByMuscle(period){
+  const allSorted = woAllSessionsSorted();
+  const musclesPresent = new Set();
+  allSorted.forEach(s=>s.exercises?.forEach(e=>musclesPresent.add(woGetMuscle(e))));
+  const musclesArr = WO_MUSCLE_ORDER.filter(m=>musclesPresent.has(m))
+    .concat([...musclesPresent].filter(m=>!WO_MUSCLE_ORDER.includes(m)));
+
+  const perMuscle = musclesArr.map(muscle=>{
+    const sortedAsc = allSorted.filter(s=>s.exercises?.some(e=>woGetMuscle(e)===muscle));
+    const chain = woChainPct(sortedAsc.map(s=>woSessPairPctByMuscle(s, allSorted, muscle)));
+    return {muscle, sortedAsc, chain};
+  });
+
+  if(period==='session'){
+    const maxLen = perMuscle.reduce((m,p)=>Math.max(m,p.chain.length), 0);
+    const labels = Array.from({length:maxLen},(_,i)=>`${i+1}`);
+    const datasets = perMuscle.map(p=>{
+      const data = labels.map((_,i)=> i<p.chain.length ? p.chain[i] : null);
+      return {tid:p.muscle, label:p.muscle, color:WO_MUSCLE_COLORS[p.muscle]||'#7a8499', data, delta: woDechainPct(data)};
+    });
+    return {typesArr:[], labels, datasets};
+  }
+
+  const periodFn = period==='week' ? woWeekKey  : woMonthKey;
+  const labelFn  = period==='week' ? woWeekLabel : woMonthLabel;
+  const perMusclePeriod = perMuscle.map(({muscle, sortedAsc, chain})=>{
+    const dataByPeriod = {};
+    const periodsSet = new Set();
+    sortedAsc.forEach((s,i)=>{
+      const k = periodFn(s.date);
+      periodsSet.add(k);
+      dataByPeriod[k] = chain[i];
+    });
+    const periods = [...periodsSet].sort();
+    const deltaByPeriod = {};
+    woDechainPct(periods.map(k=>dataByPeriod[k])).forEach((v,i)=>{ deltaByPeriod[periods[i]] = v; });
+    return {muscle, periods, dataByPeriod, deltaByPeriod};
+  });
+  const keySet = new Set();
+  perMusclePeriod.forEach(p=>p.periods.forEach(k=>keySet.add(k)));
+  const globalKeys = [...keySet].sort();
+  const labels = globalKeys.map(k=>labelFn(k));
+  const datasets = perMusclePeriod.map(p=>({
+    tid:p.muscle, label:p.muscle, color:WO_MUSCLE_COLORS[p.muscle]||'#7a8499',
+    data:  globalKeys.map(k=> p.dataByPeriod.hasOwnProperty(k)  ? p.dataByPeriod[k]  : null),
+    delta: globalKeys.map(k=> p.deltaByPeriod.hasOwnProperty(k) ? p.deltaByPeriod[k] : null)
+  }));
+  return {typesArr:[], labels, datasets};
+}
+
 // Rendu principal de l'onglet Progression : hero, graphique, repères, accordéons
 window._woDsHidden = window._woDsHidden || {}; // tid -> masqué ? (persiste entre les changements de période)
 function woRenderProgAll(period){
@@ -19768,8 +19938,10 @@ function woRenderProgAll(period){
   const anyData = Object.keys(allTypes).some(tid=>woV2GetSessions(tid).length>0);
 
   const heroEl = document.getElementById('wo-prog-hero-val');
+  const heroInfoEl = document.getElementById('wo-prog-hero-info');
   if(!anyData){
     if(heroEl){ heroEl.textContent='—'; heroEl.style.color='var(--text)'; }
+    if(heroInfoEl){ heroInfoEl.innerHTML=''; heroInfoEl.style.display='none'; }
     const legendEl = document.getElementById('wo-prog-legend'); if(legendEl) legendEl.innerHTML='';
     if(window._woMainChart){ window._woMainChart.destroy(); window._woMainChart=null; }
     const card1 = document.getElementById('wo-prog-card-sessions'); if(card1) card1.textContent='—';
@@ -19784,7 +19956,14 @@ function woRenderProgAll(period){
     return;
   }
 
-  const {typesArr, labels, datasets} = woBuildProgSeries(period);
+  // Le graphique/hero/légende suivent la dimension choisie (type de séance ou
+  // muscle), mais les repères "Séances totales"/"Volume total" et les deux
+  // accordéons restent toujours basés sur les types de séance (peu de sens à
+  // les décliner par muscle, et ça évite de dupliquer cette logique).
+  const mode = window._woProgMode==='muscle' ? 'muscle' : 'type';
+  const built = mode==='muscle' ? woBuildProgSeriesByMuscle(period) : woBuildProgSeries(period);
+  const {labels, datasets} = built;
+  const typesArr = Object.entries(allTypes).filter(([tid])=>woV2GetSessions(tid).length>0);
 
   // Hero : moyenne du dernier point connu de chaque courbe = progression globale actuelle
   const finals = datasets.map(d=>{
@@ -19799,6 +19978,12 @@ function woRenderProgAll(period){
       heroEl.textContent = `${up?'+':''}${heroVal.toFixed(1)}%`;
       heroEl.style.color = up?'var(--lime)':eq?'var(--text)':'var(--red)';
     }
+  }
+  // Bulle d'explication du chiffre : dépend de la dimension affichée (une
+  // courbe par type de séance, ou par muscle).
+  if(heroInfoEl){
+    const curLabel = mode==='muscle' ? 'un groupe musculaire' : 'un type de séance';
+    heroInfoEl.innerHTML = `C'est la <b style="color:var(--text)">moyenne du dernier point de chaque courbe</b> affichée ci-dessous — une courbe par ${curLabel}.`;
   }
 
   // Repères rapides
@@ -20151,7 +20336,7 @@ function woRenderVolumeTable(){
 
   // Fenêtre : 4 dernières semaines (28 jours glissants)
   const nowD   = new Date(today()+'T12:00');
-  const cutoff = new Date(nowD.getTime()-28*86400000).toISOString().split('T')[0];
+  const cutoff = toLocalDateStr(new Date(nowD.getTime()-28*86400000));
   const recent = allSessionsFlat.filter(s=>s.date>=cutoff);
 
   // Semaine calendaire précédente (lundi → dimanche) : volume réel, sans moyenne
@@ -20159,8 +20344,8 @@ function woRenderVolumeTable(){
   const curMonday = new Date(nowD); curMonday.setDate(nowD.getDate()-curDow+1);
   const prevMonday = new Date(curMonday); prevMonday.setDate(curMonday.getDate()-7);
   const prevSunday = new Date(curMonday); prevSunday.setDate(curMonday.getDate()-1);
-  const pwStart = prevMonday.toISOString().split('T')[0];
-  const pwEnd   = prevSunday.toISOString().split('T')[0];
+  const pwStart = toLocalDateStr(prevMonday);
+  const pwEnd   = toLocalDateStr(prevSunday);
   let prevWeekSets = 0;
   allSessionsFlat.filter(s=>s.date>=pwStart && s.date<=pwEnd).forEach(sess=>{
     (sess.exercises||[]).forEach(exo=>{
@@ -20668,9 +20853,37 @@ function woStartChronoDisplay(){
 
 function woDraftAddSet(ei){
   const d=woDraftGet(); if(!d||!d.exercises[ei]) return;
-  const prev=d.exercises[ei].sets?.slice(-1)[0];
-  d.exercises[ei].sets = d.exercises[ei].sets||[];
-  d.exercises[ei].sets.push({reps:prev?.reps||10, weight:prev?.weight||0});
+  const exo = d.exercises[ei];
+  exo.sets = exo.sets||[];
+  const idx = exo.sets.length;
+  // Historique de cet exo (toutes séances antérieures, tous types confondus),
+  // du plus ancien au plus récent.
+  const history = woGetAllSessionsAll()
+    .filter(sess=>sess.date < d.date)
+    .map(sess=>sess.exercises?.find(e=>e.id===exo.id||e.name===exo.name))
+    .filter(e=>e && e.sets?.length);
+  let prev = null;
+  // On remonte du plus récent au plus ancien pour trouver la dernière
+  // occurrence qui avait bien une série à CET index précis — pas juste la
+  // dernière occurrence tout court, qui peut en avoir moins (ex : 1 série
+  // la semaine dernière au lieu de 2 → la 2e série reprend la perf de
+  // l'occurrence antérieure qui, elle, avait bien 2 séries).
+  for(let i=history.length-1;i>=0;i--){
+    if(history[i].sets.length > idx){ prev = history[i].sets[idx]; break; }
+  }
+  if(!prev){
+    if(history.length){
+      // Aucune occurrence n'a jamais eu cette série précise : à défaut de
+      // mieux, dernière série connue de la dernière occurrence.
+      const last = history[history.length-1];
+      prev = last.sets[last.sets.length-1];
+    } else if(idx>0){
+      // Exercice jamais fait avant : on retombe sur la série précédente
+      // saisie ce soir.
+      prev = exo.sets[idx-1];
+    }
+  }
+  exo.sets.push({reps:prev?.reps??10, weight:prev?.weight??0});
   // Chrono auto : on horodate la toute première série de la séance (silencieux,
   // sert de base au calcul automatique de durée proposé à la fin — cf woFinishSession).
   if(!d.startedAt) d.startedAt = Date.now();
@@ -22583,7 +22796,7 @@ function _renderStreak() {
   var streak = 0;
   var d = new Date(today() + 'T12:00');
   for (var i = 0; i < 365; i++) {
-    var ds = d.toISOString().split('T')[0];
+    var ds = toLocalDateStr(d);
     if (mealDates.has(ds))  { streak++; d.setDate(d.getDate() - 1); }
     else if (i === 0)       { d.setDate(d.getDate() - 1); }
     else                    { break; }
@@ -22633,7 +22846,7 @@ function openKcalGoalModal() {
     var today7 = [];
     for (var i = 6; i >= 0; i--) {
       var dd = new Date(); dd.setDate(dd.getDate() - i);
-      today7.push(dd.toISOString().split('T')[0]);
+      today7.push(toLocalDateStr(dd));
     }
     var recentDeps = today7.map(function(d){
       var f = fitness.find(function(x){ return x.date === d; });
@@ -23035,7 +23248,7 @@ function openReportPeriodPicker() {
   if (endInp && !endInp.value) endInp.value = today();
   if (startInp && !startInp.value) {
     var d = new Date(); d.setDate(d.getDate() - 6);
-    startInp.value = d.toISOString().split('T')[0];
+    startInp.value = toLocalDateStr(d);
   }
   modal.style.display = 'flex';
   kcLockScroll();
@@ -23240,7 +23453,7 @@ function reportDateRange(start, end) {
   var dates = [];
   var d = new Date(start + 'T12:00');
   var endD = new Date(end + 'T12:00');
-  while (d <= endD) { dates.push(d.toISOString().split('T')[0]); d.setDate(d.getDate() + 1); }
+  while (d <= endD) { dates.push(toLocalDateStr(d)); d.setDate(d.getDate() + 1); }
   return dates;
 }
 
@@ -23699,8 +23912,8 @@ function computeSeanceReport(start, end) {
   // Volume de la période précédente de même durée, pour contextualiser l'évolution.
   var prevEnd = new Date(start); prevEnd.setDate(prevEnd.getDate() - 1);
   var prevStart = new Date(prevEnd); prevStart.setDate(prevStart.getDate() - (days - 1));
-  var prevStartS = prevStart.toISOString().split('T')[0];
-  var prevEndS   = prevEnd.toISOString().split('T')[0];
+  var prevStartS = toLocalDateStr(prevStart);
+  var prevEndS   = toLocalDateStr(prevEnd);
   var prevVol = all.filter(function(s) { return s.date >= prevStartS && s.date <= prevEndS; })
     .reduce(function(sum, s) { return sum + woSessVol(s); }, 0);
   var volPct = prevVol > 0 ? Math.round(((totalVol - prevVol) / prevVol) * 100) : null;
@@ -23904,7 +24117,7 @@ function renderSeanceReportHtml(start, end, label, r) {
   /* ── Vue SEMAINE ── */
   function loadWeekView(raw) {
     var days = [], labels = [], naData = [], kData = [], hasAny = false;
-    for (var i=6; i>=0; i--) { var d=new Date(); d.setDate(d.getDate()-i); days.push(d.toISOString().split('T')[0]); }
+    for (var i=6; i>=0; i--) { var d=new Date(); d.setDate(d.getDate()-i); days.push(toLocalDateStr(d)); }
     days.forEach(function(date) {
       var meals = raw[date] || {}; var na=0,k=0,hasNa=false,hasK=false;
       Object.values(meals).forEach(function(items){
@@ -23921,7 +24134,7 @@ function renderSeanceReportHtml(start, end, label, r) {
 
   /* ── Vue JOUR (repas par repas) ── */
   function loadDayView(raw) {
-    var date = (typeof AP !== 'undefined' && AP.date) ? AP.date : new Date().toISOString().split('T')[0];
+    var date = (typeof AP !== 'undefined' && AP.date) ? AP.date : toLocalDateStr(new Date());
     var dayLabel = document.getElementById('nak-day-label');
     if (dayLabel) {
       var d = new Date(date + 'T12:00:00');
@@ -24505,7 +24718,7 @@ function renderSeanceReportHtml(start, end, label, r) {
     if(id==='recap')       loadRecapWidget();
   }
 
-  function getTodayStr(){ return new Date().toISOString().split('T')[0]; }
+  function getTodayStr(){ return toLocalDateStr(new Date()); }
 
   /* EAU — Hydratation avec courbe & bottom-sheet multi-unités */
   var EAU_GOAL = parseInt(localStorage.getItem('kcalos_eau_goal')||'2000') || 2000;
@@ -24523,6 +24736,7 @@ function renderSeanceReportHtml(start, end, label, r) {
     _eauSave(log);
     _eauRefreshWidget();
     _eauRefreshSheet();
+    _eauPlayAddAnim();
     if(typeof showToast==='function') showToast('+'+ml+' ml enregistrés 💧');
   };
   window.eauAddCustom = function(){
@@ -24538,8 +24752,19 @@ function renderSeanceReportHtml(start, end, label, r) {
     if(inp) inp.value = '';
     _eauRefreshWidget();
     _eauRefreshSheet();
+    _eauPlayAddAnim();
     if(typeof showToast==='function') showToast('+'+ml+' ml ajoutés 💧');
   };
+  /* Petite animation (rebond de la bouteille + goutte qui s'envole) jouée à chaque ajout d'eau */
+  function _eauPlayAddAnim(){
+    var wrap = document.getElementById('eau-bottle-wrap');
+    if(!wrap) return;
+    wrap.classList.remove('eau-bump'); void wrap.offsetWidth; wrap.classList.add('eau-bump');
+    var drop = document.getElementById('eau-drop');
+    if(drop){
+      drop.classList.remove('go'); void drop.offsetWidth; drop.classList.add('go');
+    }
+  }
   window.eauReset = function(){
     if(!confirm('Effacer toute la saisie eau du jour ?')) return;
     localStorage.removeItem(_eauKey());
@@ -24583,24 +24808,22 @@ function renderSeanceReportHtml(start, end, label, r) {
     var log   = _eauGetLog();
     var total = _eauTotal(log);
     var pct   = Math.min(100, total / EAU_GOAL * 100);
-    var reste = Math.max(0, EAU_GOAL - total);
+    var atGoal= total >= EAU_GOAL;
     var mlEl  = document.getElementById('db-eau-ml');
     var goalEl= document.getElementById('db-eau-goal');
-    var bar   = document.getElementById('db-eau-bar');
-    var msg   = document.getElementById('db-eau-msg');
-    var resteEl = document.getElementById('db-eau-reste');
+    var countEl=document.getElementById('db-eau-count');
+    var water = document.getElementById('eau-bottle-water');
+    var wrap  = document.getElementById('eau-bottle-wrap');
+    var pctEl = document.getElementById('eau-bottle-pct');
     if(mlEl)  mlEl.textContent  = total;
     if(goalEl)goalEl.textContent = EAU_GOAL;
-    if(bar)   bar.style.width   = pct.toFixed(1) + '%';
-    if(resteEl) resteEl.textContent = reste;
-    if(msg){
-      var pctRound = Math.round(pct);
-      if(pct >= 100)      msg.innerHTML = '🎯 <strong style="color:var(--teal)">Objectif atteint !</strong> <span style="color:var(--muted);font-size:0.58rem">'+Math.round(total)+' ml — bien joué 💪</span>';
-      else if(pct >= 75)  msg.innerHTML = '💧 Presque là — <strong style="color:var(--teal)">'+reste+'</strong> ml encore ('+pctRound+'%)';
-      else if(pct >= 40)  msg.innerHTML = '💧 <strong style="color:var(--teal)">'+reste+'</strong> ml à boire ('+pctRound+'% atteint)';
-      else                msg.innerHTML = '⚠️ <strong style="color:var(--orange)">'+reste+'</strong> ml restants — pense à vous hydrater !';
+    if(water) water.style.height = pct.toFixed(1) + '%';
+    if(pctEl){
+      pctEl.textContent = Math.round(pct) + '%';
+      pctEl.classList.toggle('eau-full', atGoal);
     }
-    _eauDrawCurve(log);
+    if(wrap)  wrap.classList.toggle('eau-full', atGoal);
+    if(countEl) countEl.classList.toggle('eau-full', atGoal);
   }
 
   function _eauRefreshSheet(){
@@ -24623,53 +24846,6 @@ function renderSeanceReportHtml(start, end, label, r) {
             + '</div>';
         }).join('');
       }
-    }
-  }
-
-  function _eauDrawCurve(log){
-    var canvas = document.getElementById('db-eau-curve');
-    if(!canvas) return;
-    var ctx = canvas.getContext('2d');
-    var W = canvas.offsetWidth || 220, H = 36;
-    canvas.width = W; canvas.height = H;
-    ctx.clearRect(0,0,W,H);
-    /* Accumul par heure (6h→24h = 18 slots) */
-    var slots = new Array(18).fill(0);
-    var today = new Date().toDateString();
-    log.forEach(function(e){
-      var d = new Date(e.ts);
-      if(d.toDateString() !== today) return;
-      var slot = Math.max(0, Math.min(17, d.getHours() - 6));
-      slots[slot] += (e.ml || 0);
-    });
-    /* Cumulatif */
-    var cum = [], acc = 0;
-    slots.forEach(function(v){ acc += v; cum.push(acc); });
-    var maxV = Math.max(EAU_GOAL, acc || 1);
-    function px(i){ return i / (cum.length-1) * (W-4) + 2; }
-    function py(v){ return H - 4 - (v/maxV)*(H-8); }
-    /* Remplissage dégradé */
-    ctx.beginPath();
-    cum.forEach(function(v,i){ i===0 ? ctx.moveTo(px(i),py(v)) : ctx.lineTo(px(i),py(v)); });
-    ctx.lineTo(px(cum.length-1), H); ctx.lineTo(2, H); ctx.closePath();
-    var grad = ctx.createLinearGradient(0,0,0,H);
-    grad.addColorStop(0,'rgba(53,201,160,0.35)'); grad.addColorStop(1,'rgba(53,201,160,0.03)');
-    ctx.fillStyle = grad; ctx.fill();
-    /* Ligne */
-    ctx.beginPath(); ctx.strokeStyle='rgba(53,201,160,0.85)'; ctx.lineWidth=1.6; ctx.lineJoin='round';
-    cum.forEach(function(v,i){ i===0 ? ctx.moveTo(px(i),py(v)) : ctx.lineTo(px(i),py(v)); });
-    ctx.stroke();
-    /* Ligne objectif */
-    var gy = py(EAU_GOAL);
-    if(gy > 2 && gy < H){
-      ctx.beginPath(); ctx.setLineDash([3,4]); ctx.strokeStyle='rgba(53,201,160,0.25)'; ctx.lineWidth=0.8;
-      ctx.moveTo(2, gy); ctx.lineTo(W-2, gy); ctx.stroke(); ctx.setLineDash([]);
-    }
-    /* Point actuel */
-    var lastV = cum[cum.length-1];
-    if(lastV > 0){
-      ctx.beginPath(); ctx.arc(px(cum.length-1), py(lastV), 3, 0, Math.PI*2);
-      ctx.fillStyle = 'rgba(53,201,160,0.9)'; ctx.fill();
     }
   }
 
@@ -24950,7 +25126,7 @@ function renderSeanceReportHtml(start, end, label, r) {
         return;
       }
       var weekCutF = new Date(); weekCutF.setDate(weekCutF.getDate()-7);
-      var weekStrF = weekCutF.toISOString().split('T')[0];
+      var weekStrF = toLocalDateStr(weekCutF);
       var weekLoad = eatSess.filter(function(d){return d.date>=weekStrF;}).reduce(function(s,d){return s+(d.exercise_kcal||0);},0);
       var avgLoad  = eatSess.reduce(function(s,d){return s+(d.exercise_kcal||0);},0)/eatSess.length;
       _perfKpis(kpisEl,[
@@ -24983,8 +25159,8 @@ function renderSeanceReportHtml(start, end, label, r) {
     var thisMonday = new Date(today); thisMonday.setDate(today.getDate() - (dow===0?6:dow-1)); thisMonday.setHours(0,0,0,0);
     var lastMonday = new Date(thisMonday); lastMonday.setDate(thisMonday.getDate()-7);
     var lastSunday = new Date(thisMonday); lastSunday.setDate(thisMonday.getDate()-1);
-    var weekStr    = lastMonday.toISOString().split('T')[0];
-    var weekEndStr = lastSunday.toISOString().split('T')[0];
+    var weekStr    = toLocalDateStr(lastMonday);
+    var weekEndStr = toLocalDateStr(lastSunday);
     var weekSess = allSess.filter(function(s){ return (s.date||'')>=weekStr && (s.date||'')<=weekEndStr; });
     var weekVol  = weekSess.reduce(function(s,ss){ return s+sessVol(ss); }, 0);
     var totVol   = allSess.reduce(function(s,ss){ return s+sessVol(ss); }, 0);
@@ -26874,7 +27050,7 @@ else setTimeout(slInit,200);
     DB.getFood().forEach(f=>{ if(f.kcal>0) mealDates.add(f.date); });
     let streak=0, d=new Date(today()+'T12:00');
     for(let i=0;i<365;i++){
-      const ds=d.toISOString().split('T')[0];
+      const ds=toLocalDateStr(d);
       if(mealDates.has(ds)){ streak++; d.setDate(d.getDate()-1); }
       else if(i===0){ d.setDate(d.getDate()-1); }
       else break;
