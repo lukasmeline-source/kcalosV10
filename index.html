@@ -2779,39 +2779,91 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 }
 
 /* ── Widget Eau ── */
-.eau-qbtn{padding:0.45rem 0.2rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--teal);font-family:Syne,sans-serif;font-size:0.78rem;font-weight:600;cursor:pointer;text-align:center;transition:background var(--trans);line-height:1.3;-webkit-tap-highlight-color:transparent}
-.eau-qbtn span{font-size:0.52rem;color:var(--muted2);display:block;font-weight:400}
-.eau-qbtn:active,.eau-qbtn:hover{background:var(--teal-bg);border-color:var(--teal-d)}
+.eau-qbtn{padding:0.4rem 0.15rem;background:var(--s2);border:none;border-radius:var(--r-pill);color:var(--teal);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.7rem;font-weight:600;cursor:pointer;text-align:center;transition:background var(--trans),transform var(--trans);line-height:1.25;-webkit-tap-highlight-color:transparent}
+.eau-qbtn span{font-size:0.47rem;color:var(--muted2);display:block;font-weight:500;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
+.eau-qbtn:active,.eau-qbtn:hover{background:var(--teal-bg);transform:scale(0.97)}
 
 /* ── Widget Eau : header + hero bouteille (épuré, focus sur l'animation) ── */
-.eau-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.35rem}
+.eau-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.55rem}
 .eau-count{font-size:0.72rem;font-weight:600;color:var(--teal);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
 .eau-count .eau-unit{font-size:0.58rem;color:var(--teal-d);font-weight:500;margin-left:1px}
 .eau-count .eau-goal-txt{font-size:0.56rem;color:var(--muted2);font-weight:500}
 .eau-count.eau-full{color:var(--lime)}
 
-/* Hero : bouteille centrée, seule vraie pièce visuelle du widget */
-.eau-hero{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0.3rem 0 0.85rem}
-.eau-bottle-wrap{position:relative;width:64px;height:108px;flex-shrink:0;transition:filter 0.4s ease}
-.eau-bottle-outline{position:absolute;inset:0;pointer-events:none}
+/* Corps du widget : bouteille (agrandie) à gauche, saisie rapide à droite */
+.eau-body{display:flex;align-items:center;gap:0}
+.eau-hero{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:0 0 auto;padding:0.2rem 16px 0.2rem 0}
+.eau-bottle-wrap{position:relative;width:84px;height:142px;flex-shrink:0;transition:filter 0.4s ease}
+.eau-bottle-outline{position:absolute;inset:0;pointer-events:none;overflow:visible}
 .eau-bottle-fill{position:absolute;inset:0;-webkit-clip-path:url(#eauBottleClip);clip-path:url(#eauBottleClip);background:var(--s2);box-shadow:inset 0 1px 0 rgba(255,255,255,0.05)}
-.eau-bottle-water{position:absolute;left:-2px;right:-2px;bottom:0;height:0%;opacity:0;transition:height 0.7s cubic-bezier(0.34,1.56,0.64,1),opacity 0.3s ease;background:linear-gradient(180deg,var(--blue) 0%,var(--teal) 100%)}
-.eau-bottle-sheen{position:absolute;left:9px;top:23px;bottom:12px;width:6px;border-radius:6px;background:linear-gradient(180deg,rgba(255,255,255,0.22),rgba(255,255,255,0.02));pointer-events:none}
-.eau-wave{position:absolute;left:0;top:-6px;width:200%;height:12px}
+/* Repères de palier (25/50/75%) : discrets, visibles même bouteille vide */
+.eau-bottle-marks{position:absolute;inset:0;pointer-events:none}
+.eau-bottle-marks line{stroke:var(--border2);stroke-width:1;stroke-dasharray:2.2 2.2;opacity:0.6}
+.eau-bottle-water{position:absolute;left:-2px;right:-2px;bottom:0;height:0%;opacity:0;overflow:hidden;transform-origin:bottom center;transition:height 0.7s cubic-bezier(0.34,1.56,0.64,1),opacity 0.4s ease;background:linear-gradient(180deg,var(--blue) 0%,var(--teal) 100%)}
+.eau-bottle-sheen{position:absolute;left:22px;top:32px;bottom:21px;width:8px;border-radius:7px;background:linear-gradient(180deg,rgba(255,255,255,0.22),rgba(255,255,255,0.02));pointer-events:none;z-index:3}
+.eau-wave{position:absolute;left:0;top:-7px;width:200%;height:14px}
 .eau-wave svg{display:block;width:100%;height:100%}
-.eau-wave-back{animation:eauWaveScroll 5.5s linear infinite reverse;opacity:0.55}
-.eau-wave-front{animation:eauWaveScroll 3.8s linear infinite;opacity:0.9}
-@keyframes eauWaveScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.eau-wave-back{animation:eauWaveFlow 6s var(--ease-inout,ease-in-out) infinite reverse;opacity:0.5}
+.eau-wave-front{animation:eauWaveFlow 3.6s var(--ease-inout,ease-in-out) infinite;opacity:0.92}
+@keyframes eauWaveFlow{0%{transform:translate(0,0)}50%{transform:translate(-25%,-1.6px)}100%{transform:translate(-50%,0)}}
+/* Vague "excitée" jouée brièvement à chaque ajout d'eau (inspiré du chaînage fill→wave
+   de coiger/fill-water-animation : amplitude et vitesse accrues, puis retour au calme) */
+.eau-wave-back.eau-wave-burst{animation:eauWaveBurst 0.85s cubic-bezier(0.42,0,0.58,1) 2}
+.eau-wave-front.eau-wave-burst{animation:eauWaveBurst 0.65s cubic-bezier(0.42,0,0.58,1) 2}
+@keyframes eauWaveBurst{0%{transform:translate(0,0)}50%{transform:translate(-25%,-3.4px)}100%{transform:translate(-50%,0)}}
+/* Léger clapot vertical de la surface entière, indépendant du défilement des vagues */
+.eau-bottle-water{animation:eauSurfaceBreathe 3.2s ease-in-out infinite}
+@keyframes eauSurfaceBreathe{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.006)}}
+/* Bulles montantes dans l'eau : vie continue et discrète du liquide */
+.eau-bubbles{position:absolute;inset:0;pointer-events:none}
+.eau-bubble{position:absolute;bottom:-6px;border-radius:50%;background:rgba(255,255,255,0.4);opacity:0;animation:eauBubbleRise linear infinite}
+.eau-bubble:nth-child(1){left:22%;width:3px;height:3px;animation-duration:3.6s;animation-delay:0.1s}
+.eau-bubble:nth-child(2){left:52%;width:2px;height:2px;animation-duration:2.8s;animation-delay:1.1s}
+.eau-bubble:nth-child(3){left:70%;width:2.5px;height:2.5px;animation-duration:4.2s;animation-delay:2s}
+.eau-bubble:nth-child(4){left:38%;width:2px;height:2px;animation-duration:3.2s;animation-delay:0.7s}
+@keyframes eauBubbleRise{0%{transform:translateY(0) scale(0.8);opacity:0}12%{opacity:0.85}90%{opacity:0.15}100%{transform:translateY(-90px) scale(1.15);opacity:0}}
 .eau-bottle-wrap.eau-bump{animation:eauBump var(--trans-spring)}
 @keyframes eauBump{0%{transform:scale(1)}35%{transform:scale(1.07)}100%{transform:scale(1)}}
+/* Anneau d'onde à la surface, joué à chaque ajout (inspiré des indicateurs "ripple" des trackers d'hydratation) */
+.eau-ripple{position:absolute;left:50%;bottom:0;width:6px;height:6px;border-radius:50%;border:1.4px solid var(--teal);transform:translate(-50%,50%) scale(0);opacity:0;pointer-events:none}
+.eau-ripple.go{animation:eauRippleOut 0.7s ease-out forwards}
+@keyframes eauRippleOut{0%{transform:translate(-50%,50%) scale(0);opacity:0.8}70%{opacity:0.35}100%{transform:translate(-50%,50%) scale(7);opacity:0}}
+/* Gouttes qui s'envolent vers le badge à chaque ajout (plusieurs, légèrement dispersées) */
 .eau-drop{position:absolute;left:50%;bottom:8px;width:6px;height:6px;border-radius:50% 50% 50% 0;background:var(--teal);transform:translateX(-50%) rotate(45deg);opacity:0;pointer-events:none}
 .eau-drop.go{animation:eauDropRise 0.9s ease-out forwards}
+.eau-drop.d2.go{animation-name:eauDropRise2;animation-duration:0.8s;animation-delay:0.05s}
+.eau-drop.d3.go{animation-name:eauDropRise3;animation-duration:1s;animation-delay:0.1s}
 @keyframes eauDropRise{0%{opacity:0;transform:translate(-50%,0) rotate(45deg) scale(0.6)}15%{opacity:0.9}100%{opacity:0;transform:translate(-50%,-70px) rotate(45deg) scale(1)}}
+@keyframes eauDropRise2{0%{opacity:0;transform:translate(-50%,0) rotate(45deg) scale(0.45)}15%{opacity:0.8}100%{opacity:0;transform:translate(calc(-50% - 14px),-58px) rotate(45deg) scale(0.85)}}
+@keyframes eauDropRise3{0%{opacity:0;transform:translate(-50%,0) rotate(45deg) scale(0.4)}15%{opacity:0.75}100%{opacity:0;transform:translate(calc(-50% + 14px),-50px) rotate(45deg) scale(0.75)}}
 /* Badge % accroché au bas de la bouteille */
-.eau-pct-badge{margin-top:-9px;background:var(--s2);border:1px solid var(--border2);border-radius:var(--r-pill);padding:1px 8px;font-size:0.6rem;font-weight:700;color:var(--teal);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;white-space:nowrap;transition:color var(--trans),border-color var(--trans)}
+.eau-pct-badge{margin-top:-3px;background:var(--s2);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-pill);padding:2px 9px;font-size:0.6rem;font-weight:700;color:var(--teal);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;white-space:nowrap;transition:color var(--trans)}
 /* Objectif atteint : léger halo autour de la bouteille + badge doré */
 .eau-bottle-wrap.eau-full{filter:drop-shadow(0 0 7px var(--teal))}
-.eau-pct-badge.eau-full{color:var(--lime);border-color:var(--lime-d)}
+.eau-pct-badge.eau-full{color:var(--lime)}
+/* Pulse joué une fois au moment précis où l'objectif est atteint */
+.eau-bottle-wrap.eau-goal-pulse{animation:eauGoalPulse 0.9s ease-out}
+@keyframes eauGoalPulse{0%{filter:drop-shadow(0 0 0 var(--lime))}40%{filter:drop-shadow(0 0 14px var(--lime))}100%{filter:drop-shadow(0 0 7px var(--teal))}}
+/* Dépassement d'objectif : léger battement du badge (la couleur, elle, est interpolée
+   en JS de lime → orange → rouge selon l'ampleur du dépassement, voir _eauOverColor) */
+.eau-pct-badge.eau-over{animation:eauOverPulse 1.7s ease-in-out infinite}
+@keyframes eauOverPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+/* Séparateur discret entre la bouteille et les boutons de saisie rapide */
+.eau-qgrid{flex:1;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;border-left:1px solid var(--border);padding-left:16px;min-width:0}
+.eau-qgrid .eau-qbtn:last-child{grid-column:span 2}
+
+/* ── Widget Eau : adaptation au mode réduit (data-size="half") ──
+   En demi-largeur, bouteille + grille de boutons côte à côte ne tiennent plus :
+   on passe en colonne (bouteille au-dessus, boutons en dessous) et on réduit
+   légèrement les composants pour rester lisible sans déborder. */
+.widget-block[data-size="half"] .eau-body{flex-direction:column;gap:0.6rem}
+.widget-block[data-size="half"] .eau-hero{padding:0.1rem 0 0 0}
+.widget-block[data-size="half"] .eau-bottle-wrap{width:64px;height:108px}
+.widget-block[data-size="half"] .eau-qgrid{width:100%;border-left:none;border-top:1px solid var(--border);padding-left:0;padding-top:0.55rem}
+.widget-block[data-size="half"] .eau-qbtn{padding:0.32rem 0.1rem;font-size:0.66rem}
+.widget-block[data-size="half"] .eau-qbtn span{font-size:0.46rem}
+.widget-block[data-size="half"] .eau-count{font-size:0.66rem}
+.widget-block[data-size="half"] .eau-count .eau-goal-txt{display:none}
 /* ── Widget Sommeil phases ── */
 .sl-ph-bar{height:7px;border-radius:4px;overflow:hidden;display:flex;gap:1px;margin:5px 0 3px}
 /* ── Macros restantes ── */
@@ -3037,6 +3089,22 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
           </div>
         </div>
         <div style="font-size:0.62rem;color:var(--muted2);margin-top:5px">Appliqué immédiatement · synchronisé avec la page Séance</div>
+      </div>
+
+      <!-- Aujourd'hui dans les calculs de balance — cf shouldIncludeToday()/getTodayIncludeMode().
+           Contrôle immédiat (pas besoin d'"Enregistrer"), reset auto à "Auto" chaque nouveau jour. -->
+      <div class="field">
+        <label>Aujourd'hui dans les calculs <button class="src-info-btn" onclick="showTodayIncludeInfo()" aria-label="Comment ça marche ?" title="Comment ça marche ?">!</button></label>
+        <div class="radio-group cols3">
+          <div class="rb"><input type="radio" name="ap-todayinc" id="ap-todayinc-auto" value="auto" onchange="setTodayIncludeMode('auto')"><label for="ap-todayinc-auto">Auto</label></div>
+          <div class="rb"><input type="radio" name="ap-todayinc" id="ap-todayinc-include" value="include" onchange="setTodayIncludeMode('include')"><label for="ap-todayinc-include">Inclure</label></div>
+          <div class="rb"><input type="radio" name="ap-todayinc" id="ap-todayinc-exclude" value="exclude" onchange="setTodayIncludeMode('exclude')"><label for="ap-todayinc-exclude">Exclure</label></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+          <label style="font-size:0.7rem;color:var(--muted);white-space:nowrap;margin:0;flex-shrink:0">Heure de bascule (mode Auto)</label>
+          <div class="inp-wrap" style="max-width:80px"><input type="number" id="ap-todayinc-hour" min="0" max="23" step="1" onchange="setTodayCutoffHour(this.value)"><span class="unit">h</span></div>
+        </div>
+        <div id="ap-todayinc-status" style="font-size:0.62rem;color:var(--muted2);margin-top:6px;line-height:1.5">—</div>
       </div>
 
       <button class="btn" onclick="saveAccountProfile()" style="margin-top:0.5rem">Enregistrer le profil →</button>
@@ -3506,46 +3574,66 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
         <span id="db-eau-ml">0</span><span class="eau-unit">ml</span><span class="eau-goal-txt"> / <span id="db-eau-goal">2000</span></span>
       </div>
     </div>
-    <!-- Hero : bouteille qui se remplit avec des vagues animées au fil des saisies -->
+    <!-- Corps : bouteille agrandie à gauche, saisie rapide à droite -->
+    <div class="eau-body">
     <div class="eau-hero">
       <div class="eau-bottle-wrap" id="eau-bottle-wrap">
         <svg width="0" height="0" style="position:absolute" aria-hidden="true">
           <defs>
-            <clipPath id="eauBottleClip" clipPathUnits="userSpaceOnUse">
-              <rect x="24" y="0" width="16" height="7" rx="2"/>
-              <polygon points="26,7 38,7 46,21 18,21"/>
-              <rect x="9" y="19" width="46" height="88" rx="16"/>
+            <clipPath id="eauBottleClip" clipPathUnits="objectBoundingBox">
+              <path d="M0.2031,0.1481 L0.2031,0.0370 Q0.2031,0 0.2656,0 L0.7344,0 Q0.7969,0 0.7969,0.0370 L0.7969,0.1481 Z"/>
+              <path d="M0.1875,0.1759 Q0.1875,0.1481 0.2344,0.1481 L0.7656,0.1481 Q0.8125,0.1481 0.8125,0.1759 L0.8125,0.8333 Q0.8125,0.9630 0.5938,0.9630 L0.4063,0.9630 Q0.1875,0.9630 0.1875,0.8333 Z"/>
             </clipPath>
           </defs>
         </svg>
         <svg class="eau-bottle-outline" viewBox="0 0 64 108" aria-hidden="true">
-          <rect x="24" y="0" width="16" height="7" rx="2" fill="none" stroke="var(--border2)" stroke-width="1.6"/>
-          <polygon points="26,7 38,7 46,21 18,21" fill="none" stroke="var(--border2)" stroke-width="1.6" stroke-linejoin="round"/>
-          <rect x="9" y="19" width="46" height="88" rx="16" fill="none" stroke="var(--border2)" stroke-width="1.6"/>
+          <!-- Bouchon large côtelé -->
+          <path d="M13,16 L13,4 Q13,0 17,0 L47,0 Q51,0 51,4 L51,16 Z" fill="none" stroke="var(--border2)" stroke-width="1.6" stroke-linejoin="round"/>
+          <line x1="15" y1="5" x2="49" y2="5" stroke="var(--border2)" stroke-width="1" opacity="0.55"/>
+          <line x1="15" y1="10" x2="49" y2="10" stroke="var(--border2)" stroke-width="1" opacity="0.55"/>
+          <!-- Corps droit, base largement arrondie -->
+          <path d="M12,19 Q12,16 15,16 L49,16 Q52,16 52,19 L52,90 Q52,104 38,104 L26,104 Q12,104 12,90 Z" fill="none" stroke="var(--border2)" stroke-width="1.6" stroke-linejoin="round"/>
+          <!-- Dragonne (décor, hors zone de remplissage) -->
+          <circle cx="45" cy="3.2" r="1.2" fill="none" stroke="var(--border2)" stroke-width="1"/>
+          <path d="M46.5,4.2 C55,7.5 56,17 51.5,23 C48.5,27 47.5,31 48.5,36" fill="none" stroke="var(--border2)" stroke-width="1.3" stroke-linecap="round" opacity="0.85"/>
+        </svg>
+        <!-- Repères 25/50/75% : lignes pointillées fixes, indépendantes du niveau -->
+        <svg class="eau-bottle-marks" viewBox="0 0 64 108" aria-hidden="true">
+          <line x1="15" y1="81" x2="49" y2="81"/>
+          <line x1="15" y1="54" x2="49" y2="54"/>
+          <line x1="15" y1="27" x2="49" y2="27"/>
         </svg>
         <div class="eau-bottle-fill">
           <div class="eau-bottle-water" id="eau-bottle-water">
             <div class="eau-wave eau-wave-back">
-              <svg viewBox="0 0 40 10" preserveAspectRatio="none"><path d="M0,5 Q5,0 10,5 T20,5 T30,5 T40,5 V10 H0 Z" fill="var(--teal)"/></svg>
+              <svg viewBox="0 0 40 12" preserveAspectRatio="none"><path d="M0,6 Q5,0.5 10,6 T20,6 T30,6 T40,6 V12 H0 Z" fill="var(--teal)"/></svg>
             </div>
             <div class="eau-wave eau-wave-front">
-              <svg viewBox="0 0 40 10" preserveAspectRatio="none"><path d="M0,4 Q5,9 10,4 T20,4 T30,4 T40,4 V10 H0 Z" fill="var(--blue)"/></svg>
+              <svg viewBox="0 0 40 12" preserveAspectRatio="none"><path d="M0,5 Q5,11 10,5 T20,5 T30,5 T40,5 V12 H0 Z" fill="var(--blue)"/></svg>
+            </div>
+            <div class="eau-bubbles" id="eau-bubbles">
+              <span class="eau-bubble"></span><span class="eau-bubble"></span>
+              <span class="eau-bubble"></span><span class="eau-bubble"></span>
             </div>
           </div>
           <div class="eau-bottle-sheen"></div>
+          <div class="eau-ripple" id="eau-ripple"></div>
         </div>
         <div class="eau-drop" id="eau-drop"></div>
+        <div class="eau-drop d2" id="eau-drop2"></div>
+        <div class="eau-drop d3" id="eau-drop3"></div>
       </div>
       <div class="eau-pct-badge" id="eau-bottle-pct">0%</div>
     </div>
     <!-- Boutons de saisie rapide (logique : eauQuickAdd / openEauSheet) -->
-    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px">
+    <div class="eau-qgrid">
       <button class="eau-qbtn" onclick="eauQuickAdd(150)">+150<span>ml</span></button>
       <button class="eau-qbtn" onclick="eauQuickAdd(250)">+250<span>ml</span></button>
       <button class="eau-qbtn" onclick="eauQuickAdd(500)">+500<span>ml</span></button>
       <button class="eau-qbtn" onclick="eauQuickAdd(800)">+800<span>ml</span></button>
-      <button class="eau-qbtn" onclick="openEauSheet()" style="color:var(--muted);grid-column:span 1">+…<span>autre</span></button>
+      <button class="eau-qbtn" onclick="openEauSheet()" style="color:var(--muted)">+…<span>autre quantité</span></button>
     </div>
+    </div><!-- /eau-body -->
   </div>
   </div><!-- /widget-eau -->
 
@@ -6090,13 +6178,16 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   <div style="position:absolute;bottom:0;left:0;right:0;background:var(--s1);border-radius:20px 20px 0 0;padding:1.5rem 1.25rem calc(1.75rem + env(safe-area-inset-bottom,0px));max-width:480px;margin:0 auto;border-top:1px solid var(--border2)">
     <button class="kc-modal-close" onclick="closeEauSheet()" aria-label="Fermer">✕</button>
     <div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1.25rem"></div>
-    <div style="font-family:Playfair Display,serif;font-size:1.1rem;margin-bottom:0.9rem">💧 Ajouter de l'eau</div>
+    <div style="font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-weight:700;font-size:1rem;color:var(--text);display:flex;align-items:center;gap:8px;margin-bottom:1rem">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round" style="flex-shrink:0"><path d="M8 2c0 0-5 5-5 9a5 5 0 0010 0C13 7 8 2 8 2z"/></svg>
+      Ajouter de l'eau
+    </div>
     <div style="display:flex;gap:8px;margin-bottom:0.85rem">
       <input type="number" id="eau-sheet-input" placeholder="Quantité" min="1" max="9999" inputmode="decimal"
-        style="flex:1;font-size:1.4rem;font-weight:600;text-align:center;padding:0.65rem;border-radius:var(--r-sm);border:1.5px solid var(--border2);background:var(--s2);color:var(--text);font-family:DM Sans,sans-serif;outline:none"
-        onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border2)'"
+        style="flex:1;font-size:1.4rem;font-weight:700;text-align:center;padding:0.7rem;border-radius:var(--r-sm);border:1.5px solid var(--border);background:var(--s2);color:var(--text);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;outline:none;transition:border-color var(--trans)"
+        onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'"
         onkeydown="if(event.key==='Enter')eauAddCustom()">
-      <select id="eau-sheet-unit" style="width:105px;padding:0.65rem 0.4rem;border-radius:var(--r-sm);border:1.5px solid var(--border2);background:var(--s2);color:var(--text);font-family:Syne,sans-serif;font-size:0.78rem;outline:none">
+      <select id="eau-sheet-unit" style="width:105px;padding:0.65rem 0.4rem;border-radius:var(--r-sm);border:1.5px solid var(--border);background:var(--s2);color:var(--text);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.76rem;outline:none">
         <option value="1">ml</option>
         <option value="10">cl</option>
         <option value="1000">Litre (L)</option>
@@ -6106,22 +6197,22 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
         <option value="1500">Grande bouteille</option>
       </select>
     </div>
-    <button onclick="eauAddCustom()" style="width:100%;padding:0.85rem;background:var(--teal);color:#000;border:none;border-radius:var(--r-sm);font-family:Syne,sans-serif;font-size:0.9rem;font-weight:700;cursor:pointer;margin-bottom:0.75rem">Ajouter →</button>
+    <button onclick="eauAddCustom()" style="width:100%;padding:0.85rem;background:var(--teal);color:#000;border:none;border-radius:var(--r-pill);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.88rem;font-weight:700;cursor:pointer;margin-bottom:0.9rem">Ajouter →</button>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
-      <div style="font-size:0.65rem;color:var(--muted2);font-family:Syne,sans-serif">Historique · <strong id="eau-sheet-total" style="color:var(--teal)">0</strong> ml aujourd'hui</div>
-      <button onclick="eauReset()" style="font-size:0.65rem;color:rgba(248,113,113,0.8);background:none;border:1px solid var(--border);border-radius:20px;padding:2px 8px;cursor:pointer;font-family:Syne,sans-serif">Effacer</button>
+      <div style="font-size:0.66rem;color:var(--muted);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">Historique · <strong id="eau-sheet-total" style="color:var(--teal)">0</strong> ml aujourd'hui</div>
+      <button onclick="eauReset()" style="font-size:0.64rem;color:var(--red);background:var(--red-bg);border:none;border-radius:var(--r-pill);padding:3px 10px;cursor:pointer;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-weight:500">Effacer</button>
     </div>
-    <div id="eau-sheet-log" class="kc-modal-scroll" style="max-height:90px;overflow-y:auto;font-size:0.68rem;font-family:Syne,sans-serif"></div>
+    <div id="eau-sheet-log" class="kc-modal-scroll" style="max-height:90px;overflow-y:auto;font-size:0.68rem;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif"></div>
     <!-- Modifier l'objectif -->
     <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--border)">
-      <div style="font-size:0.65rem;color:var(--muted2);font-family:Syne,sans-serif;margin-bottom:6px">Objectif journalier</div>
+      <div style="font-size:0.62rem;color:var(--muted);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Objectif journalier</div>
       <div style="display:flex;gap:8px;align-items:center">
         <input type="number" id="eau-goal-input" min="500" max="5000" step="100" placeholder="2000"
-          style="flex:1;padding:0.45rem 0.6rem;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--s2);color:var(--text);font-family:Syne,sans-serif;font-size:0.82rem;outline:none"
-          onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border2)'"
+          style="flex:1;padding:0.5rem 0.6rem;border-radius:var(--r-sm);border:1.5px solid var(--border);background:var(--s2);color:var(--text);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.82rem;outline:none;transition:border-color var(--trans)"
+          onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'"
           onkeydown="if(event.key==='Enter')eauSaveGoal()">
-        <span style="font-size:0.72rem;color:var(--muted2);font-family:Syne,sans-serif">ml</span>
-        <button onclick="eauSaveGoal()" style="padding:0.45rem 0.85rem;background:var(--teal);color:#000;border:1px solid var(--teal);border-radius:var(--r-sm);color:#000;font-family:Syne,sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer">OK</button>
+        <span style="font-size:0.72rem;color:var(--muted);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">ml</span>
+        <button onclick="eauSaveGoal()" style="padding:0.5rem 1rem;background:var(--teal);border:none;border-radius:var(--r-pill);color:#000;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.76rem;font-weight:700;cursor:pointer">OK</button>
       </div>
     </div>
   </div>
@@ -6516,6 +6607,44 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   </div>
 </div>
 
+<!-- ═══ INFO — "AUJOURD'HUI DANS LES CALCULS" (bulle Profil) ═══
+     z-index 1050 : au-dessus du panneau Compte (#account-panel, z-index 1000) puisque
+     ce modal s'ouvre depuis un bouton situé À L'INTÉRIEUR de ce panneau. -->
+<div id="today-include-info-modal" style="display:none;position:fixed;inset:0;z-index:1050;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);align-items:flex-end;justify-content:center" onclick="if(event.target===this)hideTodayIncludeInfo()">
+  <div class="kc-modal-scroll" style="position:relative;background:var(--s1);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:540px;max-height:88vh;overflow-y:auto;padding:1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom,0));animation:slideUp 0.28s cubic-bezier(0.34,1.2,0.64,1)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem">
+      <div style="font-family:Playfair Display,serif;font-size:1.05rem;font-weight:700;color:var(--text)">Aujourd'hui dans les calculs</div>
+    </div>
+    <button class="kc-modal-close" onclick="hideTodayIncludeInfo()" aria-label="Fermer">✕</button>
+    <div style="font-size:0.78rem;color:var(--muted);line-height:1.7">
+      <div style="margin-bottom:1rem">Par défaut, tes balances (7j, 30j, période diète, poids prédit) ne comptent que les jours <strong style="color:var(--text)">terminés</strong> : la journée en cours n'est pas incluse tant qu'elle n'est pas finie, sinon la moyenne bougerait à chaque repas saisi. Ce réglage décide QUAND aujourd'hui rejoint le calcul.</div>
+
+      <div style="display:flex;gap:10px;margin-bottom:0.7rem;padding:0.85rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm)">
+        <div style="font-size:1.1rem;flex-shrink:0">🕗</div>
+        <div>
+          <div style="font-weight:700;color:var(--text);margin-bottom:3px">Auto (par défaut)</div>
+          Aujourd'hui reste exclu jusqu'à l'heure de bascule choisie ci-dessous (22h par défaut), puis rejoint automatiquement le calcul — pratique pour voir le résultat du jour dès que ta journée est finie, sans y toucher manuellement.
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:0.7rem;padding:0.85rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm)">
+        <div style="font-size:1.1rem;flex-shrink:0">✅</div>
+        <div>
+          <div style="font-weight:700;color:var(--text);margin-bottom:3px">Inclure</div>
+          Force l'inclusion immédiate d'aujourd'hui, quelle que soit l'heure — utile si tu as déjà tout saisi (repas + poids) et veux voir le résultat tout de suite.
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:1.1rem;padding:0.85rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm)">
+        <div style="font-size:1.1rem;flex-shrink:0">🚫</div>
+        <div>
+          <div style="font-weight:700;color:var(--text);margin-bottom:3px">Exclure</div>
+          Garde aujourd'hui hors du calcul même après l'heure de bascule — utile si ta journée n'est pas représentative (repas pas encore tous saisis, événement particulier) et que tu veux garder une moyenne stable sur les jours précédents.
+        </div>
+      </div>
+      <div>Le choix ("Inclure"/"Exclure") ne dure qu'un jour : il revient automatiquement sur "Auto" le lendemain matin.</div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ SÉLECTEUR D'UNITÉ — SAISIE ALIMENT ═══ -->
 <div id="qty-unit-picker-modal" style="display:none;position:fixed;inset:0;z-index:650;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeUnitPicker()">
   <div style="position:relative;background:var(--s1);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:540px;padding:0.85rem 1rem calc(1.1rem + env(safe-area-inset-bottom,0));animation:slideUp 0.28s cubic-bezier(0.34,1.2,0.64,1)">
@@ -6567,7 +6696,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-09-07.11';
+const APP_BUILD_VERSION = '2026-09-08.6';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -16573,6 +16702,12 @@ function openAccountPanel(tab){
   if(p.sessions){ const el=document.getElementById('ap-sessions'); if(el) el.value = p.sessions; }
   if(p.duree){    const el=document.getElementById('ap-duree');    if(el) el.value = p.duree; }
   if(typeof renderProfilePhaseButtons==='function') renderProfilePhaseButtons(p.phase||null);
+  // Aujourd'hui dans les calculs de balance (cf getTodayIncludeMode/getTodayCutoffHour)
+  const todayIncEl = document.getElementById('ap-todayinc-'+getTodayIncludeMode());
+  if(todayIncEl) todayIncEl.checked = true;
+  const todayHourEl = document.getElementById('ap-todayinc-hour');
+  if(todayHourEl) todayHourEl.value = getTodayCutoffHour();
+  renderTodayIncludeStatus();
 
   // Pre-fill estimer tab from profile too
   if(p.taille){ const e=document.getElementById('c-taille'); if(e) e.value=p.taille; }
@@ -16782,15 +16917,103 @@ function toLocalDateStr(d){
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 
-/* Helper: détail jour par jour de la balance sur les 7 derniers jours. */
+/* ── Réglage "Heure de bascule automatique" (bulle Profil) ──
+   Détermine si AUJOURD'HUI compte déjà dans les calculs de balance (7j/30j/
+   période diète/poids prédit), qui l'excluaient auparavant de façon
+   inconditionnelle (jour pas terminé, la moyenne bougerait à chaque repas
+   saisi). 3 états, stockés dans le profil :
+   - 'auto'    (défaut) : suit l'heure réglée (todayCutoffHour, défaut 22h) —
+                aujourd'hui est exclu avant cette heure, inclus après.
+   - 'include' : bascule forcée immédiate, quelle que soit l'heure.
+   - 'exclude' : reste exclu même après l'heure de bascule.
+   Un mode forcé ('include'/'exclude') est daté (todayIncludeSetDate) : s'il
+   date d'un jour différent d'aujourd'hui, il est automatiquement remis à
+   'auto' (reset quotidien à minuit — cf demande produit). */
+function getTodayIncludeMode(){
+  const p = JSON.parse(localStorage.getItem('kcalos_profile')||'{}');
+  const todayStr = today();
+  let mode = p.todayIncludeMode || 'auto';
+  if(mode !== 'auto' && p.todayIncludeSetDate !== todayStr){
+    // Mode forcé daté d'un jour précédent → reset auto au changement de jour
+    mode = 'auto';
+    p.todayIncludeMode = 'auto';
+    delete p.todayIncludeSetDate;
+    localStorage.setItem('kcalos_profile', JSON.stringify(p));
+  }
+  return mode;
+}
+function setTodayIncludeMode(mode){
+  const p = JSON.parse(localStorage.getItem('kcalos_profile')||'{}');
+  p.todayIncludeMode = mode;
+  if(mode==='auto') delete p.todayIncludeSetDate;
+  else p.todayIncludeSetDate = today();
+  localStorage.setItem('kcalos_profile', JSON.stringify(p));
+  renderTodayIncludeStatus();
+  renderDashboard();
+}
+function getTodayCutoffHour(){
+  const p = JSON.parse(localStorage.getItem('kcalos_profile')||'{}');
+  const h = parseInt(p.todayCutoffHour, 10);
+  return (Number.isInteger(h) && h>=0 && h<=23) ? h : 22;
+}
+function setTodayCutoffHour(hour){
+  const h = Math.min(23, Math.max(0, parseInt(hour,10)||0));
+  const p = JSON.parse(localStorage.getItem('kcalos_profile')||'{}');
+  p.todayCutoffHour = h;
+  localStorage.setItem('kcalos_profile', JSON.stringify(p));
+  renderTodayIncludeStatus();
+  renderDashboard();
+}
+/* Vrai si aujourd'hui doit être inclus dans les calculs de balance, selon
+   getTodayIncludeMode() ci-dessus. */
+function shouldIncludeToday(){
+  const mode = getTodayIncludeMode();
+  if(mode==='include') return true;
+  if(mode==='exclude') return false;
+  return new Date().getHours() >= getTodayCutoffHour();
+}
+/* Ligne de statut affichée dans la bulle Profil (#ap-todayinc-status), sous le
+   segmented control : explique en clair ce que le réglage actuel fait EN CE
+   MOMENT, pour que l'utilisateur comprenne l'effet sans avoir à ouvrir le "!"
+   d'aide (cf showTodayIncludeInfo). Appelée à l'ouverture du panneau et à
+   chaque changement de mode/heure. */
+function renderTodayIncludeStatus(){
+  const el = document.getElementById('ap-todayinc-status');
+  if(!el) return;
+  const mode = getTodayIncludeMode();
+  const hour = getTodayCutoffHour();
+  const included = shouldIncludeToday();
+  if(mode==='include'){
+    el.textContent = "✅ Aujourd'hui est inclus dans tes balances (forcé) · revient sur Auto demain matin";
+  } else if(mode==='exclude'){
+    el.textContent = "🚫 Aujourd'hui reste exclu de tes balances (forcé) · revient sur Auto demain matin";
+  } else {
+    el.textContent = included
+      ? `🕗 Mode Auto · il est passé ${hour}h, aujourd'hui est déjà inclus dans tes balances`
+      : `🕗 Mode Auto · aujourd'hui sera inclus dans tes balances à partir de ${hour}h`;
+  }
+}
+function showTodayIncludeInfo(){
+  const m = document.getElementById('today-include-info-modal');
+  if(m){ m.style.display='flex'; kcLockScroll(); }
+}
+function hideTodayIncludeInfo(){
+  const m = document.getElementById('today-include-info-modal');
+  if(m){ m.style.display='none'; kcUnlockScroll(); }
+}
+
+/* Helper: détail jour par jour de la balance sur les 7 derniers jours.
+   Fenêtre glissante de 7 jours pleins : se termine à hier par défaut, ou à
+   aujourd'hui si shouldIncludeToday() (cf réglage "Heure de bascule" du
+   profil) — le jour en cours reste sinon exclu pour ne pas faire bouger la
+   moyenne à chaque repas saisi (ex: petit-déj qui change en direct la
+   "balance moyenne 7j" affichée). */
 function computeLast7BalanceDetail(fitness, food, profile){
   const dates = [];
-  // i de 7 à 1 (pas 6 à 0) : on exclut AUJOURD'HUI volontairement. Le jour en
-  // cours n'est pas terminé (repas pas tous saisis, dépense pas stabilisée),
-  // donc l'inclure fausse la moyenne dès qu'on ajoute un repas — ex: saisir le
-  // petit-déj change en direct la "balance moyenne 7j" affichée. On prend donc
-  // les 7 derniers jours COMPLETS (hier inclus).
-  for(let i=7;i>=1;i--){
+  const includeToday = shouldIncludeToday();
+  const start = includeToday ? 6 : 7;
+  const end = includeToday ? 0 : 1;
+  for(let i=start;i>=end;i--){
     const d=new Date(); d.setDate(d.getDate()-i);
     dates.push(toLocalDateStr(d));
   }
@@ -16798,25 +17021,20 @@ function computeLast7BalanceDetail(fitness, food, profile){
 }
 
 /* Helper: détail jour par jour de la balance sur les 30 derniers jours (même
-   règle que balance 7j : jours complets uniquement, aujourd'hui exclu). */
+   règle que balance 7j : fenêtre glissante, aujourd'hui inclus/exclu selon
+   shouldIncludeToday()). */
 function computeLast30BalanceDetail(fitness, food, profile){
   const dates = [];
-  for(let i=30;i>=1;i--){
+  const includeToday = shouldIncludeToday();
+  const start = includeToday ? 29 : 30;
+  const end = includeToday ? 0 : 1;
+  for(let i=start;i>=end;i--){
     const d=new Date(); d.setDate(d.getDate()-i);
     dates.push(toLocalDateStr(d));
   }
   return computeBalanceDetailForDates(dates, fitness, food, profile);
 }
 
-/* Helper: détail jour par jour de la balance sur la période de la phase (diet/
-   surplus/maintien) en cours, du jour de début (cf getCurrentPhaseStartDate)
-   jusqu'à AUJOURD'HUI inclus. Contrairement à balance 7j/30j (qui excluent
-   volontairement le jour en cours pour ne pas faire bouger une petite moyenne
-   à chaque repas saisi), ici la période peut courir sur des semaines/mois :
-   un seul jour partiel a un impact négligeable sur la moyenne, et de toute
-   façon il reste auto-exclu tant qu'il n'a pas d'apport ET de dépense fiables
-   (cf computeBalanceDayDetail → autoValid). Retourne startDate:null si aucune
-   phase n'est connue. */
 /* Helper générique : détail jour par jour de la balance sur une période
    [startDate, endDate]. Si ongoing=true, endDate est inclus tel quel
    (période en cours, ex: phase actuelle → aujourd'hui). Si ongoing=false,
@@ -16837,15 +17055,14 @@ function computeBalanceDetailForPeriod(fitness, food, profile, startDate, endDat
 
 /* Helper: détail jour par jour de la balance sur la période de la phase (diet/
    surplus/maintien) en cours, du jour de début (cf getCurrentPhaseStartDate)
-   jusqu'à HIER inclus. Même règle qu'aujourd'hui pour balance 7j/30j :
-   aujourd'hui est toujours exclu (jour pas terminé, la moyenne ne doit pas
-   bouger en direct à chaque repas saisi). Retourne startDate:null si aucune
-   phase n'est connue. */
+   jusqu'à aujourd'hui (inclus) ou hier (exclu), selon shouldIncludeToday()
+   (cf réglage "Heure de bascule" du profil — même règle que balance 7j/30j).
+   Retourne startDate:null si aucune phase n'est connue. */
 function computeDietPeriodBalanceDetail(fitness, food, profile){
   const startDate = getCurrentPhaseStartDate();
   if(!startDate) return { days: [], includedBalances: [], avg: null, startDate: null };
   const todayStr = today();
-  const detail = computeBalanceDetailForPeriod(fitness, food, profile, startDate, todayStr, false);
+  const detail = computeBalanceDetailForPeriod(fitness, food, profile, startDate, todayStr, shouldIncludeToday());
   return { ...detail, startDate };
 }
 
@@ -24728,7 +24945,7 @@ function renderSeanceReportHtml(start, end, label, r) {
   function _eauTotal(log){ return log.reduce(function(s,e){ return s+(e.ml||0); }, 0); }
 
   function initEauWidget(){ loadEauWidget(); }
-  function loadEauWidget(){ _eauRefreshWidget(); }
+  function loadEauWidget(){ _eauRefreshWidget(/*silent=*/true); }
 
   window.eauQuickAdd = function(ml){
     var log = _eauGetLog();
@@ -24755,14 +24972,28 @@ function renderSeanceReportHtml(start, end, label, r) {
     _eauPlayAddAnim();
     if(typeof showToast==='function') showToast('+'+ml+' ml ajoutés 💧');
   };
-  /* Petite animation (rebond de la bouteille + goutte qui s'envole) jouée à chaque ajout d'eau */
+  /* Petite animation (rebond de la bouteille + onde de surface + gouttes qui s'envolent)
+     jouée à chaque ajout d'eau. La vague "s'excite" brièvement (amplitude/vitesse accrues)
+     puis revient au calme — inspiré du chaînage fill→wave de coiger/fill-water-animation,
+     adapté ici à un remplissage continu en ml plutôt que par paliers 25/50/75/100. */
+  var _eauBurstTimer = null;
   function _eauPlayAddAnim(){
     var wrap = document.getElementById('eau-bottle-wrap');
     if(!wrap) return;
     wrap.classList.remove('eau-bump'); void wrap.offsetWidth; wrap.classList.add('eau-bump');
-    var drop = document.getElementById('eau-drop');
-    if(drop){
-      drop.classList.remove('go'); void drop.offsetWidth; drop.classList.add('go');
+    ['eau-drop','eau-drop2','eau-drop3'].forEach(function(id){
+      var d = document.getElementById(id);
+      if(d){ d.classList.remove('go'); void d.offsetWidth; d.classList.add('go'); }
+    });
+    var ripple = document.getElementById('eau-ripple');
+    if(ripple){ ripple.classList.remove('go'); void ripple.offsetWidth; ripple.classList.add('go'); }
+    var back = document.querySelector('.eau-wave-back'), front = document.querySelector('.eau-wave-front');
+    if(back && front){
+      back.classList.add('eau-wave-burst'); front.classList.add('eau-wave-burst');
+      clearTimeout(_eauBurstTimer);
+      _eauBurstTimer = setTimeout(function(){
+        back.classList.remove('eau-wave-burst'); front.classList.remove('eau-wave-burst');
+      }, 1300);
     }
   }
   window.eauReset = function(){
@@ -24804,26 +25035,68 @@ function renderSeanceReportHtml(start, end, label, r) {
     if(s){ s.style.display = 'none'; kcUnlockScroll(); }
   };
 
-  function _eauRefreshWidget(){
-    var log   = _eauGetLog();
-    var total = _eauTotal(log);
-    var pct   = Math.min(100, total / EAU_GOAL * 100);
-    var atGoal= total >= EAU_GOAL;
+  /* Couleurs de la zone "dépassement d'objectif" (au-delà de 100%) : interpolation
+     progressive lime → orange → rouge, à partir des vraies couleurs du thème actif
+     (jamais de couleur en dur), pour que l'eau et le badge changent de teinte au fil
+     du dépassement plutôt que de basculer brutalement. */
+  function _eauParseColor(str){
+    str = (str || '').trim();
+    var m = str.match(/^#([0-9a-f]{6})$/i);
+    if(m){ var n = parseInt(m[1],16); return [(n>>16)&255,(n>>8)&255,n&255]; }
+    m = str.match(/^rgba?\(([^)]+)\)$/i);
+    if(m){ var p = m[1].split(',').map(function(x){ return parseFloat(x); }); return [p[0]||0,p[1]||0,p[2]||0]; }
+    return [255,255,255];
+  }
+  function _eauMixColor(c1, c2, t){
+    var a = _eauParseColor(c1), b = _eauParseColor(c2);
+    var r = Math.round(a[0]+(b[0]-a[0])*t), g = Math.round(a[1]+(b[1]-a[1])*t), bl = Math.round(a[2]+(b[2]-a[2])*t);
+    return 'rgb('+r+','+g+','+bl+')';
+  }
+  function _eauOverColor(t){
+    var cs = getComputedStyle(document.documentElement);
+    var lime = cs.getPropertyValue('--lime'), orange = cs.getPropertyValue('--orange'), red = cs.getPropertyValue('--red');
+    return t <= 0.5 ? _eauMixColor(lime, orange, t/0.5) : _eauMixColor(orange, red, (t-0.5)/0.5);
+  }
+
+  var _eauWasAtGoal = null; /* null = pas encore initialisé, évite un pulse parasite au chargement */
+  function _eauRefreshWidget(silent){
+    var log     = _eauGetLog();
+    var total   = _eauTotal(log);
+    var realPct = total / EAU_GOAL * 100;       /* peut dépasser 100 : reflète le dépassement réel */
+    var fillPct = Math.min(100, realPct);       /* hauteur de l'eau, plafonnée à la forme de la bouteille */
+    var atGoal  = total >= EAU_GOAL;
+    var overT   = atGoal ? Math.min(1, (realPct-100)/100) : 0; /* 0 à l'objectif → 1 au double de l'objectif */
     var mlEl  = document.getElementById('db-eau-ml');
     var goalEl= document.getElementById('db-eau-goal');
     var countEl=document.getElementById('db-eau-count');
     var water = document.getElementById('eau-bottle-water');
     var wrap  = document.getElementById('eau-bottle-wrap');
     var pctEl = document.getElementById('eau-bottle-pct');
+    var ripple= document.getElementById('eau-ripple');
     if(mlEl)  mlEl.textContent  = total;
     if(goalEl)goalEl.textContent = EAU_GOAL;
-    if(water) water.style.height = pct.toFixed(1) + '%';
-    if(pctEl){
-      pctEl.textContent = Math.round(pct) + '%';
-      pctEl.classList.toggle('eau-full', atGoal);
+    if(water){
+      water.style.height  = fillPct.toFixed(1) + '%';
+      water.style.opacity = fillPct > 0 ? '1' : '0'; /* évite un résidu de vague visible bouteille vide */
+      /* Au-delà de l'objectif, la surface de l'eau vire progressivement vers l'orange/rouge */
+      water.style.background = overT > 0 ? 'linear-gradient(180deg,var(--blue) 0%,'+_eauOverColor(overT)+' 100%)' : '';
     }
-    if(wrap)  wrap.classList.toggle('eau-full', atGoal);
+    if(ripple) ripple.style.bottom = fillPct.toFixed(1) + '%'; /* l'onde part du niveau d'eau courant */
+    if(pctEl){
+      pctEl.textContent = Math.round(realPct) + '%';
+      pctEl.classList.toggle('eau-full', atGoal);
+      pctEl.classList.toggle('eau-over', overT > 0.15); /* léger "battement" une fois nettement au-dessus de l'objectif */
+      pctEl.style.color = overT > 0 ? _eauOverColor(overT) : '';
+    }
+    if(wrap){
+      wrap.classList.toggle('eau-full', atGoal);
+      wrap.style.filter = overT > 0 ? 'drop-shadow(0 0 '+(7+overT*9).toFixed(0)+'px '+_eauOverColor(overT)+')' : '';
+      if(atGoal && _eauWasAtGoal===false && !silent){
+        wrap.classList.remove('eau-goal-pulse'); void wrap.offsetWidth; wrap.classList.add('eau-goal-pulse');
+      }
+    }
     if(countEl) countEl.classList.toggle('eau-full', atGoal);
+    _eauWasAtGoal = atGoal;
   }
 
   function _eauRefreshSheet(){
