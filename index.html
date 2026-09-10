@@ -6231,6 +6231,17 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--teal-d);margin-bottom:4px">Balance moyenne</div>
       <div id="bal7-sheet-avg" style="font-size:1.4rem;font-weight:700;color:var(--teal);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">—</div>
       <div id="bal7-sheet-count" style="font-size:0.66rem;color:var(--teal-d);margin-top:2px">0 jour pris en compte</div>
+      <div style="display:flex;margin-top:0.7rem;padding-top:0.65rem;border-top:1px solid rgba(64,217,176,0.2)">
+        <div style="flex:1;text-align:center">
+          <div style="font-size:0.56rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--teal-d);margin-bottom:2px">Apport moy.</div>
+          <div id="bal7-sheet-apport" style="font-size:0.8rem;font-weight:700;color:var(--text)">—</div>
+        </div>
+        <div style="width:1px;background:rgba(64,217,176,0.2)"></div>
+        <div style="flex:1;text-align:center">
+          <div style="font-size:0.56rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--teal-d);margin-bottom:2px">Dépense moy.</div>
+          <div id="bal7-sheet-depense" style="font-size:0.8rem;font-weight:700;color:var(--text)">—</div>
+        </div>
+      </div>
     </div>
 
     <!-- Liste des 7 jours -->
@@ -6253,6 +6264,17 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--lime-d);margin-bottom:4px">Balance moyenne</div>
       <div id="bal30-sheet-avg" style="font-size:1.4rem;font-weight:700;color:var(--lime);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">—</div>
       <div id="bal30-sheet-count" style="font-size:0.66rem;color:var(--lime-d);margin-top:2px">0 jour pris en compte</div>
+      <div style="display:flex;margin-top:0.7rem;padding-top:0.65rem;border-top:1px solid rgba(200,240,74,0.25)">
+        <div style="flex:1;text-align:center">
+          <div style="font-size:0.56rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--lime-d);margin-bottom:2px">Apport moy.</div>
+          <div id="bal30-sheet-apport" style="font-size:0.8rem;font-weight:700;color:var(--text)">—</div>
+        </div>
+        <div style="width:1px;background:rgba(200,240,74,0.25)"></div>
+        <div style="flex:1;text-align:center">
+          <div style="font-size:0.56rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--lime-d);margin-bottom:2px">Dépense moy.</div>
+          <div id="bal30-sheet-depense" style="font-size:0.8rem;font-weight:700;color:var(--text)">—</div>
+        </div>
+      </div>
     </div>
 
     <!-- Liste des 30 jours -->
@@ -6275,6 +6297,17 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--pink-d);margin-bottom:4px">Balance moyenne</div>
       <div id="baldiet-sheet-avg" style="font-size:1.4rem;font-weight:700;color:var(--pink);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">—</div>
       <div id="baldiet-sheet-count" style="font-size:0.66rem;color:var(--pink-d);margin-top:2px">0 jour pris en compte</div>
+      <div style="display:flex;margin-top:0.7rem;padding-top:0.65rem;border-top:1px solid rgba(216,85,192,0.25)">
+        <div style="flex:1;text-align:center">
+          <div style="font-size:0.56rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--pink-d);margin-bottom:2px">Apport moy.</div>
+          <div id="baldiet-sheet-apport" style="font-size:0.8rem;font-weight:700;color:var(--text)">—</div>
+        </div>
+        <div style="width:1px;background:rgba(216,85,192,0.25)"></div>
+        <div style="flex:1;text-align:center">
+          <div style="font-size:0.56rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--pink-d);margin-bottom:2px">Dépense moy.</div>
+          <div id="baldiet-sheet-depense" style="font-size:0.8rem;font-weight:700;color:var(--text)">—</div>
+        </div>
+      </div>
     </div>
 
     <!-- Liste des jours de la période -->
@@ -6696,7 +6729,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-09-09.3';
+const APP_BUILD_VERSION = '2026-09-10.5';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -15786,6 +15819,75 @@ function tmgComputeRecap(){
     }
   }catch(e){}
 
+  // 7. Progression de la seance du jour vs sa derniere fois (tous types de
+  //    seance confondus, recherche "en profondeur" par serie) — meme moteur
+  //    de calcul que la banniere live de la page Seance (cf woSessPairPct).
+  try{
+    if(typeof woV2GetAll==='function' && typeof woSessPairPct==='function'){
+      const allFlat = Object.values(woV2GetAll()).flat().filter(s=>s && s.date);
+      const todaySess = allFlat.find(s=>s.date===todayStr);
+      if(todaySess && todaySess.exercises?.some(e=>e.sets?.length)){
+        const allSorted = allFlat.slice().sort((a,b)=>a.date.localeCompare(b.date));
+        const pct = woSessPairPct(todaySess, allSorted);
+        if(pct!==null){
+          const ok = pct >= 0;
+          checks.push({status: ok?'ok':'warn', title:'Progression seance du jour', page:'page-workout',
+            detail:`Seance d'aujourd'hui : ${pct>=0?'+':''}${pct}% vs ta derniere fois sur ces exercices. `
+              +(ok?'Tu progresses ou maintiens ton niveau — bon signal de surcompensation.':'Leger recul vs la derniere fois — ponctuel generalement (fatigue, sommeil), a surveiller si ca se repete.')});
+        } else {
+          checks.push({status:'nodata', title:'Progression seance du jour', page:'page-workout', detail:"Pas encore assez d'historique sur ces exercices pour comparer."});
+        }
+      } else {
+        checks.push({status:'nodata', title:'Progression seance du jour', page:'page-workout', detail:"Aucune seance saisie aujourd'hui."});
+      }
+    }
+  }catch(e){}
+
+  // 8 et 9 ne s'affichent que si une phase (deficit/surplus/maintien) est
+  // declaree dans le profil — sinon elles n'ont pas de sens et sont omises
+  // plutot que d'afficher un "nodata" permanent pour qui n'utilise pas cette
+  // fonctionnalite.
+  const _recapPhase = (typeof getCurrentPhase==='function') ? getCurrentPhase() : null;
+  if(_recapPhase){
+    const _PHASE_LABEL = {deficit:'deficit', surplus:'surplus', maintien:'maintien'};
+    try{
+      const fitness = DB.getFitness(), food = DB.getFood();
+      const profile = JSON.parse(localStorage.getItem('kcalos_profile')||'{}');
+      const balDietDetail = (typeof computeDietPeriodBalanceDetail==='function')
+        ? computeDietPeriodBalanceDetail(fitness, food, profile) : null;
+
+      // 8. Evolution REELLE du poids (pesees) depuis le debut de la phase —
+      //    doit aller dans le sens attendu par la phase declaree.
+      const pred = (balDietDetail && typeof computeDietWeightPrediction==='function')
+        ? computeDietWeightPrediction(balDietDetail, fitness) : null;
+      if(pred){
+        let ok;
+        if(_recapPhase==='deficit') ok = pred.actualDeltaKg <= -0.1;
+        else if(_recapPhase==='surplus') ok = pred.actualDeltaKg >= 0.1;
+        else ok = Math.abs(pred.actualDeltaKg) <= 0.5;
+        checks.push({status: ok?'ok':'warn', title:'Poids vs phase', page:'page-progression',
+          detail:`${pred.actualDeltaKg>=0?'+':''}${pred.actualDeltaKg.toFixed(1)} kg peses depuis le debut de ta phase ${_PHASE_LABEL[_recapPhase]||_recapPhase} (${pred.days} j). `
+            +(ok?'Tendance coherente avec ta phase actuelle.':'Pas encore la direction attendue pour cette phase — laisse un peu de temps ou verifie tes apports.')});
+      } else {
+        checks.push({status:'nodata', title:'Poids vs phase', page:'page-progression', detail:'Pas assez de pesees autour du debut de phase et d\'aujourd\'hui pour degager une tendance.'});
+      }
+
+      // 9. Balance calorique moyenne depuis le debut de la phase — doit etre
+      //    du bon signe (meme donnee que le widget "Balance periode diete").
+      if(balDietDetail && balDietDetail.avg!==null){
+        let ok;
+        if(_recapPhase==='deficit') ok = balDietDetail.avg <= -50;
+        else if(_recapPhase==='surplus') ok = balDietDetail.avg >= 50;
+        else ok = Math.abs(balDietDetail.avg) <= 150;
+        checks.push({status: ok?'ok':'warn', title:'Balance calorique vs phase', page:'page-progression',
+          detail:`Balance moyenne depuis le debut de la phase ${_PHASE_LABEL[_recapPhase]||_recapPhase} : ${balDietDetail.avg>=0?'+':''}${Math.round(balDietDetail.avg)} kcal/j. `
+            +(ok?'Coherente avec la phase declaree.':'Pas encore alignee avec la phase declaree — ajuste tes apports ou ta depense.')});
+      } else {
+        checks.push({status:'nodata', title:'Balance calorique vs phase', page:'page-progression', detail:'Pas assez de donnees saisies depuis le debut de la phase pour calculer une balance moyenne.'});
+      }
+    }catch(e){}
+  }
+
   return checks;
 }
 
@@ -16937,9 +17039,16 @@ function computeBalanceDetailForDates(dates, fitness, food, profile){
   const excluded = getBal7Exclusions();
   const forced = getBal7Forced();
   const days = dates.map(ds=>computeBalanceDayDetail(ds, fitness, food, profile, excluded, forced));
-  const includedBalances = days.filter(d=>d.included).map(d=>d.balance);
+  const includedDays = days.filter(d=>d.included);
+  const includedBalances = includedDays.map(d=>d.balance);
   const avg = includedBalances.length ? includedBalances.reduce((a,b)=>a+b,0)/includedBalances.length : null;
-  return { days, includedBalances, avg };
+  // Apport moyen et dépense moyenne sur les mêmes jours inclus que la balance
+  // (affichés en complément dans les sheets de détail bal7/bal30/baldiet).
+  const includedApports = includedDays.map(d=>d.apportKcal);
+  const includedDepenses = includedDays.map(d=>d.depenseKcal);
+  const avgApport = includedApports.length ? includedApports.reduce((a,b)=>a+b,0)/includedApports.length : null;
+  const avgDepense = includedDepenses.length ? includedDepenses.reduce((a,b)=>a+b,0)/includedDepenses.length : null;
+  return { days, includedBalances, avg, avgApport, avgDepense };
 }
 
 /* Convertit un objet Date en chaîne AAAA-MM-JJ en heure LOCALE (pas UTC) —
@@ -17658,6 +17767,10 @@ function renderBal7Sheet(){
   if(avgEl) avgEl.textContent = detail.avg!==null ? (detail.avg>=0?'+':'')+fmt(detail.avg)+' kcal/j' : '—';
   const countEl = document.getElementById('bal7-sheet-count');
   if(countEl) countEl.textContent = detail.includedBalances.length+' jour'+(detail.includedBalances.length>1?'s':'')+' pris en compte sur 7';
+  const apportEl = document.getElementById('bal7-sheet-apport');
+  if(apportEl) apportEl.textContent = detail.avgApport!==null ? fmt(detail.avgApport)+' kcal' : '—';
+  const depenseEl = document.getElementById('bal7-sheet-depense');
+  if(depenseEl) depenseEl.textContent = detail.avgDepense!==null ? fmt(detail.avgDepense)+' kcal' : '—';
 
   daysEl.innerHTML = detail.days.map(d=>{
     const balTxt = (d.balance>=0?'+':'')+fmt(d.balance)+' kcal';
@@ -17726,6 +17839,10 @@ function renderBal30Sheet(){
   if(avgEl) avgEl.textContent = detail.avg!==null ? (detail.avg>=0?'+':'')+fmt(detail.avg)+' kcal/j' : '—';
   const countEl = document.getElementById('bal30-sheet-count');
   if(countEl) countEl.textContent = detail.includedBalances.length+' jour'+(detail.includedBalances.length>1?'s':'')+' pris en compte sur 30';
+  const apportEl = document.getElementById('bal30-sheet-apport');
+  if(apportEl) apportEl.textContent = detail.avgApport!==null ? fmt(detail.avgApport)+' kcal' : '—';
+  const depenseEl = document.getElementById('bal30-sheet-depense');
+  if(depenseEl) depenseEl.textContent = detail.avgDepense!==null ? fmt(detail.avgDepense)+' kcal' : '—';
 
   daysEl.innerHTML = detail.days.map(d=>{
     const balTxt = (d.balance>=0?'+':'')+fmt(d.balance)+' kcal';
@@ -17794,17 +17911,23 @@ function renderBalDietSheet(){
   const introEl = document.getElementById('baldiet-sheet-intro');
   const avgEl = document.getElementById('baldiet-sheet-avg');
   const countEl = document.getElementById('baldiet-sheet-count');
+  const apportEl = document.getElementById('baldiet-sheet-apport');
+  const depenseEl = document.getElementById('baldiet-sheet-depense');
 
   if(!detail.startDate){
     if(introEl) introEl.textContent = 'Aucune phase (déficit / surplus / maintien) définie pour le moment — choisis-en une dans ton profil pour activer ce suivi.';
     if(avgEl) avgEl.textContent = '—';
     if(countEl) countEl.textContent = '0 jour pris en compte';
+    if(apportEl) apportEl.textContent = '—';
+    if(depenseEl) depenseEl.textContent = '—';
     daysEl.innerHTML = '';
     return;
   }
   if(introEl) introEl.textContent = `Depuis le début de la phase en cours (${fmtD(detail.startDate)}). Seuls les jours avec un apport et une dépense réellement saisis comptent par défaut dans la moyenne — un jour sans donnée est grisé automatiquement, touche-le pour le réintégrer quand même, ou pour retirer un jour valide.`;
   if(avgEl) avgEl.textContent = detail.avg!==null ? (detail.avg>=0?'+':'')+fmt(detail.avg)+' kcal/j' : '—';
   if(countEl) countEl.textContent = detail.includedBalances.length+' jour'+(detail.includedBalances.length>1?'s':'')+' pris en compte sur '+detail.days.length;
+  if(apportEl) apportEl.textContent = detail.avgApport!==null ? fmt(detail.avgApport)+' kcal' : '—';
+  if(depenseEl) depenseEl.textContent = detail.avgDepense!==null ? fmt(detail.avgDepense)+' kcal' : '—';
 
   daysEl.innerHTML = detail.days.map(d=>{
     const balTxt = (d.balance>=0?'+':'')+fmt(d.balance)+' kcal';
@@ -18971,6 +19094,15 @@ const WO_MUSCLES = ['Tous', ...new Set(EXERCISE_DB.map(e=>e.muscle))];
    WO V2 — Storage & State
 ════════════════════════════════════════ */
 const WO2 = { type: null, screen: 'picker', pickerDate: today() };
+// Nombre de séances supplémentaires (au-delà des 5 par défaut) à afficher dans
+// le strip d'historique de chaque exercice, par index d'exo dans le draft.
+// Remis à zéro à chaque (re)démarrage d'une séance — cf woStartSession.
+let woHistExtraShown = {};
+// Quand non-null, contient l'index (ei) de l'exercice qu'on vient d'étendre
+// via le bouton "+" : seul CE strip est laissé à sa position (pour montrer
+// les séances anciennes révélées) lors du prochain render — tous les autres
+// strips continuent de se scroller normalement vers AUJ. à droite.
+let woSkipHistAutoScrollOnce = null;
 
 function woV2GetAll(){ return JSON.parse(localStorage.getItem('kcalos_wo_v2')||'{}'); }
 function woV2SetAll(d){ localStorage.setItem('kcalos_wo_v2', JSON.stringify(d)); }
@@ -19958,27 +20090,29 @@ function woAllSessionsSorted(){
 // Retrouve la dernière occurrence d'un exo (même id ou même nom) STRICTEMENT avant
 // une date donnée, tous types de séance confondus (ex : pompes faites en Push puis
 // en Upper → l'une sert de référence à l'autre). Retourne l'exo trouvé (avec ses sets) ou null.
-function woLastExoOccurrence(allSorted, beforeDate, exo, excludeSess){
-  for(let i=allSorted.length-1;i>=0;i--){
-    const s = allSorted[i];
-    if(s===excludeSess) continue;
-    if(!(s.date < beforeDate)) continue;
-    const match = s.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
-    if(match) return match;
-  }
-  return null;
+// Occurrences passées d'un exercice données par un ensemble de séances déjà
+// triées ancien → récent (allSorted), strictement avant beforeDate, toutes
+// séances confondues. Factorisation du calcul utilisé à la fois par la
+// bannière live (woRenderSession) et par woSessPairPct/woSessPairPctByMuscle,
+// pour que "progression vs dernière fois" donne TOUJOURS le même chiffre,
+// qu'on le voie pendant la saisie ou ensuite sur le graphique/l'historique.
+function woExoOccurrencesBefore(allSorted, beforeDate, exo, excludeSess){
+  return allSorted
+    .filter(s => s !== excludeSess && s.date < beforeDate)
+    .map(s => {
+      const found = s.exercises?.find(e => e.id===exo.id || e.name===exo.name);
+      return found && found.sets?.length ? {date:s.date, sets:found.sets} : null;
+    })
+    .filter(Boolean); // allSorted déjà trié ancien→récent, l'ordre est donc préservé
 }
 
-// % d'une séance : pour chaque exo réalisé, on compare à SA dernière occurrence
-// (tous types de séance confondus, pas forcément la séance juste avant), puis
-// moyenne simple sur tous les exos ayant trouvé une référence.
 function woSessPairPct(curSess, allSorted){
   if(!curSess) return null;
   const indivPcts = [];
   curSess.exercises?.forEach(exo=>{
-    const refExo = woLastExoOccurrence(allSorted, curSess.date, exo, curSess);
-    if(!refExo) return;
-    const mp = woMatchedProgress(exo.sets||[], refExo.sets||[]);
+    const occs = woExoOccurrencesBefore(allSorted, curSess.date, exo, curSess);
+    if(!occs.length) return;
+    const mp = woMatchedProgressDeep(exo.sets||[], occs);
     if(mp.pct !== null) indivPcts.push(mp.pct);
   });
   return indivPcts.length ? Math.round(indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length) : null;
@@ -20118,15 +20252,16 @@ function woBuildProgSeries(period){
 
 // % d'une séance limité aux exos d'UN groupe musculaire — même principe que
 // woSessPairPct (comparaison à la dernière occurrence de chaque exo, tous
-// types de séance confondus), simplement filtré par muscle (woGetMuscle).
+// types de séance confondus, recherche "en profondeur" par série), simplement
+// filtré par muscle (woGetMuscle).
 function woSessPairPctByMuscle(curSess, allSorted, muscle){
   if(!curSess) return null;
   const indivPcts = [];
   curSess.exercises?.forEach(exo=>{
     if(woGetMuscle(exo)!==muscle) return;
-    const refExo = woLastExoOccurrence(allSorted, curSess.date, exo, curSess);
-    if(!refExo) return;
-    const mp = woMatchedProgress(exo.sets||[], refExo.sets||[]);
+    const occs = woExoOccurrencesBefore(allSorted, curSess.date, exo, curSess);
+    if(!occs.length) return;
+    const mp = woMatchedProgressDeep(exo.sets||[], occs);
     if(mp.pct !== null) indivPcts.push(mp.pct);
   });
   return indivPcts.length ? Math.round(indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length) : null;
@@ -20578,6 +20713,41 @@ const WO_MUSCLE_COLORS = {
   'Abdos':'#a78bfa','Cardio':'#fb923c','Autre':'#7a8499'
 };
 
+// Volume hebdomadaire par groupe musculaire, fenêtre glissante de 28 jours —
+// même moteur de calcul que le tableau de la page Séance (onglet Volume, cf
+// woRenderVolumeTable), factorisé ici pour être réutilisable ailleurs (ex :
+// checklist Récap). Retourne { muscle: weekSets } (séries/semaine estimées).
+function woComputeMuscleWeeklyVolume(){
+  const allTypes = woGetAllTypes();
+  const allSessionsFlat = Object.entries(allTypes).flatMap(([tid])=>woV2GetSessions(tid));
+  if(!allSessionsFlat.length) return {};
+  const nowD = new Date(today()+'T12:00');
+  const cutoff = toLocalDateStr(new Date(nowD.getTime()-28*86400000));
+  const recent = allSessionsFlat.filter(s=>s.date>=cutoff);
+  if(!recent.length) return {};
+  const exoMap = {};
+  recent.forEach(sess=>{
+    (sess.exercises||[]).forEach(exo=>{
+      const activeSets = (exo.sets||[]).filter(s=>!s.skipped).length;
+      if(!activeSets) return;
+      const muscle = woGetMuscle(exo);
+      const wk = woWeekKey(sess.date);
+      if(!exoMap[exo.name]) exoMap[exo.name]={ sets:0, sessions:0, weeks:new Set(), muscle };
+      exoMap[exo.name].sets     += activeSets;
+      exoMap[exo.name].sessions += 1;
+      exoMap[exo.name].weeks.add(wk);
+    });
+  });
+  const byMuscleTotal = {};
+  Object.values(exoMap).forEach(d=>{
+    const avgPerSess  = d.sets / d.sessions;
+    const weeksActive = d.weeks.size;
+    const freqPerWeek = d.sessions / weeksActive;
+    byMuscleTotal[d.muscle] = (byMuscleTotal[d.muscle]||0) + avgPerSess*freqPerWeek;
+  });
+  return byMuscleTotal;
+}
+
 function woRenderVolumeTable(){
   const el = document.getElementById('wo-volume-table');
   if(!el) return;
@@ -20769,6 +20939,7 @@ function woRenderUserExoList(){
 function woStartSession(type){
   const date = WO2.pickerDate || today();
   WO2.type = type;
+  woHistExtraShown = {};
   const draft = woDraftGet();
   if(!draft || draft.date!==date || draft.type!==type){
     const sessions = woV2GetSessions(type);
@@ -20813,6 +20984,16 @@ function woGetAllSessionsAll(){
   allTypeOrder.forEach(tid=>{ woV2GetSessions(tid).forEach(s=>allSessionsAll.push(s)); });
   allSessionsAll.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   return allSessionsAll;
+}
+
+// Affiche 5 séances de plus dans le strip d'historique d'un exercice (bouton "+"
+// tout à gauche). Le re-render qui suit ne doit pas re-scroller le strip vers
+// la droite (AUJ.), sinon les séances qu'on vient de révéler resteraient
+// invisibles — cf le flag woSkipHistAutoScrollOnce plus bas dans woRenderSession.
+function woExpandExoHistory(ei){
+  woHistExtraShown[ei] = (woHistExtraShown[ei] || 0) + 5;
+  woSkipHistAutoScrollOnce = ei;
+  woRenderSession();
 }
 
 function woRenderSession(){
@@ -20902,15 +21083,13 @@ function woRenderSession(){
   // Chaque exo est comparé à SA dernière occurrence, tous types de séance confondus
   // (ex : pompes faites en Push ET en Upper → l'une sert de référence à l'autre).
   // Comparaison "en profondeur" série par série : cf woMatchedProgressDeep.
+  // Même logique que woSessPairPct (woExoOccurrencesBefore) pour que ce chiffre
+  // reste identique à celui affiché plus tard dans l'historique/le graphique.
   let globalPct = null;
   if(draft.exercises.length){
     const indivPcts=[];
     draft.exercises.forEach(exo=>{
-      const occs = allSessionsAll.map(sess=>{
-        if(sess.date >= draft.date) return null;
-        const found = sess.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
-        return found && found.sets?.length ? {date:sess.date, sets:found.sets} : null;
-      }).filter(Boolean).sort((a,b)=>a.date.localeCompare(b.date));
+      const occs = woExoOccurrencesBefore(allSessionsAll, draft.date, exo, null);
       if(!occs.length) return;
       const mp = woMatchedProgressDeep(exo.sets||[], occs);
       if(mp.pct !== null) indivPcts.push(mp.pct);
@@ -20947,8 +21126,10 @@ function woRenderSession(){
 
     // history est déjà trié ancien→récent (localeCompare)
     // On affiche directement dans cet ordre : ancien à gauche, récent à droite (juste avant AUJ)
-    // Limiter à 5 séances max pour ne pas surcharger l'affichage
-    const histDisplay = history.slice(-5);
+    // 5 séances par défaut, +5 à chaque clic sur le bouton "+" (cf woExpandExoHistory)
+    const histShown = 5 + (woHistExtraShown[ei] || 0);
+    const histDisplay = history.slice(-histShown);
+    const histHiddenCount = history.length - histDisplay.length;
     // Vrai 1RM estimé : le max sur UNE série
     const epley1RM = woEpley1RMBest;
     // Records all-time pour détecter un PR en cours de saisie
@@ -20978,6 +21159,16 @@ function woRenderSession(){
         ${h.sets.map(s=>`<div style="font-size:0.78rem;color:var(--muted);white-space:nowrap;line-height:1.6">${s.reps}<span style="opacity:0.5;font-size:0.62rem">×</span>${s.weight}</div>`).join('')}
       </div>`;
     }).join('');
+
+    // Bouton "+" tout à gauche du strip pour remonter dans les séances plus
+    // anciennes, non affichées par défaut (5 max) — cf woExpandExoHistory.
+    const loadMoreCol = histHiddenCount > 0
+      ? `<button onclick="woExpandExoHistory(${ei})" title="Voir ${histHiddenCount} séance${histHiddenCount>1?'s':''} plus ancienne${histHiddenCount>1?'s':''}"
+          style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 8px;border:none;border-right:1px solid var(--border);background:var(--s2);color:var(--muted2);cursor:pointer;min-width:32px;font-family:DM Sans,sans-serif;-webkit-tap-highlight-color:transparent">
+          <span style="font-size:0.95rem;font-weight:700;line-height:1">+</span>
+          <span style="font-size:0.46rem;font-weight:600">${histHiddenCount}</span>
+        </button>`
+      : '';
 
     // AUJ. column — fond phase ou fond type
     const todayBg  = draft.phase ? WO_PHASE_COLORS[draft.phase]+'28' : t.colorBg;
@@ -21070,21 +21261,26 @@ function woRenderSession(){
         </div>
       </div>
       ${(hasHistory||hasCurrent)?`
-      <div class="wo-hist-scroll" style="overflow-x:auto;padding-bottom:3px;-webkit-overflow-scrolling:touch">
+      <div class="wo-hist-scroll" data-exo-idx="${ei}" style="overflow-x:auto;padding-bottom:3px;-webkit-overflow-scrolling:touch">
         <div style="display:inline-flex;gap:0;min-width:max-content;border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden">
-          ${histCols}${todayCol}
+          ${loadMoreCol}${histCols}${todayCol}
         </div>
       </div>`:
       `<button onclick="woDraftAddSet(${ei})" style="width:100%;padding:12px;border:1.5px dashed ${t.colorD||'var(--border2)'};border-radius:var(--r-sm);background:${t.colorBg||'transparent'};color:${t.color};cursor:pointer;font-size:0.82rem;font-weight:600;font-family:DM Sans,sans-serif;-webkit-tap-highlight-color:transparent">+ Commencer les séries</button>`}
     </div>`;
   }).join('');
 
-  // Auto-scroll instantané (pas d'animation pour éviter le défilement visible à chaque re-render)
+  // Auto-scroll instantané (pas d'animation pour éviter le défilement visible à chaque re-render).
+  // Le strip qu'on vient d'étendre via "+" (woSkipHistAutoScrollOnce) garde sa
+  // position pour laisser visibles les séances anciennes révélées à gauche —
+  // tous les autres strips se re-scrollent normalement vers AUJ. à droite.
   requestAnimationFrame(()=>{
     document.querySelectorAll('.wo-hist-scroll').forEach(c=>{
+      if(woSkipHistAutoScrollOnce !== null && c.dataset.exoIdx === String(woSkipHistAutoScrollOnce)) return;
       c.style.scrollBehavior = 'auto';
       c.scrollLeft = c.scrollWidth;
     });
+    woSkipHistAutoScrollOnce = null;
   });
 }
 
