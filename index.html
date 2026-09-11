@@ -6729,7 +6729,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-09-10.5';
+const APP_BUILD_VERSION = '2026-09-10.7';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -15885,8 +15885,185 @@ function tmgComputeRecap(){
       } else {
         checks.push({status:'nodata', title:'Balance calorique vs phase', page:'page-progression', detail:'Pas assez de donnees saisies depuis le debut de la phase pour calculer une balance moyenne.'});
       }
+
+      // 9bis. Intensite de la phase — un deficit/surplus trop agressif est
+      //    contre-productif (perte de masse maigre / prise de gras superflue),
+      //    meme si le sens est correct (deja verifie au check 9). Ne concerne
+      //    que deficit/surplus (le maintien n'a pas d'"intensite").
+      if(balDietDetail && balDietDetail.avg!==null && (_recapPhase==='deficit'||_recapPhase==='surplus')){
+        let ok, seuilTxt;
+        if(_recapPhase==='deficit'){ ok = balDietDetail.avg >= -1000; seuilTxt = '-1000 kcal/j'; }
+        else { ok = balDietDetail.avg <= 700; seuilTxt = '+700 kcal/j'; }
+        checks.push({status: ok?'ok':'warn', title:'Intensite de la phase', page:'page-progression',
+          detail:`Balance moyenne : ${balDietDetail.avg>=0?'+':''}${Math.round(balDietDetail.avg)} kcal/j. `
+            +(ok?`Amplitude raisonnable (sous le seuil de ${seuilTxt}).`
+                :`Amplitude tres marquee (au-dela de ${seuilTxt}) — un ${_recapPhase==='deficit'?'deficit':'surplus'} trop agressif accelere la ${_recapPhase==='deficit'?'perte de masse maigre':'prise de gras'} sans benefice supplementaire.`)});
+      }
     }catch(e){}
   }
+
+  // 10. Hydratation du jour vs objectif configuré (widget Eau).
+  try{
+    const eauGoal = parseInt(localStorage.getItem('kcalos_eau_goal')||'2000') || 2000;
+    let eauLog = [];
+    try{ eauLog = JSON.parse(localStorage.getItem('kcalos_eau_log_'+todayStr)||'[]'); }catch(e){}
+    const eauTotal = Array.isArray(eauLog) ? eauLog.reduce((s,e)=>s+(e.ml||0),0) : 0;
+    if(eauTotal>0){
+      const pct = Math.round(eauTotal/eauGoal*100);
+      const ok = eauTotal >= eauGoal;
+      checks.push({status: ok?'ok':'warn', title:'Hydratation', page:'page-dashboard',
+        detail:`${eauTotal} ml bus aujourd'hui sur ${eauGoal} ml cible (${pct}%). `
+          +(ok?"Objectif atteint — bonne hydratation pour la performance et la recuperation.":"En dessous de l'objectif — l'hydratation influence directement la performance et la synthese proteique.")});
+    } else {
+      checks.push({status:'nodata', title:'Hydratation', page:'page-dashboard', detail:"Aucune eau saisie aujourd'hui."});
+    }
+  }catch(e){}
+
+  // 11. Volume hebdomadaire par groupe musculaire (fenetre 28j) vs plages de
+  //     reference scientifiques — meme moteur que l'onglet Volume de la page
+  //     Seance (woComputeMuscleWeeklyVolume, factorise depuis woRenderVolumeTable).
+  try{
+    if(typeof woComputeMuscleWeeklyVolume==='function'){
+      const byMuscle = woComputeMuscleWeeklyVolume();
+      const refs = {'Pectoraux':{min:10,max:20},'Dos':{min:10,max:20},'Épaules':{min:6,max:16},
+        'Biceps':{min:8,max:14},'Triceps':{min:8,max:14},'Jambes':{min:10,max:20},'Abdos':{min:6,max:16}};
+      const tracked = Object.keys(refs).filter(m=>byMuscle[m]!==undefined);
+      if(tracked.length){
+        const inRange = tracked.filter(m=>{
+          const v = Math.round(byMuscle[m]);
+          return v >= refs[m].min && v <= refs[m].max;
+        });
+        const ok = inRange.length >= Math.ceil(tracked.length*0.7); // ≥70% des groupes suivis dans la plage
+        checks.push({status: ok?'ok':'warn', title:'Volume musculaire', page:'page-workout',
+          detail:`${inRange.length}/${tracked.length} groupe(s) musculaire(s) dans la plage recommandee sur les 4 dernieres semaines. `
+            +(ok?'La majorite de tes groupes musculaires recoivent un volume optimal.':"Plusieurs groupes sont sous- ou sur-entraines vs les reperes recommandes — regarde le detail dans l'onglet Volume.")});
+      } else {
+        checks.push({status:'nodata', title:'Volume musculaire', page:'page-workout', detail:'Pas assez de seances sur les 4 dernieres semaines pour estimer le volume par muscle.'});
+      }
+    }
+  }catch(e){}
+
+  // 12. Regularite des pesees sur les 7 derniers jours — une balance/tendance
+  //     fiable suppose des pesees suffisamment regulieres.
+  try{
+    const fitnessAll = DB.getFitness();
+    const cutoff7 = toLocalDateStr(new Date(new Date(todayStr+'T12:00').getTime()-6*86400000));
+    const weighDays = new Set(fitnessAll.filter(f=>f && f.poids && f.date>=cutoff7 && f.date<=todayStr).map(f=>f.date));
+    if(fitnessAll.some(f=>f.poids)){
+      const ok = weighDays.size >= 5;
+      checks.push({status: ok?'ok':'warn', title:'Regularite des pesees', page:'page-progression',
+        detail:`${weighDays.size}/7 jours peses cette semaine. `
+          +(ok?'Suivi regulier — tes tendances de poids et de balance restent fiables.':'Pesees trop espacees — les tendances de poids/balance perdent en fiabilite. Vise une pesee quotidienne, meme heure, a jeun.')});
+    } else {
+      checks.push({status:'nodata', title:'Regularite des pesees', page:'page-progression', detail:'Aucune pesee enregistree pour le moment.'});
+    }
+  }catch(e){}
+
+  // 13. Streak nutrition — jours consecutifs (jusqu'a aujourd'hui) avec au
+  //     moins un repas saisi. Bonne regularite = tendances plus fiables.
+  try{
+    if(typeof getMealsForDate==='function'){
+      let streak = 0;
+      let d = new Date(todayStr+'T12:00');
+      for(let i=0;i<365;i++){
+        const ds = toLocalDateStr(d);
+        const meals = getMealsForDate(ds) || {};
+        const hasMeal = Object.values(meals).some(items=>Array.isArray(items) && items.length>0);
+        if(hasMeal){ streak++; d.setDate(d.getDate()-1); }
+        else if(i===0){ d.setDate(d.getDate()-1); } // le jour meme peut etre en cours, ne casse pas la serie
+        else break;
+      }
+      if(streak>0){
+        const ok = streak >= 3;
+        checks.push({status: ok?'ok':'warn', title:'Streak nutrition', page:'page-apports',
+          detail:`${streak} jour${streak>1?'s':''} consecutif${streak>1?'s':''} avec des repas saisis. `
+            +(ok?'Bonne regularite de suivi — plus la serie est longue, plus tes stats sont fiables.':'Serie courte — plus tu logges regulierement, plus les tendances (balance, macros) sont fiables.')});
+      } else {
+        checks.push({status:'nodata', title:'Streak nutrition', page:'page-apports', detail:"Aucun repas saisi recemment."});
+      }
+    }
+  }catch(e){}
+
+  // 14. Repartition glucides/lipides du jour vs l'objectif reellement
+  //     configure (tmgRealGoal, meme source que "Ton profil"), en complement
+  //     des proteines deja suivies au check 6. Tolerance 70-130% de la cible
+  //     (pas besoin d'etre pile).
+  try{
+    const macroGoals = (typeof tmgRealGoal==='function') ? tmgRealGoal() : null;
+    if(macroGoals){
+      const meals = getMealsForDate(todayStr) || {};
+      let gluc=0, lip=0;
+      Object.values(meals).forEach(items=>{ if(Array.isArray(items)) items.forEach(it=>{ gluc+=it.gluc||0; lip+=it.lip||0; }); });
+      if(gluc>0 || lip>0){
+        const glucPct = macroGoals.gluc ? Math.round(gluc/macroGoals.gluc*100) : null;
+        const lipPct  = macroGoals.lip  ? Math.round(lip/macroGoals.lip*100)  : null;
+        const glucOk = glucPct===null || (glucPct>=70 && glucPct<=130);
+        const lipOk  = lipPct===null  || (lipPct>=70  && lipPct<=130);
+        const ok = glucOk && lipOk;
+        checks.push({status: ok?'ok':'warn', title:'Repartition macro', page:'page-apports',
+          detail:`Glucides : ${Math.round(gluc)}g${glucPct!==null?' ('+glucPct+'% cible)':''} · Lipides : ${Math.round(lip)}g${lipPct!==null?' ('+lipPct+'% cible)':''}. `
+            +(ok?'Repartition dans la fourchette attendue autour de ta cible.':"Un des deux macros s'ecarte nettement de la cible — verifie tes prochaines prises.")});
+      } else {
+        checks.push({status:'nodata', title:'Repartition macro', page:'page-apports', detail:"Apports du jour insuffisamment renseignes."});
+      }
+    }
+  }catch(e){}
+
+  // 15. Pas quotidiens (NEAT) vs objectif configure — meme source de donnees
+  //     que le KPI "Pas" du dashboard.
+  try{
+    const stepsGoal = parseInt(localStorage.getItem('kcalos_step_goal')||'10000') || 10000;
+    const fitToday = DB.getFitness().find(d=>d.date===todayStr);
+    const stepsToday = (typeof SC!=='undefined' && SC) ? ((SC.savedToday||0)+(SC.count||0)) || fitToday?.steps || 0 : (fitToday?.steps || 0);
+    if(stepsToday>0){
+      const pct = Math.round(stepsToday/stepsGoal*100);
+      const ok = stepsToday >= stepsGoal;
+      checks.push({status: ok?'ok':'warn', title:'Pas quotidiens', page:'page-steps',
+        detail:`${stepsToday.toLocaleString('fr-FR')} pas aujourd'hui sur ${stepsGoal.toLocaleString('fr-FR')} cible (${pct}%). `
+          +(ok?'Objectif atteint — bonne activite NEAT hors sport.':"En dessous de l'objectif — le NEAT (activite hors sport) pese lourd dans la depense totale.")});
+    } else {
+      checks.push({status:'nodata', title:'Pas quotidiens', page:'page-steps', detail:"Aucun pas enregistre aujourd'hui."});
+    }
+  }catch(e){}
+
+  // 16. Recuperation entre seances — un meme groupe musculaire travaille deux
+  //     jours consecutifs limite la surcompensation (hypertrophie/force),
+  //     verifie sur les "gros" groupes (compounds) des 7 derniers jours.
+  try{
+    if(typeof woGetAllTypes==='function' && typeof woV2GetSessions==='function' && typeof woGetMuscle==='function'){
+      const allTypes = woGetAllTypes();
+      const allSessionsFlat = Object.keys(allTypes).flatMap(tid=>woV2GetSessions(tid));
+      const cutoff7 = toLocalDateStr(new Date(new Date(todayStr+'T12:00').getTime()-6*86400000));
+      const recent = allSessionsFlat.filter(s=>s.date>=cutoff7 && s.date<=todayStr);
+      if(recent.length>=2){
+        const byMuscle = {}; // { muscle: Set(dates) }
+        recent.forEach(sess=>{
+          (sess.exercises||[]).forEach(exo=>{
+            if(!(exo.sets||[]).some(s=>!s.skipped)) return;
+            const m = woGetMuscle(exo);
+            if(!byMuscle[m]) byMuscle[m]=new Set();
+            byMuscle[m].add(sess.date);
+          });
+        });
+        const BIG_MUSCLES = ['Pectoraux','Dos','Jambes','Épaules'];
+        let conflictMuscle = null;
+        for(const m of BIG_MUSCLES){
+          const dates = byMuscle[m] ? Array.from(byMuscle[m]).sort() : [];
+          for(let i=1;i<dates.length;i++){
+            if((new Date(dates[i]+'T12:00') - new Date(dates[i-1]+'T12:00'))/86400000 <= 1){ conflictMuscle = m; break; }
+          }
+          if(conflictMuscle) break;
+        }
+        const ok = !conflictMuscle;
+        checks.push({status: ok?'ok':'warn', title:'Recuperation entre seances', page:'page-workout',
+          detail: ok
+            ? 'Aucun grand groupe musculaire travaille deux jours consecutifs cette semaine — bonne fenetre de recuperation.'
+            : `${conflictMuscle} a ete travaille deux jours de suite cette semaine — moins de 48h de recuperation, ce qui peut limiter la surcompensation.`});
+      } else {
+        checks.push({status:'nodata', title:'Recuperation entre seances', page:'page-workout', detail:'Pas assez de seances cette semaine pour analyser la recuperation.'});
+      }
+    }
+  }catch(e){}
 
   return checks;
 }
