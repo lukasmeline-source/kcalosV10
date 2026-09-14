@@ -4963,6 +4963,17 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     <button class="sh-tab"        id="prog-tab-activite"  onclick="switchProgTab('activite')">Activité</button>
   </div>
 
+  <!-- Toggle fond coloré par phase (déficit/maintien/surplus), commun aux 3
+       sous-onglets ci-dessus (graphiques Corps/Calories/Activité) — voir
+       progTogglePhaseBands/getPhaseForDate. -->
+  <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;margin:-0.4rem 0 0.7rem;flex-wrap:wrap">
+    <div id="prog-phase-legend" style="display:none;gap:12px;font-size:0.6rem;color:var(--muted);align-items:center;flex-wrap:wrap;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif"></div>
+    <button id="prog-phase-toggle" onclick="progTogglePhaseBands()" title="Afficher les phases (déficit/maintien/surplus) en fond des graphiques"
+      style="background:var(--s2);border:1px solid var(--border2);color:var(--muted);border-radius:var(--r-pill);padding:5px 10px;font-size:0.62rem;font-weight:600;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:5px;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">
+      <span style="width:8px;height:8px;border-radius:2px;background:linear-gradient(135deg,#6ba3f5,#fb923c)"></span>Phases
+    </button>
+  </div>
+
   <!-- ── TAB 1 : CORPS ── -->
   <div class="sh-tab-panel active" id="prog-panel-corps">
     <!-- Chiffre héros + sélecteur de période -->
@@ -5709,9 +5720,20 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <!-- Dimension du graphique : par type de séance (défaut) ou par groupe
            musculaire — même moteur de calcul (woMatchedProgress/Epley), juste
            regroupé différemment. -->
-      <div class="range-tabs" style="margin-bottom:0.6rem">
-        <button class="range-tab active" id="wo-prog-view-type" onclick="woSwitchProgView('type')">Par séance</button>
-        <button class="range-tab" id="wo-prog-view-muscle" onclick="woSwitchProgView('muscle')">Par muscle</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:0.6rem">
+        <div class="range-tabs" style="margin-bottom:0">
+          <button class="range-tab active" id="wo-prog-view-type" onclick="woSwitchProgView('type')">Par séance</button>
+          <button class="range-tab" id="wo-prog-view-muscle" onclick="woSwitchProgView('muscle')">Par muscle</button>
+        </div>
+        <!-- Toggle fond coloré par phase (déficit/maintien/surplus) sur le
+             graphique — voir woTogglePhaseBands/woBuildPhaseBandArray. Masqué
+             en vue "session" (pas de notion de période temporelle à colorer),
+             mais cette vue n'est de toute façon pas accessible depuis les
+             onglets Semaine/Mois ci-dessus. -->
+        <button id="wo-prog-phase-toggle" onclick="woTogglePhaseBands()" title="Afficher les phases (déficit/maintien/surplus) en fond du graphique"
+          style="background:var(--s2);border:1px solid var(--border2);color:var(--muted);border-radius:var(--r-pill);padding:5px 10px;font-size:0.62rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:5px">
+          <span style="width:8px;height:8px;border-radius:2px;background:linear-gradient(135deg,#6ba3f5,#fb923c)"></span>Phases
+        </button>
       </div>
 
       <!-- Graphique : une courbe par type de séance (ou par muscle selon la vue
@@ -5720,6 +5742,8 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
            pour rester simple. Légende cliquable. -->
       <div class="chart-wrap" style="height:210px;margin-bottom:0.6rem"><canvas id="wo-prog-chart"></canvas></div>
       <div class="clegend-row" id="wo-prog-legend"></div>
+      <!-- Légende des phases, affichée uniquement quand le fond coloré est actif -->
+      <div id="wo-prog-phase-legend" style="display:none;gap:12px;font-size:0.6rem;color:var(--muted);margin:-0.2rem 0 0.6rem;align-items:center;flex-wrap:wrap"></div>
 
       <!-- Repères rapides -->
       <div class="sub-card-row">
@@ -5752,17 +5776,18 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <!-- En-tête avec bulle info -->
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:0.85rem">
         <div>
-          <div style="font-size:0.72rem;font-weight:600;color:var(--text);margin-bottom:2px">Volume hebdo · par groupe musculaire</div>
+          <div style="font-size:0.72rem;font-weight:600;color:var(--text);margin-bottom:2px">Volume & fréquence · par groupe musculaire</div>
         </div>
         <button onclick="document.getElementById('wo-vol-info').style.display=document.getElementById('wo-vol-info').style.display==='none'?'':'none'"
           style="background:var(--s2);border:1px solid var(--border2);color:var(--muted);border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:0.7rem;font-weight:700;font-family:inherit;flex-shrink:0;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent">ℹ</button>
       </div>
       <div id="wo-vol-info" style="display:none;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:0.75rem;margin-bottom:0.85rem;font-size:0.65rem;color:var(--muted);line-height:1.75">
-        <b style="color:var(--text);display:block;margin-bottom:4px">Comment est calculé le volume ?</b>
+        <b style="color:var(--text);display:block;margin-bottom:4px">Comment sont calculés volume & fréquence ?</b>
         Seules les <b style="color:var(--text)">séries effectuées</b> sont comptées, sur les <b style="color:var(--text)">28 derniers jours</b>.<br>
-        Le chiffre affiché = <b style="color:var(--text)">séries/semaine</b>, en moyenne sur les seules semaines calendaires où l'exercice a été fait (les semaines sans séance ne diluent pas la moyenne).<br>
-        <b style="color:var(--text)">Semaine dernière (réelle)</b> = total de séries effectivement réalisées du lundi au dimanche précédents, sans moyenne.<br>
-        Les repères min/max viennent des travaux de <b style="color:var(--text)">Israetel et al.</b> (MEV → MRV).
+        <b style="color:var(--text)">Volume</b> = <b style="color:var(--text)">séries/semaine</b>, en moyenne sur les seules semaines calendaires où le groupe musculaire a été travaillé (les semaines sans séance ne diluent pas la moyenne).<br>
+        <b style="color:var(--text)">Fréquence</b> = nombre de <b style="color:var(--text)">séances distinctes</b> ayant touché ce groupe musculaire, par semaine — même principe de moyenne (semaines actives seulement).<br>
+        <b style="color:var(--text)">Réel · sem. dernière</b> = valeurs effectivement réalisées du lundi au dimanche précédents, sans moyenne.<br>
+        Les repères min/max de volume viennent des travaux de <b style="color:var(--text)">Israetel et al.</b> (MEV → MRV).
       </div>
       <div id="wo-volume-table"></div>
 
@@ -6729,7 +6754,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-09-10.7';
+const APP_BUILD_VERSION = '2026-09-14.6';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -6895,7 +6920,7 @@ function icon(name,size){
 /* ════════════════════════════════════════
    STATE
 ════════════════════════════════════════ */
-const S = { bmr:null, poids:null, tdee:null, range:7, activityMode:'avg', selectedGoal:'cut', stepsRange:30, dsHidden:{} };
+const S = { bmr:null, poids:null, tdee:null, range:7, activityMode:'avg', selectedGoal:'cut', stepsRange:30, dsHidden:{}, showPhaseBands:false };
 
 // Auto-init S.bmr / S.tdee from stored profile so dashboard shows correct values without opening BMR page
 (function _initS(){
@@ -16283,6 +16308,33 @@ function switchProgTab(tab) {
   if(tab === 'activite') { renderActivityPanel(); }
 }
 
+/* ── Fond coloré par phase (déficit/maintien/surplus) sur les graphiques
+   Corps/Calories/Activité, cf getPhaseForDate/woMakePhaseBandsPlugin. Toggle
+   unique, partagé entre les 3 sous-onglets (S.showPhaseBands). ── */
+function progTogglePhaseBands(){
+  S.showPhaseBands = !S.showPhaseBands;
+  const btn = document.getElementById('prog-phase-toggle');
+  if(btn){
+    btn.style.background = S.showPhaseBands ? 'var(--s3)' : 'var(--s2)';
+    btn.style.color = S.showPhaseBands ? 'var(--text)' : 'var(--muted)';
+    btn.style.borderColor = S.showPhaseBands ? 'var(--border)' : 'var(--border2)';
+  }
+  const legendEl = document.getElementById('prog-phase-legend');
+  if(legendEl){
+    if(S.showPhaseBands){
+      const phaseLbl = {deficit:'Déficit', maintien:'Maintien', surplus:'Surplus'};
+      legendEl.style.display = 'flex';
+      legendEl.innerHTML = Object.keys(WO_PHASE_COLORS).map(ph=>
+        `<span style="display:inline-flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:${WO_PHASE_COLORS[ph]}"></span>${phaseLbl[ph]||ph}</span>`
+      ).join('');
+    } else {
+      legendEl.style.display = 'none';
+      legendEl.innerHTML = '';
+    }
+  }
+  switchProgTab(currentProgTab);
+}
+
 function updateStepStats() {
   const fitness = DB.getFitness();
   const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - S.range);
@@ -16489,8 +16541,12 @@ function loadChartCorps(){
     pointRadius:0,pointHoverRadius:5,pointHitRadius:12,tension,fill:false,spanGaps:true,
     hidden:!!S.dsHidden[idx],
   });
+  // Fond coloré par phase (bouton "Phases", cf progTogglePhaseBands) : une
+  // date = une phase (getPhaseForDate), pas de regroupement nécessaire ici.
+  const phaseBands = S.showPhaseBands ? filt.map(d=>getPhaseForDate(d.date)) : null;
   chartInst=new Chart(canvas.getContext('2d'),{
     type:'line',
+    plugins:[woMakePhaseBandsPlugin(phaseBands)],
     data:{labels,datasets:[
       ds(0,'Poids (kg)',poidsRel,poids,'#f0a84a','y2'),
       ds(1,'Masse sèche (kg)',leanRel,leanMass,'#a080e8','y2'),
@@ -16623,8 +16679,11 @@ function loadChartCalories(){
     gradient.addColorStop(1,negColor);
     return gradient;
   };
+  // Fond coloré par phase (bouton "Phases", cf progTogglePhaseBands)
+  const phaseBands = S.showPhaseBands ? filt.map(d=>getPhaseForDate(d.date)) : null;
   chartInstCal=new Chart(canvas.getContext('2d'),{
     type:'line',
+    plugins:[woMakePhaseBandsPlugin(phaseBands)],
     data:{labels,datasets:[
       {label:'_p',data:[],yAxisID:'y2',borderColor:'transparent',hidden:true},
       {label:'_ls',data:[],yAxisID:'y2',borderColor:'transparent',hidden:true},
@@ -16662,8 +16721,11 @@ function loadChartActivite(){
   const tickC = isLight?'#6b7280':'#404d60';
   if(chartInstAct){ chartInstAct.destroy(); chartInstAct=null; }
 
+  // Fond coloré par phase (bouton "Phases", cf progTogglePhaseBands)
+  const phaseBands = S.showPhaseBands ? filt.map(d=>getPhaseForDate(d.date)) : null;
   chartInstAct=new Chart(canvas.getContext('2d'),{
     type:'bar',
+    plugins:[woMakePhaseBandsPlugin(phaseBands)],
     data:{labels,datasets:[
       { label:'Pas', data:steps,
         backgroundColor:steps.map(s=>s>=goal?'rgba(53,201,160,0.6)':'rgba(91,200,240,0.5)'),
@@ -16801,15 +16863,17 @@ function loadChartActiviteSessions(){
   const byDate = new Map();
   sessions.forEach(s=>{ if(!byDate.has(s.date)) byDate.set(s.date, []); byDate.get(s.date).push(s); });
 
-  let labels, durations, volumes, colors, cellSessions;
+  let labels, durations, volumes, colors, cellSessions, dateKeys;
   if(S.range<=30){
     // Une entrée par jour calendaire (même sans séance) pour visualiser les enchaînements et les jours off
-    labels=[]; durations=[]; volumes=[]; colors=[]; cellSessions=[];
+    labels=[]; durations=[]; volumes=[]; colors=[]; cellSessions=[]; dateKeys=[];
     const start=new Date(cutoff); start.setHours(0,0,0,0);
     const end=new Date(); end.setHours(0,0,0,0);
     for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
-      const daySessions = byDate.get(isoDay(d)) || [];
-      labels.push(fmtDL(isoDay(d)));
+      const key = isoDay(d);
+      const daySessions = byDate.get(key) || [];
+      labels.push(fmtDL(key));
+      dateKeys.push(key);
       if(daySessions.length){
         durations.push(daySessions.reduce((a,s)=>a+(parseFloat(s.duration)||0),0));
         volumes.push(daySessions.reduce((a,s)=>a+woSessVol(s),0));
@@ -16824,14 +16888,18 @@ function loadChartActiviteSessions(){
   } else {
     // Périodes longues : rendu compact, une barre par séance (les trous prendraient trop de place)
     labels = sessions.map(s=>fmtDL(s.date));
+    dateKeys = sessions.map(s=>s.date);
     durations = sessions.map(s=>parseFloat(s.duration)||0);
     volumes = sessions.map(s=>woSessVol(s));
     colors = sessions.map(s=>_cssVar(allTypes[s.type]?.color));
     cellSessions = sessions.map(s=>[s]);
   }
 
+  // Fond coloré par phase (bouton "Phases", cf progTogglePhaseBands)
+  const phaseBands = S.showPhaseBands ? dateKeys.map(k=>getPhaseForDate(k)) : null;
   chartInstAct=new Chart(canvas.getContext('2d'),{
     type:'bar',
+    plugins:[woMakePhaseBandsPlugin(phaseBands)],
     data:{labels,datasets:[
       { label:'Séance', data:durations, yAxisID:'y',
         backgroundColor:colors, borderRadius:3, maxBarThickness:28, order:1 },
@@ -19005,16 +19073,23 @@ function renderProjectionModal(){
    depuis le début de la phase, ce que la balance réellement enregistrée
    prédisait comme poids — pour voir a posteriori où le poids réel a suivi
    ou divergé du calcul. */
-function computeDietWeightTrajectory(balDietDetail, fitness){
+function computeDietWeightTrajectory(balDietDetail, fitness, pred){
   if(!balDietDetail?.startDate) return null;
-  const startWeight = getWeightNear(fitness, balDietDetail.startDate, 3);
+  const startWeight = pred ? pred.startWeight : getWeightNear(fitness, balDietDetail.startDate, 3);
   if(startWeight===null) return null;
   let cum = 0;
+  const lastIdx = balDietDetail.days.length - 1;
   const predicted = balDietDetail.days.map(d=>{
     if(d.included) cum += d.balance;
     return { date:d.date, label:fmtDL(d.date), predictedWeight:+(startWeight + cum/7700).toFixed(2) };
   });
-  const measured = balDietDetail.days.map(d=>{
+  // 1er et dernier point alignés sur les valeurs lissées (±3j, cf getWeightNear)
+  // utilisées pour "Poids de départ"/"Poids actuel" dans le résumé texte, pour
+  // que l'écart chiffré corresponde à ce que montre visuellement la courbe.
+  // Les points intermédiaires restent la pesée exacte du jour (ou null).
+  const measured = balDietDetail.days.map((d,i)=>{
+    if(i===0) return { date:d.date, label:fmtDL(d.date), poids: startWeight };
+    if(i===lastIdx && pred?.nowWeight!=null) return { date:d.date, label:fmtDL(d.date), poids: pred.nowWeight };
     const fitD = fitness.find(f=>f.date===d.date);
     return { date:d.date, label:fmtDL(d.date), poids: fitD?.poids!=null ? +fitD.poids : null };
   });
@@ -19055,8 +19130,8 @@ function renderBalDietWeightModal(){
   }
   if(subEl) subEl.textContent = `Depuis le début de la phase, le ${fmtD(balDietDetail.startDate)}`;
 
-  const traj = computeDietWeightTrajectory(balDietDetail, fitness);
   const pred = computeDietWeightPrediction(balDietDetail, fitness);
+  const traj = computeDietWeightTrajectory(balDietDetail, fitness, pred);
 
   if(ctx){
     if(window._balDietWeightChartInst) window._balDietWeightChartInst.destroy();
@@ -20048,6 +20123,21 @@ function woSwitchProgView(mode){
   woRenderProgAll(period);
 }
 
+/* ── Fond coloré par phase (déficit/maintien/surplus) sur le graphique
+   Progression, cf woBuildPhaseBandArray/woRenderMainProgChart ── */
+window._woShowPhaseBands = window._woShowPhaseBands || false;
+function woTogglePhaseBands(){
+  window._woShowPhaseBands = !window._woShowPhaseBands;
+  const btn = document.getElementById('wo-prog-phase-toggle');
+  if(btn){
+    btn.style.background = window._woShowPhaseBands ? 'var(--s3)' : 'var(--s2)';
+    btn.style.color = window._woShowPhaseBands ? 'var(--text)' : 'var(--muted)';
+    btn.style.borderColor = window._woShowPhaseBands ? 'var(--border)' : 'var(--border2)';
+  }
+  const period = document.getElementById('wo-prog-tab-month')?.classList.contains('active') ? 'month' : 'week';
+  woRenderProgAll(period);
+}
+
 /* ── Helpers ── */
 function woProgFmt(pct){
   if(pct === null) return {str:'—', color:'var(--muted2)'};
@@ -20091,6 +20181,41 @@ function woMonthLabel(key){
   const [y,m] = key.split('-');
   const names = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
   return names[parseInt(m)-1]+' '+y.slice(2);
+}
+
+/* Phase dominante (déficit/maintien/surplus) par période (semaine/mois), pour
+   le fond coloré optionnel du graphique Progression (bouton "Phases"). Se
+   base sur le champ sess.phase déjà stocké sur chaque séance (même source
+   que la pastille de phase affichée dans l'historique) — pas de recalcul
+   indépendant depuis kcalos_profile/kcalGoalHistory, pour rester cohérent
+   avec ce qui est déjà affiché ailleurs.
+   Retourne un tableau aligné index par index sur `labels` (même ordre, même
+   longueur que globalKeys dans woBuildProgSeries/woBuildProgSeriesByMuscle —
+   union des périodes de TOUTES les séances, cf commentaires de ces
+   fonctions) : chaque élément est un code phase ou null (aucune séance
+   taguée sur cette période → pas de bande dessinée). Retourne null en vue
+   "par séance" (period==='session'), qui n'a pas de notion de période
+   temporelle à colorer (l'axe X y est un simple compteur 1,2,3…). */
+function woBuildPhaseBandArray(period){
+  if(period!=='week' && period!=='month') return null;
+  const periodFn = period==='week' ? woWeekKey : woMonthKey;
+  const allSorted = woAllSessionsSorted();
+  const counts = {}; // periodKey -> {phase: nb de séances}
+  const keySet = new Set();
+  allSorted.forEach(s=>{
+    const k = periodFn(s.date);
+    keySet.add(k);
+    if(!s.phase) return;
+    counts[k] = counts[k] || {};
+    counts[k][s.phase] = (counts[k][s.phase]||0) + 1;
+  });
+  const globalKeys = [...keySet].sort();
+  return globalKeys.map(k=>{
+    const c = counts[k];
+    if(!c) return null;
+    // Phase majoritaire de la période (nb de séances taguées, pas nb de jours)
+    return Object.keys(c).reduce((a,b)=> c[a]>=c[b] ? a : b);
+  });
 }
 
 /* ════════════════════════════════════════
@@ -20210,7 +20335,7 @@ function woAggregate(sessions, periodFn){
    Une instance par canvas, détruite/recréée à chaque rendu pour éviter les fuites Chart.js. */
 window._woChartInstances = window._woChartInstances || {};
 window._woExoChartData = window._woExoChartData || {}; // canvasId -> {labels,data,color}, pour le rendu différé (accordéon) de l'onglet Exo
-function woRenderEvoChart(canvasId, labels, data, color){
+function woRenderEvoChart(canvasId, labels, data, color, bandPhases, delta){
   const canvas = document.getElementById(canvasId);
   if(!canvas) return;
   if(window._woChartInstances[canvasId]){ window._woChartInstances[canvasId].destroy(); }
@@ -20218,12 +20343,18 @@ function woRenderEvoChart(canvasId, labels, data, color){
   const gridC = isLight?'rgba(0,0,0,0.06)':'rgba(255,255,255,0.04)';
   const tickC = isLight?'#6b7280':'#404d60';
   const resolvedColor = _cssVar(color); // Chart.js/canvas ne comprend pas var(--xxx)
+  // Fond coloré par phase (bouton "Phases" du graphique Progression, état
+  // partagé) — un point = une occurrence = une séance, donc bandPhases[i]
+  // correspond directement à la phase de cette séance (pas de regroupement
+  // par période nécessaire ici, contrairement au graphique principal).
+  const phaseBandsPlugin = woMakePhaseBandsPlugin(bandPhases);
   window._woChartInstances[canvasId] = new Chart(canvas.getContext('2d'),{
     type:'line',
+    plugins:[phaseBandsPlugin],
     data:{labels, datasets:[{
       data, borderColor:resolvedColor, backgroundColor:resolvedColor+'18',
       borderWidth:2, pointRadius:0, pointHoverRadius:4, pointHitRadius:10,
-      tension:0.35, fill:true, spanGaps:true
+      tension:0.35, fill:true, spanGaps:true, __delta:delta
     }]},
     options:{
       responsive:true, maintainAspectRatio:false,
@@ -20235,7 +20366,14 @@ function woRenderEvoChart(canvasId, labels, data, color){
           borderColor:'rgba(128,128,128,0.2)', borderWidth:1,
           titleColor:isLight?'#111':'#f0ede6', bodyColor:'#6b7a90', padding:8,
           titleFont:{family:'DM Sans',size:10}, bodyFont:{family:'DM Sans',size:11},
-          callbacks:{label:c=> c.raw===null ? null : `  ${c.raw>0?'+':''}${c.raw}%`}
+          // Affiche la progression SEULE vs l'occurrence précédente (comme la
+          // bannière live), pas le cumulé depuis le début — même si la ligne,
+          // elle, trace bien la courbe cumulée (__delta, cf woDechainPct).
+          callbacks:{label:c=>{
+            const d = c.dataset.__delta?.[c.dataIndex];
+            if(d===null || d===undefined) return null;
+            return `  vs occurrence préc. : ${d>0?'+':''}${d}%`;
+          }}
         }
       },
       layout:{padding:{top:6,right:4,bottom:2,left:4}},
@@ -20511,6 +20649,7 @@ function woRenderProgAll(period){
     if(heroEl){ heroEl.textContent='—'; heroEl.style.color='var(--text)'; }
     if(heroInfoEl){ heroInfoEl.innerHTML=''; heroInfoEl.style.display='none'; }
     const legendEl = document.getElementById('wo-prog-legend'); if(legendEl) legendEl.innerHTML='';
+    const phaseLegendEl0 = document.getElementById('wo-prog-phase-legend'); if(phaseLegendEl0){ phaseLegendEl0.style.display='none'; phaseLegendEl0.innerHTML=''; }
     if(window._woMainChart){ window._woMainChart.destroy(); window._woMainChart=null; }
     const card1 = document.getElementById('wo-prog-card-sessions'); if(card1) card1.textContent='—';
     const card2 = document.getElementById('wo-prog-card-volume'); if(card2) card2.textContent='—';
@@ -20570,7 +20709,24 @@ function woRenderProgAll(period){
       </div>`).join('');
   }
 
-  woRenderMainProgChart(labels, datasets);
+  // Fond coloré par phase (bouton "Phases") : uniquement pertinent en vues
+  // Semaine/Mois, cf woBuildPhaseBandArray (retourne null en vue "session").
+  const phaseBands = window._woShowPhaseBands ? woBuildPhaseBandArray(period) : null;
+  const phaseLegendEl = document.getElementById('wo-prog-phase-legend');
+  if(phaseLegendEl){
+    if(phaseBands){
+      const phaseLbl = {deficit:'Déficit', maintien:'Maintien', surplus:'Surplus'};
+      phaseLegendEl.style.display = 'flex';
+      phaseLegendEl.innerHTML = Object.keys(WO_PHASE_COLORS).map(ph=>
+        `<span style="display:inline-flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:${WO_PHASE_COLORS[ph]}"></span>${phaseLbl[ph]||ph}</span>`
+      ).join('');
+    } else {
+      phaseLegendEl.style.display = 'none';
+      phaseLegendEl.innerHTML = '';
+    }
+  }
+
+  woRenderMainProgChart(labels, datasets, phaseBands);
 
   const histBody = document.getElementById('wo-prog-history-body');
   if(histBody) histBody.innerHTML = woBuildHistoryHtml(typesArr, datasets);
@@ -20593,8 +20749,43 @@ function woToggleDS(tid, el){
 // cumulée depuis le début (se lit sur l'axe Y). Le tooltip, lui, n'affiche QUE
 // la variation vs la période précédente (pas le cumulé, déjà visible via la
 // hauteur de la courbe) pour rester simple à lire au survol.
+
+// Fabrique un plugin Chart.js local (scope à UNE instance via l'option
+// `plugins` du constructeur — jamais enregistré globalement, donc aucun
+// impact sur les autres graphiques de l'app) qui dessine un fond coloré par
+// point de l'axe X selon la phase diète (déficit/maintien/surplus), sous la
+// grille et les courbes. Partagé par le graphique principal Progression
+// (bandPhases = 1 phase dominante par période semaine/mois, cf
+// woBuildPhaseBandArray) et les courbes par exercice de l'onglet "Détail par
+// exercice" (bandPhases = phase de la séance de chaque occurrence, point par
+// point). bandPhases: tableau aligné sur les labels du graphique, un élément
+// = code phase ou null (pas de bande à cet index).
+function woMakePhaseBandsPlugin(bandPhases){
+  return {
+    id:'woPhaseBands',
+    beforeDraw(chart){
+      if(!bandPhases || !bandPhases.length) return;
+      const {ctx, chartArea, scales:{x}} = chart;
+      if(!chartArea) return;
+      ctx.save();
+      bandPhases.forEach((phase,i)=>{
+        const col = phase ? WO_PHASE_COLORS[phase] : null;
+        if(!col) return;
+        const center = x.getPixelForValue(i);
+        const prevC = i>0 ? x.getPixelForValue(i-1) : null;
+        const nextC = i<bandPhases.length-1 ? x.getPixelForValue(i+1) : null;
+        const left = prevC!=null ? (prevC+center)/2 : chartArea.left;
+        const right = nextC!=null ? (center+nextC)/2 : chartArea.right;
+        ctx.fillStyle = col+'1f'; // fond très translucide, ne doit pas gêner la lecture des courbes
+        ctx.fillRect(left, chartArea.top, right-left, chartArea.bottom-chartArea.top);
+      });
+      ctx.restore();
+    }
+  };
+}
+
 window._woMainChart = null;
-function woRenderMainProgChart(labels, datasets){
+function woRenderMainProgChart(labels, datasets, bandPhases){
   const canvas = document.getElementById('wo-prog-chart');
   if(!canvas) return;
   if(window._woMainChart) window._woMainChart.destroy();
@@ -20602,8 +20793,13 @@ function woRenderMainProgChart(labels, datasets){
   const gridC = isLight?'rgba(0,0,0,0.06)':'rgba(255,255,255,0.04)';
   const tickC = isLight?'#6b7280':'#404d60';
 
+  // Fond coloré par phase (bouton "Phases", cf woRenderProgAll) — voir
+  // woMakePhaseBandsPlugin ci-dessus.
+  const phaseBandsPlugin = woMakePhaseBandsPlugin(bandPhases);
+
   window._woMainChart = new Chart(canvas.getContext('2d'),{
     type:'line',
+    plugins:[phaseBandsPlugin],
     data:{labels, datasets: datasets.map(d=>{
       const col = _cssVar(d.color); // Chart.js/canvas ne comprend pas var(--xxx)
       return {
@@ -20743,6 +20939,27 @@ function woHistoryExpand(tid){
    Chaque exercice est un accordéon indépendant ; sa courbe n'est dessinée qu'à
    l'ouverture (perf + tailles de canvas correctes tant qu'il est masqué). ── */
 window._woExoChartData = window._woExoChartData || {}; // canvasId -> {labels,data,color}
+// Chaîne les occurrences d'UN exercice (déjà triées ancien → récent) en une
+// courbe cumulée, avec EXACTEMENT la même méthode que la bannière live
+// pendant la saisie (woMatchedProgressDeep : chaque occurrence comparée à sa
+// dernière fois, recherche en profondeur série par série dans tout
+// l'historique antérieur de CET exercice), puis composition multiplicative
+// (woChainPct) — le même principe que woChainSessPct pour le graphique
+// principal Progression. Le dernier point de la courbe correspond donc
+// exactement au cumul de tous les +X%/-X% déjà vus en loggant au fil du
+// temps sur cet exercice (plus vrai à comparer "depuis la première fois",
+// qui divergeait de ce qu'affiche la page Séance). Le tout premier point n'a
+// rien avant lui à comparer → null (comme la toute première séance de
+// l'app dans le graphique principal).
+function woChainExoPct(occ){
+  const raw = occ.map((o,i)=>{
+    if(i===0) return null;
+    const past = occ.slice(0,i).map(p=>({date:p.date, sets:p.sets}));
+    return woMatchedProgressDeep(o.sets, past).pct;
+  });
+  return woChainPct(raw);
+}
+
 function woBuildExoHtml(typesArr){
   // Un exo peut être partagé entre plusieurs types de séance (ex : pompes en Push
   // ET en Upper) → on fusionne toutes ses occurrences (tous types confondus) et on
@@ -20765,7 +20982,7 @@ function woBuildExoHtml(typesArr){
       const key = (exo.name||'').trim().toLowerCase();
       if(!key) return;
       if(!exoMap[key]) exoMap[key] = {name:exo.name, muscle:woGetMuscle(exo), occ:[]};
-      exoMap[key].occ.push({date:sess.date, sets});
+      exoMap[key].occ.push({date:sess.date, sets, phase:sess.phase||null});
     });
   });
 
@@ -20810,20 +21027,32 @@ function woBuildExoHtml(typesArr){
       }
 
       if(n >= 2){
-        const first = exo.occ[0], last = exo.occ[n-1];
-        const mp = woMatchedProgress(last.sets, first.sets);
-        if(mp.pct !== null){
-          const up = mp.pct>0, eq = mp.pct===0;
+        // Même méthode que la bannière live (woMatchedProgressDeep, chaînée) :
+        // le badge = dernier point connu de la courbe cumulée, jamais recalculé
+        // indépendamment, pour qu'il colle toujours exactement à la courbe
+        // affichée juste en dessous.
+        const data = woChainExoPct(exo.occ);
+        let lastPct = null;
+        for(let i=data.length-1;i>=0;i--){ if(data[i]!==null){ lastPct=data[i]; break; } }
+        if(lastPct !== null){
+          const up = lastPct>0, eq = lastPct===0;
           const col = up?'var(--lime)':eq?'var(--muted)':'var(--red)';
           const bg  = up?'var(--lime-bg)':eq?'var(--s3)':'var(--red-bg)';
           const bd  = up?'var(--lime-d)':eq?'var(--border2)':'rgba(232,56,56,0.35)';
-          badge = `<span style="font-size:0.66rem;font-weight:700;color:${col};background:${bg};border:1px solid ${bd};border-radius:var(--r-pill);padding:2px 9px;white-space:nowrap">${up?'▲':'▼'} ${up?'+':''}${mp.pct}%</span>`;
+          const lastStr = Math.round(lastPct*10)/10;
+          badge = `<span style="font-size:0.66rem;font-weight:700;color:${col};background:${bg};border:1px solid ${bd};border-radius:var(--r-pill);padding:2px 9px;white-space:nowrap">${up?'▲':'▼'} ${up?'+':''}${lastStr}%</span>`;
         } else {
           badge = `<span style="font-size:0.58rem;color:var(--muted2);background:var(--s3);border:1px solid var(--border2);border-radius:var(--r-pill);padding:2px 8px;white-space:nowrap">—</span>`;
         }
         const labels = exo.occ.map(o=>{ const [,m,dd]=o.date.split('-'); return `${dd}/${m}`; });
-        const data   = exo.occ.map(o => woMatchedProgress(o.sets, first.sets).pct);
-        window._woExoChartData[canvasId] = {labels, data, color};
+        // La ligne trace le cumulé (data, tendance lisible), mais le tooltip au
+        // survol/clic d'un point affiche la progression SEULE vs l'occurrence
+        // précédente (delta décomposé du cumulé) — même principe que le
+        // graphique principal Progression (__delta, cf woDechainPct).
+        window._woExoChartData[canvasId] = {
+          labels, data, delta: woDechainPct(data), color,
+          bandPhases: window._woShowPhaseBands ? exo.occ.map(o=>o.phase) : null
+        };
         bodyHtml = `${rm1Html}<div class="chart-wrap" style="height:120px;margin-top:0.3rem"><canvas id="${canvasId}"></canvas></div>`;
       } else if(rm1Html){
         bodyHtml = `${rm1Html}${bodyHtml}`;
@@ -20857,7 +21086,7 @@ function woBuildExoHtml(typesArr){
 function woRenderProgExoChart(canvasId){
   const d = window._woExoChartData[canvasId];
   if(!d) return;
-  woRenderEvoChart(canvasId, d.labels, d.data, d.color);
+  woRenderEvoChart(canvasId, d.labels, d.data, d.color, d.bandPhases, d.delta);
 }
 
 /* ════════════════════════════════════════
@@ -20942,15 +21171,17 @@ function woRenderVolumeTable(){
   const cutoff = toLocalDateStr(new Date(nowD.getTime()-28*86400000));
   const recent = allSessionsFlat.filter(s=>s.date>=cutoff);
 
-  // Semaine calendaire précédente (lundi → dimanche) : volume réel, sans moyenne
+  // Semaine calendaire précédente (lundi → dimanche) : valeurs réelles, sans moyenne
   const curDow    = nowD.getDay()||7; // 1=lundi … 7=dimanche
   const curMonday = new Date(nowD); curMonday.setDate(nowD.getDate()-curDow+1);
   const prevMonday = new Date(curMonday); prevMonday.setDate(curMonday.getDate()-7);
   const prevSunday = new Date(curMonday); prevSunday.setDate(curMonday.getDate()-1);
   const pwStart = toLocalDateStr(prevMonday);
   const pwEnd   = toLocalDateStr(prevSunday);
+  const lastWeekSessions = allSessionsFlat.filter(s=>s.date>=pwStart && s.date<=pwEnd);
+
   let prevWeekSets = 0;
-  allSessionsFlat.filter(s=>s.date>=pwStart && s.date<=pwEnd).forEach(sess=>{
+  lastWeekSessions.forEach(sess=>{
     (sess.exercises||[]).forEach(exo=>{
       // Pas de filtre "paused" ici (ni dans "Moyenne · 4 sem." ci-dessous) : "paused"
       // est un état courant sans date, il ne doit pas effacer des séries réellement
@@ -20958,6 +21189,9 @@ function woRenderVolumeTable(){
       prevWeekSets += (exo.sets||[]).filter(s=>!s.skipped).length;
     });
   });
+  // Fréquence réelle globale = nb de séances distinctes la semaine dernière (peu
+  // importe combien de groupes musculaires elles touchent chacune).
+  const prevWeekSessCount = new Set(lastWeekSessions.map(s=>s.date)).size;
 
   if(!recent.length){
     el.innerHTML='<div style="font-size:0.75rem;color:var(--muted2);text-align:center;padding:1rem 0">Pas de séance dans les 4 dernières semaines.</div>';
@@ -20968,7 +21202,16 @@ function woRenderVolumeTable(){
   // Les exercices en pause sont inclus : la "pause" est un état courant, elle ne
   // doit pas faire disparaître du volume moyen des séries réellement faites.
   const exoMap = {}; // { name: { sets, sessions, weeks:Set, muscle } }
+  // Fréquence par MUSCLE (pas par exercice) : une séance qui touche 2 exercices du
+  // même muscle ne doit compter qu'UNE fois pour la fréquence de ce muscle, sinon
+  // elle serait artificiellement gonflée. On suit donc les dates de séance distinctes
+  // par muscle, séparément du cumul par exercice ci-dessus.
+  const muscleDatesRecent = {};   // muscle -> Set(date) sur les 28 derniers jours
+  const muscleDatesLastWk = {};   // muscle -> Set(date) sur la semaine calendaire précédente
+  const muscleRealSets    = {};   // muscle -> total séries réelles, semaine dernière
+
   recent.forEach(sess=>{
+    const musclesTouched = new Set();
     (sess.exercises||[]).forEach(exo=>{
       const activeSets = (exo.sets||[]).filter(s=>!s.skipped).length;
       if(!activeSets) return;
@@ -20978,6 +21221,25 @@ function woRenderVolumeTable(){
       exoMap[exo.name].sets     += activeSets;
       exoMap[exo.name].sessions += 1;
       exoMap[exo.name].weeks.add(wk);
+      musclesTouched.add(muscle);
+    });
+    musclesTouched.forEach(m=>{
+      if(!muscleDatesRecent[m]) muscleDatesRecent[m]=new Set();
+      muscleDatesRecent[m].add(sess.date);
+    });
+  });
+  lastWeekSessions.forEach(sess=>{
+    const musclesTouched = new Set();
+    (sess.exercises||[]).forEach(exo=>{
+      const activeSets = (exo.sets||[]).filter(s=>!s.skipped).length;
+      if(!activeSets) return;
+      const muscle = woGetMuscle(exo);
+      muscleRealSets[muscle] = (muscleRealSets[muscle]||0) + activeSets;
+      musclesTouched.add(muscle);
+    });
+    musclesTouched.forEach(m=>{
+      if(!muscleDatesLastWk[m]) muscleDatesLastWk[m]=new Set();
+      muscleDatesLastWk[m].add(sess.date);
     });
   });
 
@@ -21010,18 +21272,21 @@ function woRenderVolumeTable(){
   const grandTotal = Object.values(byMuscle).reduce((s,arr)=>s+arr.reduce((ss,e)=>ss+e.weekSets,0),0);
   const fmtD = d => d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'});
   const pwRange = fmtD(prevMonday)+' – '+fmtD(prevSunday);
+  const fmt1 = v => Math.round(v*10)/10;
 
-  el.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:0.85rem">
+  // ── En-tête : 4 repères globaux (volume + fréquence, moyenne + réel) ──
+  const miniCard = (val,unit,lbl,sub,color) => `
     <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:0.6rem 0.5rem;text-align:center">
-      <div style="font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-weight:700;font-size:1.05rem;color:var(--lime);line-height:1;margin-bottom:3px">${Math.round(grandTotal*10)/10} <span style="font-size:0.6rem;font-weight:400;color:var(--muted)">sér./sem</span></div>
-      <div style="font-size:0.58rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">Moyenne · 4 sem.</div>
-    </div>
-    <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:0.6rem 0.5rem;text-align:center">
-      <div style="font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-weight:700;font-size:1.05rem;color:var(--text);line-height:1;margin-bottom:3px">${prevWeekSets} <span style="font-size:0.6rem;font-weight:400;color:var(--muted)">séries</span></div>
-      <div style="font-size:0.58rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">Réel · sem. dernière</div>
-      <div style="font-size:0.55rem;color:var(--muted2);margin-top:2px;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">${pwRange}</div>
-    </div>
-  </div>`
+      <div style="font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-weight:700;font-size:1.05rem;color:${color};line-height:1;margin-bottom:3px">${val} <span style="font-size:0.6rem;font-weight:400;color:var(--muted)">${unit}</span></div>
+      <div style="font-size:0.58rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">${lbl}</div>
+      ${sub?`<div style="font-size:0.55rem;color:var(--muted2);margin-top:2px;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif">${sub}</div>`:''}
+    </div>`;
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:0.9rem">
+      ${miniCard(fmt1(grandTotal),'sér./sem','Moyenne · 4 sem.','',  'var(--lime)')}
+      ${miniCard(prevWeekSets,'séries','Réel · sem. dernière',pwRange,'var(--text)')}
+    </div>`
   + sorted.map(muscle=>{
     const exos  = byMuscle[muscle].sort((a,b)=>b.weekSets-a.weekSets);
     const total = exos.reduce((s,e)=>s+e.weekSets,0);
@@ -21037,6 +21302,15 @@ function woRenderVolumeTable(){
       else
         refHint=`<span style="font-size:0.58rem;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-d);border-radius:var(--r-pill);padding:1px 7px;white-space:nowrap">✓ zone optimale</span>`;
     }
+
+    // Fréquence de CE muscle : séances distinctes (pas la somme par exercice, qui
+    // double-compterait une séance avec 2 exos du même muscle) / semaines actives.
+    const datesRecent  = muscleDatesRecent[muscle] || new Set();
+    const weeksActiveM = new Set([...datesRecent].map(d=>woWeekKey(d))).size || 1;
+    const freqAvgM      = datesRecent.size / weeksActiveM;
+    const freqRealM      = (muscleDatesLastWk[muscle]||new Set()).size;
+    const realSetsM       = muscleRealSets[muscle] || 0;
+
     return `<details class="chart-details" style="margin-bottom:0.6rem">
       <summary>
         <span style="display:flex;align-items:center;gap:6px;flex:1;min-width:0">
@@ -21044,14 +21318,26 @@ function woRenderVolumeTable(){
           <span style="font-weight:700;color:${col};text-transform:uppercase;letter-spacing:0.09em;font-size:0.63rem">${muscle}</span>
         </span>
         <span style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-          <span style="font-weight:700;color:var(--text);font-size:0.72rem">${Math.round(total*10)/10} sér./sem</span>
+          <span style="font-weight:700;color:var(--text);font-size:0.72rem">${fmt1(total)} sér./sem</span>
           ${refHint}
         </span>
       </summary>
       <div class="chart-details-body">
+        <div class="sub-card-row" style="margin-bottom:0.7rem">
+          <div class="sub-card">
+            <div class="sub-card-lbl">Volume</div>
+            <div class="sub-card-val" style="color:${col}">${fmt1(total)} <span style="font-size:0.62rem;font-weight:400;color:var(--muted)">sér./sem</span></div>
+            <div class="sub-card-sub">Réel sem. dernière : <strong style="color:var(--text)">${realSetsM}</strong> sér.</div>
+          </div>
+          <div class="sub-card">
+            <div class="sub-card-lbl">Fréquence</div>
+            <div class="sub-card-val" style="color:${col}">${fmt1(freqAvgM)} <span style="font-size:0.62rem;font-weight:400;color:var(--muted)">×/sem</span></div>
+            <div class="sub-card-sub">Réel sem. dernière : <strong style="color:var(--text)">${freqRealM}</strong> ${freqRealM>1?'séances':'séance'}</div>
+          </div>
+        </div>
         ${exos.map(e=>{
-          const avg=Math.round(e.avgPerSess*10)/10;
-          const freq=Math.round(e.freqPerWeek*10)/10;
+          const avg=fmt1(e.avgPerSess);
+          const freq=fmt1(e.freqPerWeek);
           return `<div style="display:flex;align-items:center;gap:6px;padding:3px 0">
             <div style="flex:1;font-size:0.73rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">${e.name}</div>
             <div style="font-size:0.65rem;color:var(--muted);flex-shrink:0;text-align:right">
@@ -23680,6 +23966,22 @@ function getKcalGoalForDate(dateStr) {
   }
   if (!applicable) applicable = hist[0]; // date antérieure à tout historique connu
   return applicable.kcalGoal || null;
+}
+
+// Phase (déficit/maintien/surplus) réellement en vigueur à une date donnée —
+// même principe que getKcalGoalForDate ci-dessus, mais pour la phase plutôt
+// que l'objectif kcal. Utilisé par le fond coloré optionnel des graphiques
+// de la page Progression (bouton "Phases", cf progTogglePhaseBands).
+// Retourne null si aucun historique (aucune phase n'a jamais été définie).
+function getPhaseForDate(dateStr) {
+  const hist = kcalGoalHistoryGet();
+  if (!hist.length) return null;
+  let applicable = null;
+  for (const e of hist) {
+    if (e.date <= dateStr) applicable = e; else break;
+  }
+  if (!applicable) applicable = hist[0]; // date antérieure à tout historique connu
+  return applicable.phase || null;
 }
 
 // Déduit la phase depuis le TDEE estimé (±5%, cohérent avec tmgGetObjectif).
