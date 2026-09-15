@@ -6349,24 +6349,33 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     <button class="kc-modal-close" onclick="closePoidsQuickEdit()" aria-label="Fermer">✕</button>
     <div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1.25rem"></div>
     <div style="font-family:Playfair Display,serif;font-size:1.25rem;font-weight:400;margin-bottom:0.35rem">Mettre à jour le <em style="color:var(--pink)">poids</em></div>
-    <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.9rem" id="poids-quick-last"></div>
-    <!-- Sélecteur de date -->
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.9rem;background:var(--s2);border:1.5px solid var(--border2);border-radius:12px;padding:0.5rem 0.85rem">
-      <span style="font-size:0.85rem">📅</span>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:0.52rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted2);margin-bottom:1px">Date de la mesure</div>
-        <input type="date" id="poids-quick-date"
-          style="background:none;border:none;color:var(--text);font-family:DM Sans,sans-serif;font-size:0.88rem;font-weight:600;width:100%;outline:none;cursor:pointer;padding:0"
-          onfocus="this.style.color='var(--lime)'" onblur="this.style.color='var(--text)'">
-      </div>
-      <button onclick="document.getElementById('poids-quick-date').value=today()" style="font-size:0.6rem;color:var(--muted2);background:none;border:none;cursor:pointer;white-space:nowrap;padding:2px 6px;border-radius:8px;border:1px solid var(--border)">Auj.</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:0.9rem">
+      <div style="font-size:0.72rem;color:var(--muted)" id="poids-quick-last"></div>
+      <button type="button" id="poids-quick-delete" onclick="pqDeleteEntry()" title="Supprimer la pesée de ce jour" aria-label="Supprimer la pesée de ce jour" style="display:none;flex-shrink:0;width:26px;height:26px;border-radius:50%;background:none;border:1.5px solid var(--border2);color:var(--muted);cursor:pointer;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4h11M6 4V2.6c0-.33.27-.6.6-.6h2.8c.33 0 .6.27.6.6V4M6.5 7v5M9.5 7v5M3.5 4l.6 8.6c.03.5.45.9.95.9h5.8c.5 0 .92-.4.95-.9L12.5 4"/></svg>
+      </button>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
+    <!-- Navigateur de date + mini-courbe glissable (repère visuel du jour sélectionné) -->
+    <div style="margin-bottom:1rem">
+      <div class="ap-date-nav" style="margin-bottom:0.6rem">
+        <button type="button" class="ap-date-btn" onclick="pqShiftDate(-1)" aria-label="Jour précédent">‹</button>
+        <div class="ap-date-label" id="pq-date-label" onclick="pqPickDate()">Aujourd'hui</div>
+        <button type="button" class="ap-date-btn" onclick="pqShiftDate(1)" aria-label="Jour suivant">›</button>
+      </div>
+      <input type="date" id="poids-quick-date" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px" onchange="pqSetDate(this.value)">
+      <div id="pq-curve-wrap" style="position:relative;height:70px;border-radius:14px;background:var(--s2);border:1.5px solid var(--border2);touch-action:pan-y;user-select:none;cursor:grab">
+        <svg id="pq-curve-svg" viewBox="0 0 280 70" preserveAspectRatio="none" style="width:100%;height:100%;display:block"></svg>
+      </div>
+      <div id="pq-day-hint" style="text-align:center;font-size:0.62rem;color:var(--muted2);margin-top:5px"></div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.3rem">
       <input type="number" id="poids-quick-input" placeholder="75.0" min="30" max="300" step="0.1" inputmode="decimal"
         style="flex:1;font-size:1.5rem;font-weight:600;text-align:center;padding:0.75rem 1rem;border-radius:14px;border:1.5px solid var(--lime);background:var(--s2);color:var(--text);font-family:DM Sans,sans-serif;outline:none"
-        onkeydown="if(event.key==='Enter')savePoidsQuick()">
+        onkeydown="if(event.key==='Enter')savePoidsQuick()" oninput="pqUpdateDelta()">
       <span style="font-size:1rem;color:var(--muted);font-weight:500">kg</span>
     </div>
+    <div id="poids-quick-delta" style="text-align:center;font-size:0.68rem;color:var(--muted2);margin-bottom:0.9rem;min-height:1em"></div>
     <div style="display:flex;gap:0;background:var(--s2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1.25rem">
       <button onclick="poidsQuickStep(-0.5)" style="flex:1;padding:0.6rem;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;font-family:DM Sans,sans-serif;transition:all var(--trans);border-right:1px solid var(--border)" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background='none'">−0.5</button>
       <button onclick="poidsQuickStep(-0.1)" style="flex:1;padding:0.6rem;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;font-family:DM Sans,sans-serif;transition:all var(--trans);border-right:1px solid var(--border)" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background='none'">−0.1</button>
@@ -17459,19 +17468,15 @@ function computeDietPeriodBalanceDetail(fitness, food, profile){
   return { ...detail, startDate };
 }
 
-/* Poids moyen autour d'une date (±windowDays), pour lisser le bruit court
-   terme d'une pesée isolée (rétention d'eau, digestion, cycle...). Si aucune
-   pesée dans la fenêtre, on retombe sur la pesée valide la plus proche
-   (avant ou après). Retourne null si aucune pesée n'existe du tout. */
-function getWeightNear(fitness, dateStr, windowDays){
-  windowDays = windowDays || 3;
-  const target = new Date(dateStr+'T00:00:00');
-  const withWeight = fitness.filter(f=>f.poids).map(f=>({ date:f.date, poids:parseFloat(f.poids) }));
+/* Pesée à une date donnée : la pesée exacte de ce jour si elle existe, sinon
+   la pesée valide la plus récente avant cette date (report de la dernière
+   valeur connue). Aucune moyenne ni lissage — reflète exactement ce qui a été
+   loggé. Retourne null si aucune pesée n'existe à cette date ou avant. */
+function getLastWeightOnOrBefore(fitness, dateStr){
+  const withWeight = fitness.filter(f=>f.poids && f.date<=dateStr).map(f=>({ date:f.date, poids:parseFloat(f.poids) }));
   if(!withWeight.length) return null;
-  const inWindow = withWeight.filter(f=>Math.abs((new Date(f.date+'T00:00:00')-target)/86400000) <= windowDays);
-  if(inWindow.length) return inWindow.reduce((s,f)=>s+f.poids,0) / inWindow.length;
-  const sorted = withWeight.slice().sort((a,b)=>Math.abs(new Date(a.date+'T00:00:00')-target) - Math.abs(new Date(b.date+'T00:00:00')-target));
-  return sorted[0].poids;
+  withWeight.sort((a,b)=>a.date.localeCompare(b.date));
+  return withWeight[withWeight.length-1].poids;
 }
 
 /* Compare la variation de poids THÉORIQUE (déduite de la balance cumulée sur
@@ -17479,10 +17484,15 @@ function getWeightNear(fitness, dateStr, windowDays){
    mesurée sur la balance. Retourne null si pas assez de données (pas de
    phase, pas de balance calculable, ou pas de pesées). */
 function computeDietWeightPrediction(balDietDetail, fitness){
-  if(!balDietDetail?.startDate || balDietDetail.avg===null) return null;
-  const startWeight = getWeightNear(fitness, balDietDetail.startDate, 3);
-  const todayStr = today();
-  const nowWeight = getWeightNear(fitness, todayStr, 3);
+  if(!balDietDetail?.startDate || balDietDetail.avg===null || !balDietDetail.days.length) return null;
+  const startWeight = getLastWeightOnOrBefore(fitness, balDietDetail.startDate);
+  // Ancré sur le DERNIER JOUR RÉELLEMENT COMPTÉ dans cumBalance (today() si
+  // l'heure de bascule est passée, hier sinon — cf shouldIncludeToday()) et
+  // non sur "aujourd'hui" en dur : sinon, avant l'heure de bascule, "Réel"
+  // avancerait d'un jour de plus que "Prédit" (balance encore arrêtée à
+  // hier) et fausserait l'écart affiché.
+  const lastCountedDate = balDietDetail.days[balDietDetail.days.length-1].date;
+  const nowWeight = getLastWeightOnOrBefore(fitness, lastCountedDate);
   if(startWeight===null || nowWeight===null) return null;
 
   const cumBalance = balDietDetail.includedBalances.reduce((s,b)=>s+b, 0);
@@ -17502,8 +17512,8 @@ function computeDietWeightPrediction(balDietDetail, fitness){
    période (déjà calculé dans balDetail.days, cf computeBalanceDetailForPeriod). */
 function computeWeightPredictionForPeriod(balDetail, fitness, endDate){
   if(!balDetail?.startDate || balDetail.avg===null || !endDate) return null;
-  const startWeight = getWeightNear(fitness, balDetail.startDate, 3);
-  const endWeight = getWeightNear(fitness, endDate, 3);
+  const startWeight = getLastWeightOnOrBefore(fitness, balDetail.startDate);
+  const endWeight = getLastWeightOnOrBefore(fitness, endDate);
   if(startWeight===null || endWeight===null) return null;
   const cumBalance = balDetail.includedBalances.reduce((s,b)=>s+b, 0);
   const predictedDeltaKg = cumBalance / 7700;
@@ -18603,26 +18613,229 @@ selectProduct = function(productData){
 /* ════════════════════════════════════════
    POIDS QUICK EDIT — tap on dashboard card
 ════════════════════════════════════════ */
+/* État du navigateur de date du popup "Mettre à jour le poids". */
+let PQ = { date: today() };
+
 function openPoidsQuickEdit(){
   const modal = document.getElementById('poids-quick-modal');
   if(!modal) return;
-  const fitness = DB.getFitness().slice().sort((a,b)=>b.date.localeCompare(a.date));
-  const last = fitness.find(d=>d.poids);
-  const inp = document.getElementById('poids-quick-input');
-  if(last && inp){ inp.value = last.poids; }
-  const lbl = document.getElementById('poids-quick-last');
-  if(lbl && last){ lbl.textContent = 'Dernière mesure : '+last.poids+' kg — '+fmtDL(last.date); }
-  else if(lbl){ lbl.textContent = 'Aucun poids enregistré'; }
-  // Pré-remplir la date avec aujourd\'hui
   const dateInp = document.getElementById('poids-quick-date');
-  if(dateInp){ dateInp.value = today(); dateInp.max = today(); }
-  // Préfill BF depuis profil
-  const prof = JSON.parse(localStorage.getItem('kcalos_profile')||'{}');
-  const bfInp = document.getElementById('poids-quick-bf');
-  if(bfInp && prof.bf) bfInp.value = prof.bf;
+  if(dateInp) dateInp.max = today();
+  PQ.date = today();
+  pqRefreshUI();
+  pqInitDrag();
   modal.style.display = 'flex';
   kcLockScroll();
   setTimeout(()=>{ const i=document.getElementById('poids-quick-input'); if(i){i.focus();i.select();} }, 120);
+}
+function pqShiftDate(delta){
+  const d = new Date(PQ.date+'T12:00:00');
+  d.setDate(d.getDate()+delta);
+  const nd = toLocalDateStr(d);
+  if(nd>today()) return false; // bloqué : pas de futur
+  pqSetDate(nd);
+  return true;
+}
+function pqPickDate(){
+  const picker = document.getElementById('poids-quick-date');
+  if(!picker) return;
+  picker.value = PQ.date;
+  picker.showPicker ? picker.showPicker() : picker.click();
+}
+function pqBackToToday(){ pqSetDate(today()); }
+function pqSetDate(val){
+  if(!val || val>today()) return;
+  PQ.date = val;
+  pqRefreshUI();
+}
+/* Met à jour tout le popup (label date, input poids, % MG, texte repère et
+   mini-courbe) pour qu'ils reflètent tous la date actuellement sélectionnée —
+   que ce soit via les flèches, le glissé sur la courbe, ou le date-picker natif. */
+function pqRefreshUI(){
+  const dateInp = document.getElementById('poids-quick-date');
+  if(dateInp) dateInp.value = PQ.date;
+  const todayStr = today();
+  const isToday = PQ.date === todayStr;
+  const yestStr = toLocalDateStr(new Date(Date.now()-86400000));
+  const lbl = document.getElementById('pq-date-label');
+  if(lbl){
+    lbl.textContent = isToday ? "Aujourd'hui" : (PQ.date===yestStr ? 'Hier' :
+      new Date(PQ.date+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}));
+    lbl.className = 'ap-date-label' + (isToday ? ' today-lbl' : '');
+  }
+  const fitness = DB.getFitness();
+  const entry = fitness.find(f=>f.date===PQ.date);
+  const inp = document.getElementById('poids-quick-input');
+  const bfInp = document.getElementById('poids-quick-bf');
+  const lastLbl = document.getElementById('poids-quick-last');
+  const prof = JSON.parse(localStorage.getItem('kcalos_profile')||'{}');
+  if(entry?.poids!=null){
+    // Une pesée existe déjà pour ce jour : on la charge (modification en place possible)
+    if(inp) inp.value = parseFloat(entry.poids);
+    if(lastLbl) lastLbl.textContent = '✏️ Pesée déjà enregistrée le '+fmtDL(PQ.date)+' — modifiable ci-dessous';
+  } else {
+    // Rien ce jour-là : on propose la dernière pesée connue avant/à cette date,
+    // comme simple repère éditable (rien n'est encore sauvegardé).
+    const prevKnown = fitness.filter(f=>f.poids && f.date<=PQ.date).sort((a,b)=>b.date.localeCompare(a.date))[0];
+    if(inp) inp.value = prevKnown ? parseFloat(prevKnown.poids) : '';
+    if(lastLbl) lastLbl.textContent = prevKnown
+      ? 'Aucune pesée le '+fmtDL(PQ.date)+' — dernière connue : '+prevKnown.poids+' kg ('+fmtDL(prevKnown.date)+')'
+      : 'Aucune pesée enregistrée';
+  }
+  if(bfInp) bfInp.value = entry?.bf!=null ? entry.bf : (isToday && prof.bf ? prof.bf : '');
+  const delBtn = document.getElementById('poids-quick-delete');
+  if(delBtn) delBtn.style.display = (entry?.poids!=null) ? 'flex' : 'none';
+  const hint = document.getElementById('pq-day-hint');
+  if(hint){
+    if(isToday){ hint.textContent = 'Glisse la courbe ← → pour changer de jour'; hint.style.cursor='default'; hint.onclick=null; }
+    else { hint.textContent = "↺ Revenir à aujourd'hui"; hint.style.cursor='pointer'; hint.onclick=pqBackToToday; }
+  }
+  pqUpdateDelta();
+  pqRenderCurve();
+}
+/* Delta live entre la valeur en cours de saisie et la dernière pesée
+   STRICTEMENT antérieure à PQ.date (pour ne jamais se comparer à elle-même en
+   cas de modification d'une pesée existante). Recalculé à chaque frappe
+   (oninput), à chaque +/-, et à chaque changement de jour. */
+function pqUpdateDelta(){
+  const el = document.getElementById('poids-quick-delta');
+  if(!el) return;
+  const val = parseFloat(document.getElementById('poids-quick-input')?.value);
+  if(isNaN(val)){ el.textContent=''; return; }
+  const prevEntry = DB.getFitness().filter(f=>f.poids!=null && f.date<PQ.date).sort((a,b)=>b.date.localeCompare(a.date))[0];
+  if(!prevEntry){ el.textContent=''; return; }
+  const diff = val - parseFloat(prevEntry.poids);
+  const yestOfSel = toLocalDateStr(new Date(new Date(PQ.date+'T12:00:00').getTime()-86400000));
+  const label = prevEntry.date===yestOfSel ? 'hier' : 'le '+fmtDL(prevEntry.date);
+  el.textContent = (diff>=0?'+':'')+diff.toFixed(1)+' kg vs '+label;
+  el.style.color = diff>0.05 ? 'var(--orange)' : diff<-0.05 ? 'var(--teal)' : 'var(--muted2)';
+}
+/* Supprime la pesée (et le % MG associé) du jour sélectionné. Conserve le
+   reste de la ligne fitness de ce jour (pas, calories...) si elle contient
+   d'autres données ; supprime la ligne entière sinon. */
+function pqDeleteEntry(){
+  const fitness = DB.getFitness();
+  const idx = fitness.findIndex(f=>f.date===PQ.date && f.poids!=null);
+  if(idx<0) return;
+  if(!confirm('Supprimer la pesée du '+fmtDL(PQ.date)+' ?')) return;
+  const entry = { ...fitness[idx] };
+  delete entry.poids; delete entry.bf;
+  const hasOtherData = Object.keys(entry).some(k=>k!=='date' && entry[k]!=null);
+  const newFitness = fitness.slice();
+  if(hasOtherData) newFitness[idx] = entry; else newFitness.splice(idx,1);
+  DB.setFitness(newFitness);
+  pqRefreshUI();
+  renderDashboard();
+  toast('Pesée supprimée', 'var(--muted)');
+}
+/* Mini-courbe (7 jours glissants, centrée sur PQ.date) : relie les pesées
+   exactes connues, marque les jours sans pesée par un anneau creux sur l'axe,
+   et place un curseur (ligne pointillée + point) toujours au centre = jour
+   sélectionné. Glisser horizontalement sur #pq-curve-wrap (cf pqInitDrag)
+   fait avancer/reculer PQ.date jour par jour, logué ou non. */
+function pqRenderCurve(){
+  const svg = document.getElementById('pq-curve-svg');
+  if(!svg) return;
+  const fitness = DB.getFitness();
+  const byDate = new Map(fitness.filter(f=>f.poids!=null).map(f=>[f.date, parseFloat(f.poids)]));
+  const todayStr = today();
+  const center = new Date(PQ.date+'T12:00:00');
+  const N = 7, mid = 3;
+  const slots = [];
+  for(let i=0;i<N;i++){
+    const d = new Date(center); d.setDate(d.getDate()+(i-mid));
+    const ds = toLocalDateStr(d);
+    slots.push({ date:ds, poids: byDate.has(ds)?byDate.get(ds):null, future: ds>todayStr });
+  }
+  const W=280, H=70, padT=8, padB=16, padL=20, baseY=H-padB;
+  const stepX = (W-padL)/N;
+  const xOf = i => padL + (i+0.5)*stepX;
+  const known = slots.map((s,i)=>({i,v:s.poids})).filter(p=>p.v!=null);
+  let minV, maxV, realMin=null, realMax=null;
+  if(known.length){
+    realMin = Math.min(...known.map(p=>p.v)); realMax = Math.max(...known.map(p=>p.v));
+    minV=realMin; maxV=realMax;
+    if(maxV-minV < 0.6){ const m=(minV+maxV)/2; minV=m-0.3; maxV=m+0.3; }
+  } else { minV=0; maxV=1; }
+  const yOf = v => padT + (H-padT-padB) * (1 - (v-minV)/(maxV-minV));
+  // Repères numériques min/max (valeurs réelles, pas l'échelle gonflée)
+  let minMaxLabels = '';
+  if(realMax!=null && realMax-realMin < 0.05){
+    minMaxLabels = `<text x="2" y="${(yOf(realMax)+3).toFixed(1)}" font-size="7" fill="var(--muted2)">${realMax.toFixed(1)}</text>`;
+  } else if(realMax!=null){
+    minMaxLabels = `
+      <text x="2" y="${Math.max(9,yOf(realMax)+3).toFixed(1)}" font-size="7" fill="var(--muted2)">${realMax.toFixed(1)}</text>
+      <text x="2" y="${Math.min(baseY-2,yOf(realMin)+3).toFixed(1)}" font-size="7" fill="var(--muted2)">${realMin.toFixed(1)}</text>`;
+  }
+
+  let lineSegs = '';
+  for(let k=0;k<known.length-1;k++){
+    const a=known[k], b=known[k+1], gap=b.i-a.i>1;
+    lineSegs += `<line x1="${xOf(a.i).toFixed(1)}" y1="${yOf(a.v).toFixed(1)}" x2="${xOf(b.i).toFixed(1)}" y2="${yOf(b.v).toFixed(1)}" stroke="var(--pink)" stroke-width="1.8" stroke-linecap="round" ${gap?'stroke-dasharray="3,3" opacity="0.55"':''} vector-effect="non-scaling-stroke"/>`;
+  }
+  let dots = '';
+  slots.forEach((s,i)=>{
+    if(s.future) return;
+    const isSel = i===mid;
+    if(s.poids!=null){
+      dots += `<circle cx="${xOf(i).toFixed(1)}" cy="${yOf(s.poids).toFixed(1)}" r="${isSel?4.5:2.6}" fill="${isSel?'var(--pink)':'var(--text)'}" ${isSel?'':'opacity="0.55"'}/>`;
+    } else {
+      dots += `<circle cx="${xOf(i).toFixed(1)}" cy="${baseY.toFixed(1)}" r="${isSel?4:2.2}" fill="var(--s1)" stroke="${isSel?'var(--pink)':'var(--border2)'}" stroke-width="1.4"/>`;
+    }
+  });
+  let labels = '';
+  slots.forEach((s,i)=>{
+    if(s.future) return;
+    const isSel = i===mid;
+    labels += `<text x="${xOf(i).toFixed(1)}" y="${H-3}" text-anchor="middle" font-size="7" fill="${isSel?'var(--pink)':'var(--muted2)'}" font-weight="${isSel?'700':'400'}">${s.date===todayStr?'auj.':s.date.split('-')[2]}</text>`;
+  });
+  const cx = xOf(mid).toFixed(1);
+  svg.innerHTML = `
+    <line x1="${padL}" y1="${baseY}" x2="${W}" y2="${baseY}" stroke="var(--border2)" stroke-width="0.6" stroke-dasharray="2,2" vector-effect="non-scaling-stroke"/>
+    <line x1="${cx}" y1="2" x2="${cx}" y2="${baseY}" stroke="var(--pink)" stroke-width="1" stroke-dasharray="2,2" opacity="0.45" vector-effect="non-scaling-stroke"/>
+    ${minMaxLabels}${lineSegs}${dots}${labels}`;
+}
+/* Glisser horizontalement sur la mini-courbe = naviguer jour par jour (jour
+   logué ou non). ~34px de glissé = 1 jour. Lié une seule fois par ouverture
+   du popup (garde _pqBound pour éviter les doublons d'écouteurs). */
+function pqInitDrag(){
+  const wrap = document.getElementById('pq-curve-wrap');
+  if(!wrap || wrap._pqBound) return;
+  wrap._pqBound = true;
+  const DAY_PX = 34;
+  let drag = null;
+  wrap.addEventListener('pointerdown', e=>{ drag = { x:e.clientX, acc:0 }; wrap.setPointerCapture(e.pointerId); wrap.style.cursor='grabbing'; });
+  wrap.addEventListener('pointermove', e=>{
+    if(!drag) return;
+    const dx = e.clientX - drag.x;
+    drag.x = e.clientX;
+    drag.acc += dx;
+    while(drag.acc <= -DAY_PX){  // glisse vers la gauche → jour suivant
+      drag.acc += DAY_PX;
+      if(pqShiftDate(1)){ if(navigator.vibrate) navigator.vibrate(10); }
+      else { pqBounce(); drag.acc = 0; break; } // bloqué : aujourd'hui atteint
+    }
+    while(drag.acc >= DAY_PX){  // glisse vers la droite → jour précédent
+      drag.acc -= DAY_PX;
+      if(pqShiftDate(-1)){ if(navigator.vibrate) navigator.vibrate(10); }
+    }
+  });
+  const endDrag = ()=>{ drag=null; wrap.style.cursor='grab'; };
+  wrap.addEventListener('pointerup', endDrag);
+  wrap.addEventListener('pointercancel', endDrag);
+  wrap.addEventListener('pointerleave', endDrag);
+}
+/* Petit rebond visuel de la mini-courbe quand on essaie de glisser au-delà
+   d'aujourd'hui (limite infranchissable) — signal physique de la butée. */
+function pqBounce(){
+  const wrap = document.getElementById('pq-curve-wrap');
+  if(!wrap) return;
+  wrap.style.transition = 'transform 0.12s ease-out';
+  wrap.style.transform = 'translateX(-6px)';
+  setTimeout(()=>{
+    wrap.style.transform = 'translateX(0)';
+    setTimeout(()=>{ wrap.style.transition=''; }, 130);
+  }, 90);
 }
 function closePoidsQuickEdit(){
   const modal = document.getElementById('poids-quick-modal');
@@ -18633,6 +18846,7 @@ function poidsQuickStep(delta){
   if(!inp) return;
   const cur = parseFloat(inp.value)||0;
   inp.value = Math.max(30, Math.min(300, Math.round((cur+delta)*10)/10)).toFixed(1);
+  pqUpdateDelta();
 }
 function savePoidsQuick(){
   const val = parseFloat(document.getElementById('poids-quick-input')?.value);
@@ -19075,7 +19289,7 @@ function renderProjectionModal(){
    ou divergé du calcul. */
 function computeDietWeightTrajectory(balDietDetail, fitness, pred){
   if(!balDietDetail?.startDate) return null;
-  const startWeight = pred ? pred.startWeight : getWeightNear(fitness, balDietDetail.startDate, 3);
+  const startWeight = pred ? pred.startWeight : getLastWeightOnOrBefore(fitness, balDietDetail.startDate);
   if(startWeight===null) return null;
   let cum = 0;
   const lastIdx = balDietDetail.days.length - 1;
