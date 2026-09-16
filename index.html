@@ -2478,11 +2478,15 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 }
 .wo-stat-pill .wsp-lbl{font-size:0.55rem;color:var(--muted2);text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin-bottom:2px}
 .wo-stat-pill .wsp-val{font-size:1.1rem;font-weight:700;color:var(--text)}
-/* Live kcal badge */
-.wo-kcal-live{
-  margin-left:auto;background:var(--lime-bg);border:1px solid rgba(184,224,48,0.3);
-  border-radius:var(--r-pill);padding:4px 14px;
-  display:flex;align-items:center;gap:5px;
+/* Récap de fin de séance (bottom sheet affiché à la validation) */
+.wo-recap-kcal{font-size:2.6rem;font-weight:700;color:var(--lime);line-height:1;letter-spacing:-1px}
+.wo-recap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.wo-recap-cell{background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);padding:0.6rem 0.35rem;text-align:center}
+.wo-recap-cell .wrc-lbl{font-size:0.55rem;color:var(--muted2);text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin-bottom:3px}
+.wo-recap-cell .wrc-val{font-size:1.02rem;font-weight:700;color:var(--text)}
+@media(max-width:380px){
+  .wo-recap-kcal{font-size:2.2rem}
+  .wo-recap-cell .wrc-val{font-size:0.9rem}
 }
 /* Manage panel type list */
 .wo-manage-item{
@@ -3318,7 +3322,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   <button class="widget-resize-btn" onclick="widgetResize('kpis')" title="Changer la taille">⇔</button>
   
   <!-- Hero: Balance calorique (anneau) + Apport / Dépense fusionnés -->
-  <div class="db-card db-balance db-hero" onclick="switchPage('page-progression');switchProgTab('calories')" style="cursor:pointer" title="Voir le graphique balance">
+  <div class="db-card db-balance db-hero">
     <div class="db-hero-top">
       <div class="db-hero-ring-wrap">
         <svg width="92" height="92" viewBox="0 0 92 92">
@@ -6045,11 +6049,6 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
         <div id="wo-intensity-label" style="font-size:0.78rem;font-weight:600;color:var(--text)">Modéré</div>
         <div id="wo-intensity-val" style="font-size:0.58rem;color:var(--muted2)">5 / 10</div>
       </div>
-      <div class="wo-kcal-live">
-        <span style="font-size:0.62rem;color:var(--lime-d)">~</span>
-        <span id="wo-live-kcal" style="font-size:0.92rem;font-weight:700;color:var(--lime)">0</span>
-        <span style="font-size:0.62rem;color:var(--lime-d)">kcal</span>
-      </div>
     </div>
 
     <!-- Phase calorique -->
@@ -6193,6 +6192,32 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   <div style="display:flex;gap:8px;margin-top:0.5rem">
     <button class="btn secondary" onclick="closeWoDurPanel()" style="flex:1">Annuler</button>
     <button class="btn" id="wo-dur-ok-btn" onclick="woSaveDur()" style="flex:1">OK</button>
+  </div>
+</div>
+
+<!-- WORKOUT: Récap de fin de séance (avant enregistrement) -->
+<div id="wo-recap-sheet" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)" onclick="if(event.target===this)woCloseRecap()">
+  <div style="position:absolute;bottom:0;left:0;right:0;background:var(--s1);border-radius:20px 20px 0 0;padding:1.25rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom,0px));max-width:480px;margin:0 auto;border-top:1px solid var(--border2);animation:slideUp 0.22s ease">
+    <div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1rem"></div>
+    <div id="wo-recap-title" style="font-size:0.63rem;color:var(--muted2);text-transform:uppercase;letter-spacing:0.1em;font-weight:600;text-align:center;margin-bottom:0.5rem"></div>
+    <div style="text-align:center;margin-bottom:0.9rem">
+      <span class="wo-recap-kcal" id="wo-recap-kcal">0</span><span style="font-size:0.85rem;color:var(--lime-d);font-weight:600;margin-left:4px">kcal</span>
+      <div style="font-size:0.6rem;color:var(--muted2);margin-top:4px">dépensées · estimation</div>
+    </div>
+    <div class="wo-recap-grid">
+      <div class="wo-recap-cell"><div class="wrc-lbl">Durée</div><div class="wrc-val" id="wo-recap-dur">—</div></div>
+      <div class="wo-recap-cell"><div class="wrc-lbl">Séries</div><div class="wrc-val" id="wo-recap-sets">0</div></div>
+      <div class="wo-recap-cell"><div class="wrc-lbl">Volume</div><div class="wrc-val" id="wo-recap-vol">0</div></div>
+    </div>
+    <div id="wo-recap-prog" style="display:none;align-items:center;justify-content:space-between;gap:10px;padding:0.6rem 0.9rem;border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--s2);margin-top:0.6rem">
+      <span style="font-size:0.72rem;color:var(--muted)">Évolution vs dernière fois</span>
+      <span id="wo-recap-prog-val" style="font-size:1rem;font-weight:700;flex-shrink:0"></span>
+    </div>
+    <div id="wo-recap-pr" style="display:none;font-size:0.72rem;line-height:1.6;color:var(--lime-d);background:var(--lime-bg);border:1px solid var(--lime-d);border-radius:var(--r-sm);padding:0.6rem 0.9rem;margin-top:0.6rem"></div>
+    <div style="display:flex;gap:8px;margin-top:1rem">
+      <button class="btn secondary" onclick="woCloseRecap()" style="flex:1;font-size:0.88rem;min-height:50px">← Modifier</button>
+      <button class="btn teal" onclick="woCommitSession()" style="flex:2;font-size:0.95rem;font-weight:700;min-height:50px">✓ Enregistrer</button>
+    </div>
   </div>
 </div>
 
@@ -6377,10 +6402,10 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     </div>
     <div id="poids-quick-delta" style="text-align:center;font-size:0.68rem;color:var(--muted2);margin-bottom:0.9rem;min-height:1em"></div>
     <div style="display:flex;gap:0;background:var(--s2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1.25rem">
-      <button onclick="poidsQuickStep(-0.5)" style="flex:1;padding:0.6rem;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;font-family:DM Sans,sans-serif;transition:all var(--trans);border-right:1px solid var(--border)" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background='none'">−0.5</button>
-      <button onclick="poidsQuickStep(-0.1)" style="flex:1;padding:0.6rem;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;font-family:DM Sans,sans-serif;transition:all var(--trans);border-right:1px solid var(--border)" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background='none'">−0.1</button>
-      <button onclick="poidsQuickStep(0.1)"  style="flex:1;padding:0.6rem;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;font-family:DM Sans,sans-serif;transition:all var(--trans);border-right:1px solid var(--border)" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background='none'">+0.1</button>
-      <button onclick="poidsQuickStep(0.5)"  style="flex:1;padding:0.6rem;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;font-family:DM Sans,sans-serif;transition:all var(--trans)" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background='none'">+0.5</button>
+      <button type="button" onmousedown="event.preventDefault()" onclick="poidsQuickStep(-0.5)" style="flex:1;padding:0.6rem;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;font-family:DM Sans,sans-serif;transition:all var(--trans);border-right:1px solid var(--border)" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background='none'">−0.5</button>
+      <button type="button" onmousedown="event.preventDefault()" onclick="poidsQuickStep(-0.1)" style="flex:1;padding:0.6rem;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;font-family:DM Sans,sans-serif;transition:all var(--trans);border-right:1px solid var(--border)" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background='none'">−0.1</button>
+      <button type="button" onmousedown="event.preventDefault()" onclick="poidsQuickStep(0.1)"  style="flex:1;padding:0.6rem;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;font-family:DM Sans,sans-serif;transition:all var(--trans);border-right:1px solid var(--border)" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background='none'">+0.1</button>
+      <button type="button" onmousedown="event.preventDefault()" onclick="poidsQuickStep(0.5)"  style="flex:1;padding:0.6rem;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;font-family:DM Sans,sans-serif;transition:all var(--trans)" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background='none'">+0.5</button>
     </div>
     <!-- Body fat optionnel -->
     <div style="margin-bottom:1.25rem">
@@ -6763,7 +6788,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-09-14.6';
+const APP_BUILD_VERSION = '2026-09-16.7';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -7367,7 +7392,14 @@ function liveCalc(){
   renderGoals(tdee,poids,lbm,real);
   renderInsights(tdee,poids,lbm,bf);
 
-  DB.upsertFitness({date,calories:Math.round(tdee),bmr:Math.round(S.bmr),eat:Math.round(eatDaily),neat:Math.round(neatDaily)});
+  // Le simulateur BMR/TDEE n'écrit plus jamais dans les données réelles
+  // (fitness/calories) — décision produit : cette page reste un pur outil
+  // "et si" (séances/durée/intensité/pas/TEF% librement ajustables), qui ne
+  // doit jamais pouvoir écraser ce que computeTDEE() calcule à partir des
+  // données réellement loguées (utilisé par dashboard/balances/courbes/
+  // compte rendu). Avant : `DB.upsertFitness({date,calories:...})` ici même,
+  // ce qui pouvait faire gagner la valeur théorique sur la valeur réelle
+  // selon la dernière page visitée.
   document.getElementById('breakdown-section').style.display='block';
   // Sync dashboard si visible
   setTimeout(()=>renderDashboard?.(), 80);
@@ -7814,38 +7846,13 @@ function loadChart(){
   const labels=filt.map(d=>fmtDL(d.date));
   const poids=filt.map(d=>d.poids||null);
 
-  // ── Dépense : utilise les données réelles importées si disponibles ──
+  // ── Dépense : recalculée via computeTDEE (même formule que dashboard /
+  // balances 7j-30j-période diète / compte rendu), pour rester cohérente
+  // partout dans l'app plutôt que de dupliquer le calcul ici.
   const depense=filt.map(d=>{
-    // Si TDEE stocké ET pas de données Samsung pour ce jour → utiliser le stocké
-    if(d.calories && !d.steps && !d.active_kcal && !d.exercise_kcal) return d.calories;
-    // Si on a des données Samsung, recalculer depuis les vrais chiffres
-    const bmrEst=d.bmr||S.bmr||(profile.sexe==='homme'
-      ? 10*(d.poids||70)+6.25*(profile.taille||175)-5*(profile.age||30)+5
-      : 10*(d.poids||70)+6.25*(profile.taille||165)-5*(profile.age||30)-161);
-    if(!bmrEst) return d.calories||null;
-
-    const pw=d.poids||profile.weight||70;
-    let eat=d.exercise_kcal||0;
-    let neat;
-    if(d.active_kcal && !d.exercise_kcal){
-      // Samsung active_kcal = activité totale (NEAT+EAT)
-      neat=d.active_kcal;
-      eat=0;
-    } else {
-      neat=(d.steps||0)*(pw/70)*0.025;
-    }
-    const fo=food.find(x=>x.date===d.date);
-    let tef;
-    if(fo && fo.kcal>0){
-      if(fo.prot||fo.gluc||fo.lip){
-        tef=Math.round((fo.prot||0)*4*0.25+(fo.gluc||0)*4*0.08+(fo.lip||0)*9*0.03);
-      } else {
-        tef=Math.round(fo.kcal*0.10);
-      }
-    } else {
-      tef=Math.round(bmrEst*0.10);
-    }
-    return Math.round(bmrEst+eat+neat+tef);
+    const dayApport=(food.find(x=>x.date===d.date)||{}).kcal||0;
+    const comp=computeTDEE(d, dayApport, profile, d.steps||0);
+    return comp?.tdee ?? (d.calories||null);
   });
 
   const apport=filt.map(d=>{ const f=food.find(x=>x.date===d.date); return f?f.kcal:null; });
@@ -8717,27 +8724,22 @@ function recomputeAllTDEE(){
   let updated=0;
 
   data.forEach(d=>{
-    // Ne recompute que si on a des données importées
+    // Ne recompute que si on a des données importées.
+    // `active_kcal` n'est plus jamais écrit par un import récent (celui-ci
+    // n'importe que les pas, cf applyImportStepsOnly ~L8415) — ce test le
+    // garde uniquement pour recalculer correctement d'anciens jours importés
+    // avant cette restriction et qui ont encore ce champ en base.
     if(!d.steps && !d.active_kcal && !d.exercise_kcal) return;
 
-    const bmrEst=d.bmr||(profile.sexe==='homme'
-      ? 10*(d.poids||70)+6.25*(profile.taille||175)-5*(profile.age||30)+5
-      : 10*(d.poids||70)+6.25*(profile.taille||165)-5*(profile.age||30)-161);
-    if(!bmrEst) return;
+    // Recalcul via computeTDEE (même formule que dashboard / balances /
+    // compte rendu / courbes) au lieu d'une formule dupliquée et divergente
+    // (l'ancienne version appliquait un TEF fixe de 12% du total, sans
+    // tenir compte des macros réelles).
+    const dayApport=(food.find(x=>x.date===d.date)||{}).kcal||0;
+    const comp=computeTDEE(d, dayApport, profile, d.steps||0);
+    if(!comp) return;
 
-    const pw=d.poids||70;
-    let eat=d.exercise_kcal||0;
-    let neat;
-    if(d.active_kcal && !d.exercise_kcal){
-      neat=d.active_kcal; eat=0;
-    } else {
-      neat=(d.steps||0)*(pw/70)*0.025;
-    }
-    const fo=food.find(x=>x.date===d.date);
-    const tef=fo?fo.kcal*0.12:(bmrEst+eat+neat)*0.12;
-    const newTDEE=Math.round(bmrEst+eat+neat+tef);
-
-    if(newTDEE!==d.calories){ d.calories=newTDEE; updated++; }
+    if(comp.tdee!==d.calories){ d.calories=comp.tdee; updated++; }
   });
 
   if(updated>0){
@@ -8791,7 +8793,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v25';
+    const CACHE_NAME = 'kcalos-v26';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -16583,24 +16585,13 @@ function loadChartCalories(){
   const filt=fitness.filter(d=>new Date(d.date)>=cutoff).sort((a,b)=>a.date.localeCompare(b.date));
   const labels=filt.map(d=>fmtDL(d.date));
 
+  // ── Dépense : recalculée via computeTDEE (même formule que dashboard /
+  // balances 7j-30j-période diète / compte rendu), pour rester cohérente
+  // avec les KPIs affichés plus bas (avgDep) plutôt que de dupliquer le calcul.
   const depense=filt.map(d=>{
-    if(d.calories && !d.steps && !d.active_kcal && !d.exercise_kcal) return d.calories;
-    const bmrEst=d.bmr||S.bmr||(profile.sexe==='homme'
-      ? 10*(d.poids||70)+6.25*(profile.taille||175)-5*(profile.age||30)+5
-      : 10*(d.poids||70)+6.25*(profile.taille||165)-5*(profile.age||30)-161);
-    if(!bmrEst) return d.calories||null;
-    const pw=d.poids||70;
-    let eat=d.exercise_kcal||0;
-    let neat;
-    if(d.active_kcal && !d.exercise_kcal){ neat=d.active_kcal; eat=0; }
-    else { neat=(d.steps||0)*(pw/70)*0.025; }
-    // TEF : utiliser getDayTotals pour les macros réelles
-    const fo=getDayTotals(d.date);
-    let tef;
-    if(fo && fo.kcal>0){
-      tef=fo.prot||fo.gluc||fo.lip ? Math.round((fo.prot||0)*4*0.25+(fo.gluc||0)*4*0.08+(fo.lip||0)*9*0.03) : Math.round(fo.kcal*0.10);
-    } else { tef=Math.round(bmrEst*0.10); }
-    return Math.round(bmrEst+eat+neat+tef);
+    const dayApport=getDayTotals(d.date).kcal||0;
+    const comp=computeTDEE(d, dayApport, profile, d.steps||0);
+    return comp?.tdee ?? (d.calories||null);
   });
 
   const apport=filt.map(d=>{ const t=getDayTotals(d.date); return t.kcal>0?t.kcal:null; });
@@ -17544,12 +17535,27 @@ function computeTDEE(fitEntry, apportKcal, profile, manualSteps){
     ? `${fmt(eat)} kcal — séance enregistrée`
     : 'Aucune séance aujourd\'hui';
 
-  // NEAT : UNIQUEMENT pas réels (compteur Steps ou Samsung Health)
+  // NEAT : pas réels (compteur Steps), sauf si un vieux jour importé porte
+  // encore un `active_kcal` (activité totale Samsung Health) sans séance
+  // dédiée (exercise_kcal) — auquel cas active_kcal représente déjà NEAT+EAT
+  // et remplace le calcul par les pas.
+  // ⚠️ NE PAS SUPPRIMER même si ça semble mort : l'import Samsung Health/Apple
+  // Santé n'écrit plus QUE les pas depuis qu'on a restreint applyImportStepsOnly
+  // (voir son commentaire ~L8415) — active_kcal n'est donc plus jamais produit
+  // par un NOUVEL import. Mais des jours importés AVANT cette restriction
+  // peuvent encore avoir ce champ stocké en base ; cette branche sert
+  // uniquement à ce que ces anciens jours gardent leur dépense correcte.
   const steps = manualSteps || fitEntry?.steps || 0;
-  const neat  = steps > 0 ? Math.round(steps * (pw/70) * 0.025) : 0;
-  const neatDesc = steps > 0
-    ? `${steps.toLocaleString('fr-FR')} pas → ${fmt(neat)} kcal`
-    : 'Aucun pas enregistré';
+  let neat, neatDesc;
+  if(fitEntry?.active_kcal && !fitEntry?.exercise_kcal){
+    neat = Math.round(fitEntry.active_kcal);
+    neatDesc = `${fmt(neat)} kcal — activité totale (Samsung Health)`;
+  } else {
+    neat = steps > 0 ? Math.round(steps * (pw/70) * 0.025) : 0;
+    neatDesc = steps > 0
+      ? `${steps.toLocaleString('fr-FR')} pas → ${fmt(neat)} kcal`
+      : 'Aucun pas enregistré';
+  }
 
   // TEF : UNIQUEMENT depuis l\'apport réel saisi
   let tef = 0, tefDesc = 'Aucun apport saisi';
@@ -18626,7 +18632,10 @@ function openPoidsQuickEdit(){
   pqInitDrag();
   modal.style.display = 'flex';
   kcLockScroll();
-  setTimeout(()=>{ const i=document.getElementById('poids-quick-input'); if(i){i.focus();i.select();} }, 120);
+  // Pas de focus auto sur l'input : ça ouvrait le clavier dès l'ouverture du
+  // popup, ce qui décale/couvre les boutons +/- rapides et rend les taps
+  // successifs difficiles sur mobile. L'utilisateur peut toujours taper sur
+  // le champ pour saisir une valeur au clavier s'il le souhaite.
 }
 function pqShiftDate(delta){
   const d = new Date(PQ.date+'T12:00:00');
@@ -19687,6 +19696,9 @@ function woNormalizeIntensity(raw){
   }
   return Math.min(Math.max(v, 1), 10);
 }
+// Borne une valeur entre min et max.
+function woClamp(v, min, max){ return Math.min(Math.max(v, min), max); }
+
 function woV2CalcKcal(session){
   const profile  = JSON.parse(localStorage.getItem('kcalos_profile')||'{}');
   const sorted   = DB.getFitness().slice().sort((a,b)=>b.date.localeCompare(a.date));
@@ -19695,10 +19707,6 @@ function woV2CalcKcal(session){
   const sexe     = profile.sexe || 'homme';
   const dur      = parseFloat(session.duration) || 0;
   const intensity = woNormalizeIntensity(session.intensity ?? 5);
-  // Linear interpolation: 1→MET 3.5, 10→MET 8.0
-  const t01 = (intensity - 1) / 9;
-  const met  = 3.5 + (8.0 - 3.5) * t01;
-  const vIF  = 0.7 + (1.45 - 0.7) * t01;
 
   const gF = sexe==='femme' ? 0.90 : 1.0;
   const aF = 1 - Math.max(0,(age-30)/1000);
@@ -19714,32 +19722,50 @@ function woV2CalcKcal(session){
 
   if(dur===0 && totalSets===0) return 0;
 
-  // ── Composante TEMPS ──
-  const kcalTime = met * pw * (dur/60) * gF * aF;
+  // ── MET_base : mapping intensité 1-10 → MET, borné à la plage validée par
+  // le Compendium of Physical Activities 2024 pour la musculation "classique"
+  // (3,0 à 6,5 — les valeurs 8,0+ ne concernent que des cas très spécifiques
+  // comme les kettlebell swings, non transposables ici). Voir workout-logic.md.
+  const t01     = (intensity - 1) / 9;
+  const metBase = 3.0 + (6.5 - 3.0) * t01;
 
-  // ── Composante VOLUME (tonnage × intensité × charge moyenne) ──
-  // Charge moyenne par rep : plus c\'est lourd, plus le coût par kg est élevé
-  // (fibres rapides, recrutement neural, EPOC plus fort)
-  const avgLoad  = totalReps>0 ? volume/totalReps : 0;
-  const loadMult = Math.min(1 + avgLoad/180, 1.6); // 1.0 à vide → 1.6 pour >100 kg moy.
-  const kcalVol  = volume * 0.004 * vIF * gF * loadMult;
+  // ── facteur_densité : dérivé du rythme reps/minute active (proxy fiable du
+  // temps de repos inter-série, cf. audit section 4 — le tonnage seul n'est
+  // PAS un proxy énergétique fiable, il ne reflète pas les temps de repos).
+  // Référence ~2,5 reps/min actif = densité neutre (1.0). ──
+  let densityF = 1.0;
+  if(dur>0 && totalReps>0){
+    const repsPerMin = totalReps / dur;
+    densityF = woClamp(0.85 + (repsPerMin - 1.0) * 0.10, 0.85, 1.20);
+  }
 
-  // ── Composante SÉRIES (coût fixe par série : activation neuromusculaire, récup active) ──
-  // Chaque série a un overhead métabolique indépendant du poids (~4 kcal/série)
-  const kcalSets = totalSets * 4.0 * gF;
+  // ── facteur_progression : ajustement mineur et borné à partir de la
+  // progression moyenne de la séance vs dernière occurrence de chaque exo
+  // (même moteur que la bannière live/l'historique, cf. woSessPairPct), pour
+  // rester cohérent avec le reste de l'app. Fortement atténué : +10% de
+  // progression ne produit qu'environ +1,5% de MET effectif. ──
+  let progressF = 1.0;
+  if(session.date){
+    const allSorted = woAllSessionsSorted();
+    const pct = woSessPairPct(session, allSorted);
+    if(pct !== null){
+      progressF = 1 + woClamp(pct/100, -0.05, 0.05) * 0.3;
+    }
+  }
 
-  // ── Combinaison ──
-  const kcalEffort = kcalVol + kcalSets; // signal "effort réel"
+  const metEffectif = metBase * densityF * progressF;
+
+  // ── EAT net : (MET−1) car le TDEE inclut déjà le BMR sur 24h (qui couvre
+  // aussi le temps de la séance) — utiliser le MET brut double-compte le
+  // métabolisme de repos pendant la durée de l'effort (cf. audit section 2). ──
   let total;
-  if(dur>0 && volume>0){
-    // Temps cadre la durée ; effort cadre l\'intensité réelle → 50/50
-    total = kcalTime*0.50 + kcalEffort*0.50;
-  } else if(dur>0){
-    // Pas de données volume : MET pur + overhead séries si dispo
-    total = kcalTime + kcalSets*0.3;
+  if(dur>0){
+    total = (metEffectif - 1) * pw * (dur/60) * gF * aF;
   } else {
-    // Pas de durée : estimation par effort seul × coeff métabolique (~2×)
-    total = kcalEffort * 2.0;
+    // Pas de durée renseignée : repli par série, bornée par le même MET
+    // effectif pour rester cohérente (~1 série ≈ 40s actif estimés).
+    const estDurH = totalSets * (40/3600);
+    total = (metEffectif - 1) * pw * estDurH * gF * aF;
   }
 
   return Math.max(0, Math.round(total));
@@ -19766,7 +19792,7 @@ function woShowScreen(name){
   const bubble = document.getElementById('account-bubble');
   if(bubble) bubble.style.display = name==='session' ? 'none' : '';
   hidePWABanner?.();
-  if(name!=='session') woClearChronoInterval();
+  if(name!=='session'){ woClearChronoInterval(); woCloseRecap?.(); }
 }
 
 /* ════════════════════════════════════════
@@ -21729,13 +21755,13 @@ function woRenderSession(){
     btn.style.fontWeight = active ? '600' : '400';
   });
 
-  // Stats + live kcal
+  // Stats du header (les kcal ne sont plus affichées en direct : elles le sont
+  // dans le récap de fin de séance — cf woOpenRecap)
   let totalSets=0, totalVol=0, activeExos=0;
   draft.exercises.forEach(e=>{
     if(e.sets?.length) activeExos++;
     (e.sets||[]).filter(s=>!s.skipped).forEach(s=>{ totalSets++; totalVol+=(parseFloat(s.weight)||0)*(parseFloat(s.reps)||0); });
   });
-  const liveKcal = woV2CalcKcal(draft);
   const st=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
   st('wo-sess-exo-count', activeExos);
   st('wo-sess-set-count', totalSets);
@@ -21743,7 +21769,6 @@ function woRenderSession(){
   if(draft.duration){ woClearChronoInterval(); st('wo-sess-duration', draft.duration+' min'); }
   else if(draft.startedAt){ woStartChronoDisplay(); }
   else { woClearChronoInterval(); st('wo-sess-duration', '—'); }
-  st('wo-live-kcal', liveKcal);
 
   // ── Exercise list ──
   const list = document.getElementById('wo-exo-history-list');
@@ -22029,18 +22054,16 @@ function woDraftUpdateSet(ei,si,field,val){
   const d=woDraftGet(); if(!d||!d.exercises[ei]) return;
   d.exercises[ei].sets[si][field]=field==='weight'?parseFloat(val)||0:parseInt(val)||0;
   woDraftSet(d);
-  // Lite stats + live kcal
+  // Stats légères du header (pas de kcal ici : voir le récap de fin de séance)
   let totalSets=0,totalVol=0,activeExos=0;
   d.exercises.forEach(e=>{
     if(e.sets?.length) activeExos++;
     (e.sets||[]).filter(s=>!s.skipped).forEach(s=>{totalSets++;totalVol+=(parseFloat(s.weight)||0)*(parseFloat(s.reps)||0);});
   });
-  const liveKcal=woV2CalcKcal(d);
   const st=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
   st('wo-sess-exo-count',activeExos);
   st('wo-sess-set-count',totalSets);
   st('wo-sess-volume',Math.round(totalVol).toLocaleString('fr-FR'));
-  st('wo-live-kcal',liveKcal);
   // Rafraîchit le badge PR/% du jour et la bannière globale SANS re-render complet
   // (woRenderSession recrée tous les <input>, ce qui ferait perdre le focus/curseur
   // pendant la frappe). Avant ce correctif, il fallait ajouter puis supprimer une
@@ -22108,24 +22131,30 @@ function woUpdateExoLiveBadge(ei){
 
 /* Recalcule juste la bannière "force estimée" globale, même logique que dans
    woRenderSession mais appelable à chaud depuis woDraftUpdateSet. */
+/* Évolution globale d'un brouillon : MOYENNE des % de progression de chaque
+   exercice vs sa propre dernière occurrence, jamais une somme (workout-logic.md
+   §3). Retourne null si aucun exercice n'a de référence antérieure.
+   Partagé par la bannière live et le récap de fin de séance. */
+function woDraftGlobalPct(draft){
+  if(!draft?.exercises?.length) return null;
+  const allSessionsAll = woGetAllSessionsAll();
+  const indivPcts=[];
+  draft.exercises.forEach(exo=>{
+    const occs = allSessionsAll.map(sess=>{
+      if(sess.date >= draft.date) return null;
+      const found = sess.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
+      return found && found.sets?.length ? {date:sess.date, sets:found.sets} : null;
+    }).filter(Boolean).sort((a,b)=>a.date.localeCompare(b.date));
+    if(!occs.length) return;
+    const mp = woMatchedProgressDeep(exo.sets||[], occs);
+    if(mp.pct !== null) indivPcts.push(mp.pct);
+  });
+  return indivPcts.length ? indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length : null;
+}
+
 function woUpdateGlobalProgBanner(){
   const draft = woDraftGet(); if(!draft) return;
-  const allSessionsAll = woGetAllSessionsAll();
-  let globalPct = null;
-  if(draft.exercises.length){
-    const indivPcts=[];
-    draft.exercises.forEach(exo=>{
-      const occs = allSessionsAll.map(sess=>{
-        if(sess.date >= draft.date) return null;
-        const found = sess.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
-        return found && found.sets?.length ? {date:sess.date, sets:found.sets} : null;
-      }).filter(Boolean).sort((a,b)=>a.date.localeCompare(b.date));
-      if(!occs.length) return;
-      const mp = woMatchedProgressDeep(exo.sets||[], occs);
-      if(mp.pct !== null) indivPcts.push(mp.pct);
-    });
-    if(indivPcts.length) globalPct = indivPcts.reduce((a,b)=>a+b,0)/indivPcts.length;
-  }
+  const globalPct = woDraftGlobalPct(draft);
   const banner = document.getElementById('wo-prog-banner');
   const bannerVal = document.getElementById('wo-prog-banner-val');
   if(banner && bannerVal && globalPct !== null){
@@ -22277,9 +22306,8 @@ function woDraftSetIntensity(level){
   if(lbl){ lbl.textContent = woIntensityLabel(v); lbl.style.color = woIntensityColor(v); }
   const valEl = document.getElementById('wo-intensity-val');
   if(valEl) valEl.textContent = v+' / 10';
-  // Recalculate kcal
-  const lk = document.getElementById('wo-live-kcal');
-  if(lk) lk.textContent = woV2CalcKcal(d);
+  // L'intensité entre dans le calcul des kcal, mais celles-ci ne sont plus
+  // affichées en direct : elles sont calculées au moment du récap de fin.
 }
 
 /* ── Phase calorique ── */
@@ -22400,25 +22428,100 @@ function woFinishSession(){
     openWoDurPanel(true); // true = mode "terminer"
     return;
   }
-  // ── Détection des PR 1RM avant sauvegarde : on compare chaque exercice de
-  //    la séance à son record all-time (toutes séances, tous types confondus),
-  //    pour pouvoir annoncer "de combien à combien" dans le toast final. ──
-  const _allTypesPR = Object.keys(woGetAllTypes());
-  const _priorSessionsPR = [];
-  _allTypesPR.forEach(tid=>woV2GetSessions(tid).forEach(s=>{ if(s.date<draft.date) _priorSessionsPR.push(s); }));
+  // Durée connue → récap synthétique avant enregistrement
+  woOpenRecap();
+}
+
+/* ── Récap de fin de séance ──────────────────────────────────────────────
+   Affiché à la validation, juste après la saisie de la durée : kcal estimées,
+   séries, volume, évolution et records. Remplace l'ancien compteur de kcal
+   affiché en direct pendant la saisie (trop bruyant, et faux tant que la
+   durée n'était pas renseignée — cf workout-logic.md §8). ───────────────── */
+
+// PR 1RM battus par la séance en cours (cf workout-logic.md §6).
+function woComputePRList(draft, activeExos){
+  const priorSessions = [];
+  Object.keys(woGetAllTypes()).forEach(tid=>
+    woV2GetSessions(tid).forEach(s=>{ if(s.date<draft.date) priorSessions.push(s); }));
   const prList = [];
   activeExos.forEach(exo=>{
     const curSets = (exo.sets||[]).filter(s=>!s.skipped);
     const cur1RM = Math.round(woEpley1RMBest(curSets));
     if(cur1RM<=0) return;
     let prevBest=0;
-    _priorSessionsPR.forEach(sess=>{
+    priorSessions.forEach(sess=>{
       const found = sess.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
       if(found) prevBest = Math.max(prevBest, woEpley1RMBest(found.sets));
     });
     prevBest = Math.round(prevBest);
     if(prevBest>0 && cur1RM>prevBest) prList.push({name:exo.name, from:prevBest, to:cur1RM});
   });
+  return prList;
+}
+
+// Libellé d'un type de séance, types personnalisés inclus.
+function woTypeLabel(typeId){
+  return (woGetAllTypes()[typeId] || WO_SESSION_TYPES[typeId])?.label || 'Séance';
+}
+
+function woOpenRecap(){
+  const draft = woDraftGet(); if(!draft) return;
+  const activeExos = draft.exercises.filter(e=>e.sets?.length>0);
+  if(!activeExos.length) return;
+  let totalSets=0, totalVol=0;
+  activeExos.forEach(e=>(e.sets||[]).filter(s=>!s.skipped).forEach(s=>{
+    totalSets++; totalVol += (parseFloat(s.weight)||0)*(parseFloat(s.reps)||0);
+  }));
+  const st=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  st('wo-recap-title', `${woTypeLabel(draft.type)} · ${activeExos.length} exercice${activeExos.length>1?'s':''}`);
+  st('wo-recap-kcal', woV2CalcKcal(draft));
+  st('wo-recap-dur', draft.duration ? draft.duration+' min' : '—');
+  st('wo-recap-sets', totalSets);
+  st('wo-recap-vol', Math.round(totalVol).toLocaleString('fr-FR')+' kg');
+
+  // Évolution : moyenne des % par exercice vs sa dernière fois (jamais une somme)
+  const pct = woDraftGlobalPct(draft);
+  const progBox = document.getElementById('wo-recap-prog');
+  const progVal = document.getElementById('wo-recap-prog-val');
+  if(progBox && progVal && pct !== null){
+    // Bordure : variantes -d (plus sombres) pour rester lisibles dans tous les thèmes
+    const col  = pct>0 ? 'var(--lime)'   : pct<0 ? 'var(--red)'   : 'var(--muted)';
+    const colD = pct>0 ? 'var(--lime-d)' : pct<0 ? 'var(--red)' : 'var(--border2)';
+    progVal.textContent = (pct>0?'+':pct<0?'−':'') + Math.abs(pct).toFixed(1) + '%';
+    progVal.style.color = col;
+    progBox.style.borderColor = colD;
+    progBox.style.display = 'flex';
+  } else if(progBox){ progBox.style.display='none'; }
+
+  // Records battus
+  const prBox = document.getElementById('wo-recap-pr');
+  if(prBox){
+    const prList = woComputePRList(draft, activeExos);
+    if(prList.length){
+      const esc = s => String(s).replace(/[<>&]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+      const extra = prList.length>3 ? `<br>+ ${prList.length-3} autre record${prList.length>4?'s':''}` : '';
+      prBox.innerHTML = prList.slice(0,3)
+        .map(p=>`⭐ Nouveau 1RM <strong>${esc(p.name)}</strong> : ${p.from} → ${p.to} kg`).join('<br>') + extra;
+      prBox.style.display='block';
+    } else { prBox.style.display='none'; }
+  }
+  const sheet = document.getElementById('wo-recap-sheet');
+  if(sheet) sheet.style.display='block';
+}
+
+function woCloseRecap(){
+  const sheet = document.getElementById('wo-recap-sheet');
+  if(sheet) sheet.style.display='none';
+}
+
+/* Enregistrement effectif de la séance, confirmé depuis le récap. */
+function woCommitSession(){
+  const draft = woDraftGet();
+  if(!draft){ woCloseRecap(); return; }
+  const activeExos = draft.exercises.filter(e=>e.sets?.length>0);
+  if(!activeExos.length){ woCloseRecap(); return; }
+  const prList = woComputePRList(draft, activeExos);
+  woCloseRecap();
 
   const session = {
     id:'sess_'+Date.now(),
@@ -22447,7 +22550,7 @@ function woFinishSession(){
     const extra = prList.length>1 ? ` (+${prList.length-1} autre record${prList.length>2?'s':''})` : '';
     toast(`⭐ Nouveau 1RM ${p.name} : ${p.from}kg → ${p.to}kg${extra}`, 'var(--lime)');
   } else {
-    toast(`✓ Séance ${WO_SESSION_TYPES[draft.type]?.label} · ~${kcal} kcal enregistrée`, 'var(--teal)');
+    toast(`✓ Séance ${woTypeLabel(draft.type)} · ~${kcal} kcal enregistrée`, 'var(--teal)');
   }
   woShowScreen('picker');
   woRenderPicker();
@@ -22518,8 +22621,6 @@ function woSaveDur(){
   st('wo-sess-duration',val+' min');
   const dateEl=document.getElementById('wo-sess-date-label');
   if(dateEl&&draft) dateEl.textContent=fmtDL(draft.date)+' · '+val+' min';
-  const lk=document.getElementById('wo-live-kcal');
-  if(lk){ const d2=woDraftGet(); if(d2) lk.textContent=woV2CalcKcal(d2); }
   toast(`Durée : ${val} min`,'var(--teal)');
 }
 
