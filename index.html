@@ -6788,7 +6788,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-09-17.2';
+const APP_BUILD_VERSION = '2026-09-17.3';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -6800,10 +6800,48 @@ document.addEventListener('DOMContentLoaded', () => {
    mobile (iOS Safari notamment) : on fixe le body à sa position de scroll
    actuelle pendant l'ouverture, puis on restaure exactement cette position
    à la fermeture (technique standard de body-scroll-lock cross-device). */
-let _kcModalOpenCount = 0;
 let _kcScrollY = 0;
+// Liste de tous les panneaux/modales qui appellent kcLockScroll()/kcUnlockScroll(),
+// avec la façon de détecter s'ils sont réellement ouverts dans le DOM. Sert de
+// source de vérité pour kcUnlockScroll() : plus fiable qu'un compteur manuel,
+// qui se désynchronise dès qu'un panneau est ouvert deux fois sans fermeture
+// correspondante (ex: double-appui sur un bouton qui semblait ne pas réagir) —
+// c'est ce qui bloquait durablement le clic/scroll dans toute l'app.
+const KC_LOCK_PANELS = [
+  ['meal-detail-panel',        el => el.classList.contains('open')],
+  ['mr-use-detail-panel',      el => el.classList.contains('open')],
+  ['ai-photo-panel',           el => el.classList.contains('open')],
+  ['food-search-panel',        el => el.classList.contains('open')],
+  ['mr-use-modal',             el => el.classList.contains('open')],
+  ['mr-edit-panel',            el => el.classList.contains('open')],
+  ['search-source-info-modal', el => el.style.display === 'flex'],
+  ['qty-unit-picker-modal',    el => el.style.display === 'flex'],
+  ['today-include-info-modal', el => el.style.display === 'flex'],
+  ['bal7-sheet',               el => el.style.display === 'block'],
+  ['bal30-sheet',              el => el.style.display === 'block'],
+  ['baldiet-sheet',            el => el.style.display === 'block'],
+  ['poids-quick-modal',        el => el.style.display === 'flex'],
+  ['bf-photo-modal',           el => el.style.display === 'flex'],
+  ['bf-history-modal',         el => el.style.display === 'flex'],
+  ['projection-modal',         el => el.style.display === 'flex'],
+  ['baldietweight-modal',      el => el.style.display === 'flex'],
+  ['glycemia-info-modal',      el => el.style.display === 'flex'],
+  ['wo-add-panel',             el => el.style.display === 'block'],
+  ['wo-manage-panel',          el => el.style.display === 'block'],
+  ['barcode-scanner-overlay',  el => el.style.display === 'flex'],
+  ['nutriscore-modal',         el => el.style.display === 'flex'],
+  ['kcal-goal-modal',          el => el.style.display === 'flex'],
+  ['report-modal',             el => el.style.display === 'flex'],
+  ['eau-sheet',                el => el.style.display === 'flex'],
+];
+function kcAnyLockedPanelOpen(){
+  return KC_LOCK_PANELS.some(([id, isOpen]) => {
+    const el = document.getElementById(id);
+    return el && isOpen(el);
+  });
+}
 function kcLockScroll(){
-  if (_kcModalOpenCount === 0) {
+  if (document.body.style.position !== 'fixed') {
     _kcScrollY = window.scrollY || window.pageYOffset || 0;
     document.body.style.position = 'fixed';
     document.body.style.top = '-' + _kcScrollY + 'px';
@@ -6812,12 +6850,14 @@ function kcLockScroll(){
     document.body.style.width = '100%';
     document.body.style.overflow = 'hidden';
   }
-  _kcModalOpenCount++;
   kcBubblesToggleHide();
 }
 function kcUnlockScroll(){
-  _kcModalOpenCount = Math.max(0, _kcModalOpenCount - 1);
-  if (_kcModalOpenCount === 0) {
+  // On ne déverrouille vraiment que si AUCUN panneau suivi n'est encore ouvert
+  // dans le DOM (et pas seulement "si le compteur retombe à 0") : impossible
+  // de rester bloqué durablement, même si un appel de verrouillage a été fait
+  // en trop quelque part.
+  if (!kcAnyLockedPanelOpen()) {
     document.body.style.position = '';
     document.body.style.top = '';
     document.body.style.left = '';
@@ -7072,21 +7112,13 @@ function openReportIAComingSoon(){
   closeReportMenu();
   toast('✨ Analyse IA du compte rendu : bientôt disponible', 'var(--teal)');
 }
-// Filet de sécurité : si le compteur de verrou de scroll (kcLockScroll) reste
-// désynchronisé (ex: panneau rouvert sans fermeture correspondante lors d'appuis
-// répétés sur un bouton qui semblait ne pas réagir), le body peut rester bloqué
-// en position:fixed, ce qui casse le clic/scroll dans le reste de l'app. On le
-// réinitialise quand l'utilisateur change explicitement de page, tant qu'aucun
-// des panneaux concernés n'est réellement affiché.
+// Filet de sécurité supplémentaire : si le body est resté en position:fixed
+// (verrou de scroll, voir kcLockScroll) alors qu'aucun panneau suivi n'est
+// réellement affiché — cas résiduel non couvert par KC_LOCK_PANELS — on le
+// débloque explicitement au changement de page.
 function kcForceUnlockIfStuck(){
-  if (_kcModalOpenCount <= 0) return;
-  const stillOpen = document.getElementById('food-search-panel')?.classList.contains('open')
-    || document.getElementById('qty-panel')?.classList.contains('show')
-    || document.getElementById('meal-detail-panel')?.classList.contains('open')
-    || document.getElementById('mr-use-modal')?.classList.contains('open')
-    || document.getElementById('mr-use-detail-panel')?.classList.contains('open');
-  if (stillOpen) return;
-  _kcModalOpenCount = 0;
+  if (document.body.style.position !== 'fixed') return;
+  if (kcAnyLockedPanelOpen() || document.getElementById('qty-panel')?.classList.contains('show')) return;
   document.body.style.position = '';
   document.body.style.top = '';
   document.body.style.left = '';
@@ -8818,7 +8850,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v26';
+    const CACHE_NAME = 'kcalos-v27';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
