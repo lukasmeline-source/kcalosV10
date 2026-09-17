@@ -6788,7 +6788,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-09-16.7';
+const APP_BUILD_VERSION = '2026-09-17.2';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -7072,7 +7072,31 @@ function openReportIAComingSoon(){
   closeReportMenu();
   toast('✨ Analyse IA du compte rendu : bientôt disponible', 'var(--teal)');
 }
+// Filet de sécurité : si le compteur de verrou de scroll (kcLockScroll) reste
+// désynchronisé (ex: panneau rouvert sans fermeture correspondante lors d'appuis
+// répétés sur un bouton qui semblait ne pas réagir), le body peut rester bloqué
+// en position:fixed, ce qui casse le clic/scroll dans le reste de l'app. On le
+// réinitialise quand l'utilisateur change explicitement de page, tant qu'aucun
+// des panneaux concernés n'est réellement affiché.
+function kcForceUnlockIfStuck(){
+  if (_kcModalOpenCount <= 0) return;
+  const stillOpen = document.getElementById('food-search-panel')?.classList.contains('open')
+    || document.getElementById('qty-panel')?.classList.contains('show')
+    || document.getElementById('meal-detail-panel')?.classList.contains('open')
+    || document.getElementById('mr-use-modal')?.classList.contains('open')
+    || document.getElementById('mr-use-detail-panel')?.classList.contains('open');
+  if (stillOpen) return;
+  _kcModalOpenCount = 0;
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.left = '';
+  document.body.style.right = '';
+  document.body.style.width = '';
+  document.body.style.overflow = '';
+}
+
 function switchPage(pageId){
+  kcForceUnlockIfStuck();
   const id = pageId.replace('page-','');
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item,.bn-item').forEach(n=>n.classList.remove('active'));
@@ -7090,6 +7114,7 @@ function switchPage(pageId){
 }
 document.querySelectorAll('.nav-item, .bn-item').forEach(el=>{
   el.addEventListener('click',function(){
+    kcForceUnlockIfStuck();
     const id=this.dataset.page;
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     document.querySelectorAll('.nav-item,.bn-item').forEach(n=>n.classList.remove('active'));
@@ -9922,8 +9947,12 @@ function aiphFinalizeAdd(note){
 function openSearchPanel() {
   const panel = document.getElementById('food-search-panel');
   if (!panel) return;
+  // Si déjà ouvert (ex: appui répété sur un bouton pendant qu'il semblait ne pas
+  // réagir), ne pas re-verrouiller le scroll : ça désynchronisait le compteur
+  // (_kcModalOpenCount) et bloquait durablement le clic/scroll dans toute l'app.
+  const alreadyOpen = panel.classList.contains('open');
   panel.classList.add('open');
-  kcLockScroll();
+  if (!alreadyOpen) kcLockScroll();
   document.getElementById('account-bubble')?.style.setProperty('display','none');
   AP.selectedFood = null;
   AP.addingIngredientTo = null;
@@ -13913,6 +13942,21 @@ function caUseFood(name){
   });
 }
 
+// Ouvre le sélecteur "Choisir le repas" (réutilise le modal Mes Repas) pour un aliment
+// sélectionné hors du contexte d'un repas déjà ouvert (recherche directe, aliment
+// perso depuis "Mes aliments", etc). Évite que "Ajouter au repas" ne fasse rien.
+function openMealPickerForFood(){
+  const nameEl = document.getElementById('mr-use-name');
+  if (nameEl) nameEl.textContent = AP.selectedFood?.name || 'cet aliment';
+  MR.useTemplateId = null;
+  MR.useDetailFromPrevMeal = false;
+  AP.pendingFoodPick = true;
+  MR.useMealSlot = 'dejeuner';
+  document.querySelectorAll('.mr-meal-sel-btn').forEach(b => b.classList.toggle('active', b.dataset.meal === MR.useMealSlot));
+  const modal = document.getElementById('mr-use-modal');
+  if (modal) { modal.classList.add('open'); kcLockScroll(); }
+}
+
 function caDeleteFromList(name){
   if(!confirm(`Supprimer "${name}" ?`)) return;
   deleteCustomFood(name);
@@ -15261,7 +15305,13 @@ function updateQtyPreview() { updateQtyPanel(); }
 function confirmAddFood() {
   const f = AP.selectedFood;
   if (!f) return;
-  if (!AP.currentMeal && AP.editingMrUseIdx == null && AP.editingMrEditIdx == null && !AP.addingIngredientTo) return;
+  // Aucun repas déjà ouvert (ex: aliment sélectionné directement depuis "Mes aliments"
+  // ou la recherche hors d'un repas) : au lieu de ne rien faire silencieusement,
+  // on propose de choisir le repas du jour via le sélecteur existant (Mes Repas).
+  if (!AP.currentMeal && AP.editingMrUseIdx == null && AP.editingMrEditIdx == null && !AP.addingIngredientTo) {
+    openMealPickerForFood();
+    return;
+  }
 
   const grams = parseFloat(document.getElementById('qty-grams')?.value) || 100;
   const ratio = grams / 100;
@@ -23174,6 +23224,7 @@ function mrCloseUseModal(){
   const modal = document.getElementById('mr-use-modal');
   if(modal){ modal.classList.remove('open'); kcUnlockScroll(); }
   MR.useTemplateId = null;
+  AP.pendingFoodPick = false;
 }
 function mrSelectMealSlot(el){
   document.querySelectorAll('.mr-meal-sel-btn').forEach(b => b.classList.remove('active'));
@@ -23182,6 +23233,18 @@ function mrSelectMealSlot(el){
 }
 function mrConfirmUse(){
   const slot = MR.useMealSlot;
+  // Cas "aliment seul en attente de choix de repas" (voir openMealPickerForFood) :
+  // on ouvre temporairement le créneau choisi puis on laisse confirmAddFood faire
+  // l'ajout normalement, comme si ce repas avait été ouvert dès le départ.
+  if (AP.pendingFoodPick) {
+    AP.pendingFoodPick = false;
+    if (!slot) { mrCloseUseModal(); return; }
+    AP.currentMeal = slot;
+    mrCloseUseModal();
+    confirmAddFood();
+    AP.currentMeal = null;
+    return;
+  }
   // Cas "repas précédent" : pas de template Mes Repas associé, on ajoute directement
   // la copie de travail (quantités éventuellement ajustées) au créneau du jour.
   if (MR.useDetailFromPrevMeal) {
