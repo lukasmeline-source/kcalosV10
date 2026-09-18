@@ -6788,11 +6788,33 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-09-18.1';
+const APP_BUILD_VERSION = '2026-09-18.2';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
 });
+
+/* ── Bandeau d'erreur JS persistant (diagnostic) ──
+   Quand une erreur JS non gérée se produit, un bouton peut sembler "ne rien
+   faire" alors qu'en réalité une exception a coupé la fonction en cours. Ce
+   bandeau rend l'erreur visible (message + ligne) au lieu de la laisser
+   silencieuse, pour pouvoir la diagnostiquer sur un appareil sans débogueur
+   connecté (ex: iPhone sans Mac à proximité). Reste affiché jusqu'à fermeture
+   manuelle (pas d'auto-hide comme le toast, pour laisser le temps de le lire). */
+function kcShowJsError(msg, line){
+  let bar = document.getElementById('kc-js-error-bar');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'kc-js-error-bar';
+    bar.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;z-index:99999;background:#c0392b;color:#fff;padding:10px 12px;border-radius:10px;font-size:12px;line-height:1.4;box-shadow:0 4px 16px rgba(0,0,0,.35);font-family:-apple-system,sans-serif';
+    bar.innerHTML = '<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div id="kc-js-error-text" style="flex:1;word-break:break-word"></div><button onclick="document.getElementById(\'kc-js-error-bar\').remove()" style="background:none;border:none;color:#fff;font-size:18px;line-height:1;cursor:pointer;padding:0">×</button></div>';
+    document.body.appendChild(bar);
+  }
+  const txt = document.getElementById('kc-js-error-text');
+  if (txt) txt.textContent = '⚠️ Erreur JS : ' + msg + (line ? ' (ligne ' + line + ')' : '');
+}
+window.addEventListener('error', e => kcShowJsError((e.error && e.error.message) || e.message, e.lineno));
+window.addEventListener('unhandledrejection', e => kcShowJsError((e.reason && e.reason.message) || String(e.reason)));
 
 /* ── HARMONISATION POP-UPS : verrou de scroll du body pendant l'ouverture ──
    Compteur pour gérer le cas où un pop-up en ouvre un autre par-dessus.
@@ -8850,7 +8872,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v28';
+    const CACHE_NAME = 'kcalos-v29';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -28423,8 +28445,8 @@ else setTimeout(slInit,200);
         if(typeof toast==='function') toast('☁️ Sauvegarde envoyée !','var(--teal)');
       }
     } else if(!silent){
-      setStatus('error');
       const msg = (res.error && (res.error.code ? `${res.error.code} — ${res.error.message}` : res.error.message)) || 'inconnue';
+      setStatus('error', msg);
       if(typeof toast==='function') toast('❌ Erreur de sauvegarde : '+msg,'var(--red)');
     }
     return ok;
@@ -28481,12 +28503,13 @@ else setTimeout(slInit,200);
   }
 
   /* ── Statut UI ── */
-  function setStatus(s){
+  function setStatus(s, detail){
     const el = document.getElementById('fb-sync-status');
     if(!el) return;
     const M = { syncing:['⏳ Sauvegarde…','var(--orange)'], synced:['✅ Sauvegardé','var(--teal)'], error:['❌ Erreur','var(--red)'], offline:['💾 Local (pas encore sauvegardé)','var(--muted2)'] };
     const [txt, col] = M[s] || M.offline;
-    el.textContent = txt; el.style.color = col;
+    el.textContent = (s === 'error' && detail) ? (txt + ' : ' + detail) : txt;
+    el.style.color = col;
   }
 
   /* ── UI Auth ── */
