@@ -6788,7 +6788,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-09-17.3';
+const APP_BUILD_VERSION = '2026-09-18.1';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -8850,7 +8850,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v27';
+    const CACHE_NAME = 'kcalos-v28';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -8893,10 +8893,21 @@ self.addEventListener('fetch', e => {
       const swURL  = URL.createObjectURL(swBlob);
       // Pass explicit scope matching the page\'s directory
       navigator.serviceWorker.register(swURL, { scope: basePath })
-        .then(() => { /* SW registered */ })
+        .then(reg => { reg.update().catch(() => {}); })
         .catch(() => {
           // Blob SW may be blocked by browser policy — app still works without it
         });
+      // Sur PWA iOS notamment, un nouveau Service Worker peut prendre le contrôle
+      // (skipWaiting + clients.claim) alors que la page déjà ouverte tourne encore
+      // avec l'ancien code en mémoire : sans ce reload, l'utilisateur reste bloqué
+      // sur une version obsolète même après avoir complètement fermé/rouvert l'app,
+      // le temps d'un cycle de relance. On ne le fait qu'une fois par session pour
+      // éviter toute boucle.
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (sessionStorage.getItem('kc_sw_reloaded')) return;
+        sessionStorage.setItem('kc_sw_reloaded', '1');
+        window.location.reload();
+      });
     } catch(e) { /* ignore */ }
   }
 
@@ -28372,9 +28383,11 @@ else setTimeout(slInit,200);
 
   function encodeKey(k){ return k.replace(/[^a-zA-Z0-9_-]/g,'_'); }
 
-  /* ── Batch upload d'une liste de clés vers Firestore ── */
+  /* ── Batch upload d'une liste de clés vers Firestore ──
+     Retourne { ok:true } ou { ok:false, error } pour que l'appelant puisse
+     afficher la vraie raison de l'échec (au lieu d'un message générique). ── */
   async function batchUpload(keys){
-    if(!keys.length || !fbUser || !fbDb) return true;
+    if(!keys.length || !fbUser || !fbDb) return { ok:true };
     try {
       const ref = fbDb.collection('users').doc(fbUser.uid).collection('keys');
       for(let i=0; i<keys.length; i+=400){
@@ -28385,8 +28398,8 @@ else setTimeout(slInit,200);
         });
         await batch.commit();
       }
-      return true;
-    } catch(e){ console.warn('[FB] batchUpload failed:', e.message); return false; }
+      return { ok:true };
+    } catch(e){ console.warn('[FB] batchUpload failed:', e.message); return { ok:false, error:e }; }
   }
 
   /* ── Sauvegarde vers le cloud (bouton ⬆️ ET auto-backup silencieux) ──
@@ -28400,7 +28413,8 @@ else setTimeout(slInit,200);
       const k = localStorage.key(i);
       if(k && k.startsWith('kcalos_eau_log_') && !allKeys.includes(k)) allKeys.push(k);
     }
-    const ok = await batchUpload(allKeys.filter(k => localStorage.getItem(k) !== null));
+    const res = await batchUpload(allKeys.filter(k => localStorage.getItem(k) !== null));
+    const ok = res.ok;
     if(ok){
       setLastBackup(Date.now());
       updateBackupDisplay();
@@ -28410,7 +28424,8 @@ else setTimeout(slInit,200);
       }
     } else if(!silent){
       setStatus('error');
-      if(typeof toast==='function') toast('❌ Erreur de sauvegarde','var(--red)');
+      const msg = (res.error && (res.error.code ? `${res.error.code} — ${res.error.message}` : res.error.message)) || 'inconnue';
+      if(typeof toast==='function') toast('❌ Erreur de sauvegarde : '+msg,'var(--red)');
     }
     return ok;
   }
