@@ -6788,7 +6788,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-09-18.4';
+const APP_BUILD_VERSION = '2026-09-18.5';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -8872,7 +8872,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v31';
+    const CACHE_NAME = 'kcalos-v32';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -28520,7 +28520,7 @@ else setTimeout(slInit,200);
       if(typeof toast==='function') toast('☁️ Données cloud chargées !','var(--teal)');
       setTimeout(()=> window.location.reload(), 1400);
     } catch(e){
-      setStatus('error');
+      setStatus('error', e.message);
       if(typeof toast==='function') toast('❌ Erreur : '+e.message,'var(--red)');
     }
   }
