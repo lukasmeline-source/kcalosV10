@@ -6788,7 +6788,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-09-18.2';
+const APP_BUILD_VERSION = '2026-09-18.4';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -8872,7 +8872,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v29';
+    const CACHE_NAME = 'kcalos-v31';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -28405,19 +28405,51 @@ else setTimeout(slInit,200);
 
   function encodeKey(k){ return k.replace(/[^a-zA-Z0-9_-]/g,'_'); }
 
+  /* Limite Firestore pour un champ string : 1 048 487 octets. */
+  const FIRESTORE_FIELD_MAX_BYTES = 1000000;
+  function byteLength(str){ return new TextEncoder().encode(str).length; }
+  // Taille de découpe : 250 000 caractères tient toujours sous la limite Firestore
+  // même dans le pire des cas (caractères UTF-8 sur 4 octets), donc pas besoin de
+  // recalculer les octets à chaque morceau.
+  const CHUNK_MAX_CHARS = 250000;
+
   /* ── Batch upload d'une liste de clés vers Firestore ──
+     Une valeur trop grosse pour un seul document (>1 Mo, limite Firestore) est
+     découpée en plusieurs documents "chunk" (v, k, i, isChunk:true), reconstitués
+     dans l'ordre par downloadFromCloud. Le document principal de la clé devient
+     alors un simple manifeste { k, chunked:true, count }. Ainsi aucune donnée
+     n'est plus jamais ignorée, quelle que soit sa taille. ──
      Retourne { ok:true } ou { ok:false, error } pour que l'appelant puisse
-     afficher la vraie raison de l'échec (au lieu d'un message générique). ── */
+     afficher la vraie raison de l'échec. ── */
   async function batchUpload(keys){
     if(!keys.length || !fbUser || !fbDb) return { ok:true };
     try {
       const ref = fbDb.collection('users').doc(fbUser.uid).collection('keys');
-      for(let i=0; i<keys.length; i+=400){
+      const ops = [];
+      for (const k of keys) {
+        const v = localStorage.getItem(k);
+        if (v === null) continue;
+        const docId = encodeKey(k);
+        if (byteLength(v) <= FIRESTORE_FIELD_MAX_BYTES) {
+          ops.push({ ref: ref.doc(docId), data: { v, k, chunked:false, ts: firebase.firestore.FieldValue.serverTimestamp() } });
+        } else {
+          const n = Math.ceil(v.length / CHUNK_MAX_CHARS);
+          for (let i=0; i<n; i++){
+            const chunk = v.slice(i*CHUNK_MAX_CHARS, (i+1)*CHUNK_MAX_CHARS);
+            ops.push({ ref: ref.doc(docId+'__c'+i), data: { v:chunk, k, i, isChunk:true, ts: firebase.firestore.FieldValue.serverTimestamp() } });
+          }
+          ops.push({ ref: ref.doc(docId), data: { k, chunked:true, count:n, ts: firebase.firestore.FieldValue.serverTimestamp() } });
+          // Nettoie les morceaux devenus inutiles si la valeur a rétréci depuis la dernière sauvegarde
+          try {
+            const prev = await ref.doc(docId).get();
+            const prevCount = (prev.exists && prev.data().chunked) ? (prev.data().count||0) : 0;
+            for (let i=n; i<prevCount; i++) ops.push({ ref: ref.doc(docId+'__c'+i), delete:true });
+          } catch(_) { /* pas grave si le nettoyage des anciens morceaux échoue */ }
+        }
+      }
+      for (let i=0; i<ops.length; i+=400){
         const batch = fbDb.batch();
-        keys.slice(i,i+400).forEach(k => {
-          const v = localStorage.getItem(k);
-          if(v !== null) batch.set(ref.doc(encodeKey(k)), { v, k, ts: firebase.firestore.FieldValue.serverTimestamp() });
-        });
+        ops.slice(i,i+400).forEach(op => op.delete ? batch.delete(op.ref) : batch.set(op.ref, op.data));
         await batch.commit();
       }
       return { ok:true };
@@ -28465,9 +28497,22 @@ else setTimeout(slInit,200);
         if(typeof toast==='function') toast('Aucune sauvegarde cloud trouvée','var(--orange)');
         return;
       }
+      const chunksByKey = {};
+      const directDocs = [];
       snap.docs.forEach(doc => {
         const d = doc.data();
-        if(d.v !== undefined) localStorage.setItem(d.k || doc.id, d.v);
+        if (d.isChunk) (chunksByKey[d.k] = chunksByKey[d.k] || []).push(d);
+        else directDocs.push(d);
+      });
+      directDocs.forEach(d => {
+        if (!d.k) return;
+        if (d.chunked) {
+          const parts = (chunksByKey[d.k] || []).sort((a,b) => a.i - b.i);
+          if (parts.length === d.count) localStorage.setItem(d.k, parts.map(p => p.v).join(''));
+          else console.warn('[FB] Sauvegarde cloud incomplète pour', d.k, `(${parts.length}/${d.count} morceaux)`);
+        } else if (d.v !== undefined) {
+          localStorage.setItem(d.k, d.v);
+        }
       });
       setLastBackup(Date.now());
       setStatus('synced');
