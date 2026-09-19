@@ -2395,6 +2395,25 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   position:relative;overflow:hidden;
 }
 .wo-exo-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--teal),rgba(53,201,160,0.2))}
+
+/* Poignée de réorganisation des exercices en séance — glisser verticalement
+   pour changer l'ordre dans lequel les exercices sont faits. Intégrée
+   directement dans l'arrondi du coin haut-gauche de la carte (même rayon
+   que la carte) plutôt que posée par-dessus, pour un rendu "onglet" fondu
+   dans la carte au lieu d'une pastille flottante séparée. */
+.wo-exo-handle{
+  position:absolute;top:0;left:0;z-index:5;
+  width:30px;height:24px;
+  border-top-left-radius:calc(var(--r) - 1px);
+  border-bottom-right-radius:12px;
+  background:var(--s3);
+  border-right:1px solid var(--border);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;gap:3px;
+  cursor:grab;touch-action:none;-webkit-tap-highlight-color:transparent;
+}
+.wo-exo-handle:active{cursor:grabbing;background:var(--s2)}
+.wo-exo-handle span{width:3px;height:3px;border-radius:50%;background:var(--muted);pointer-events:none}
+.wo-exo-card-dragging{opacity:0.5}
 .wo-exo-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.85rem;gap:8px}
 .wo-exo-name{font-size:0.95rem;font-weight:600;color:var(--text);letter-spacing:-0.2px}
 .wo-exo-muscle{
@@ -3030,6 +3049,9 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
             </div>
           </div>
 
+          <!-- Bandeau d'alerte : sauvegarde cloud en retard/jamais réussie -->
+          <div id="fb-backup-health-warning" style="display:none;margin-top:0.6rem;background:rgba(255,159,10,0.1);border:1.5px solid var(--orange);color:var(--orange);border-radius:var(--r-sm);padding:8px 10px;font-size:0.68rem;line-height:1.4"></div>
+
           <!-- Actions cloud avec descriptions -->
           <div style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.5rem">
 
@@ -3050,6 +3072,9 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
               </div>
               <button onclick="fbRestoreFromCloud()" style="background:var(--s3);border:1.5px solid var(--border2);color:var(--muted);border-radius:var(--r-sm);padding:6px 12px;font-size:0.72rem;font-weight:600;cursor:pointer;font-family:Syne,sans-serif;white-space:nowrap">⬇️ Charger</button>
             </div>
+
+            <!-- Annuler la dernière restauration (filet de sécurité) -->
+            <button onclick="kcalosUndoRestore()" style="background:none;border:1.5px dashed var(--border2);color:var(--muted2);border-radius:var(--r-sm);padding:5px 10px;font-size:0.65rem;cursor:pointer;font-family:Syne,sans-serif">↩️ Annuler le dernier chargement cloud</button>
 
             <!-- Déconnexion -->
             <button onclick="fbSignOut()" style="background:none;border:none;color:var(--muted2);font-size:0.7rem;cursor:pointer;font-family:Syne,sans-serif;padding:4px 0;text-align:center">Déconnexion</button>
@@ -6788,7 +6813,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-09-18.5';
+const APP_BUILD_VERSION = '2026-09-19.2';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -7064,7 +7089,18 @@ const DB = {
 ════════════════════════════════════════ */
 /* ── switchPage helper ── */
 function updateAccountBubbleVisibility(id){
-  document.getElementById('account-bubble')?.classList.toggle('ab-hidden', id !== 'dashboard');
+  const bubble = document.getElementById('account-bubble');
+  if(!bubble) return;
+  bubble.classList.toggle('ab-hidden', id !== 'dashboard');
+  // Filet de sécurité : certains écrans internes (séance en cours, gestion
+  // des types d'entraînement) masquent temporairement la bulle via un style
+  // inline plutôt qu'une classe. Ce style ne se réinitialisait pas si on
+  // quittait la page par un autre chemin que celui prévu (ex: barre de
+  // navigation du bas plutôt que le bouton "Retour" dédié), laissant la
+  // bulle profil durablement invisible même de retour sur le Dashboard.
+  // On la réinitialise à CHAQUE changement de page : l'écran concerné la
+  // re-masquera lui-même si on y retourne.
+  bubble.style.display = '';
 }
 // Bulle bascule (⋮) : uniquement sur le Dashboard, comme le reste du groupe.
 function updateBubblesToggleVisibility(id){
@@ -22058,9 +22094,10 @@ function woRenderSession(){
       ${muscleOptions}
     </select>`;
 
-    return `<div style="background:var(--s1);border:1px solid ${hasCurrent?inputBorderColor:'var(--border)'};border-radius:var(--r);padding:0.8rem 0.85rem;margin-bottom:0.6rem;transition:border-color 0.2s">
+    return `<div data-wo-ei="${ei}" style="position:relative;background:var(--s1);border:1px solid ${hasCurrent?inputBorderColor:'var(--border)'};border-radius:var(--r);padding:0.8rem 0.85rem;margin-bottom:0.6rem;transition:border-color 0.2s">
+      <div class="wo-exo-handle" onpointerdown="woExoDragStart(event,${ei})" title="Glisser pour réordonner"><span></span><span></span><span></span></div>
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:${hasHistory||hasCurrent?'0.55rem':'0'}">
-        <div style="flex:1;min-width:0">
+        <div style="flex:1;min-width:0;padding-left:26px">
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
             <span style="font-size:0.87rem;font-weight:500;color:var(--text);cursor:pointer;border-bottom:1px dashed transparent;transition:border-color 0.15s"
               title="Cliquer pour renommer"
@@ -22102,6 +22139,76 @@ function woRenderSession(){
 }
 
 /* ── Draft CRUD ── */
+/* ── Réorganisation des exercices par glisser-déposer (poignée dédiée) ──
+   Liste à une seule colonne (pas une grille comme les widgets du dashboard) :
+   on déplace juste la carte dans le DOM au fil du geste, puis on relit
+   l'ordre final des data-wo-ei (index d'origine, figés depuis le dernier
+   rendu) pour reconstruire draft.exercises dans le nouvel ordre. ── */
+let woExoDrag = null; // {el, clone, offsetY}
+
+function woExoDragStart(e, ei){
+  e.preventDefault();
+  const list = document.getElementById('wo-exo-history-list');
+  const card = list?.querySelector(`[data-wo-ei="${ei}"]`);
+  if(!list || !card) return;
+  if(navigator.vibrate) navigator.vibrate(15);
+
+  const rect = card.getBoundingClientRect();
+  const clone = card.cloneNode(true);
+  clone.removeAttribute('data-wo-ei'); // le clone flottant n'est pas une cible de dépôt
+  clone.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;margin:0;'
+    +'width:'+rect.width+'px;top:'+rect.top+'px;left:'+rect.left+'px;'
+    +'box-shadow:0 14px 32px rgba(0,0,0,0.5);transform:scale(1.02);opacity:0.96;transition:none';
+  document.body.appendChild(clone);
+  card.classList.add('wo-exo-card-dragging');
+
+  woExoDrag = { el: card, clone, offsetY: e.clientY - rect.top };
+  document.addEventListener('pointermove', woExoDragMove);
+  document.addEventListener('pointerup', woExoDragEnd, { once:true });
+  document.addEventListener('pointercancel', woExoDragEnd, { once:true });
+}
+
+function woExoDragMove(e){
+  if(!woExoDrag) return;
+  if(e.cancelable) e.preventDefault();
+  const { clone, el } = woExoDrag;
+  clone.style.top = (e.clientY - woExoDrag.offsetY) + 'px';
+
+  const list = document.getElementById('wo-exo-history-list');
+  if(!list) return;
+  const after = Array.from(list.children).find(sib => {
+    if(sib === el || !sib.hasAttribute('data-wo-ei')) return false;
+    const r = sib.getBoundingClientRect();
+    return e.clientY < r.top + r.height / 2;
+  });
+  if(after){ if(el.nextSibling !== after) list.insertBefore(el, after); }
+  else if(list.lastElementChild !== el) list.appendChild(el);
+}
+
+function woExoDragEnd(){
+  if(!woExoDrag) return;
+  const { el, clone } = woExoDrag;
+  document.removeEventListener('pointermove', woExoDragMove);
+  clone.remove();
+  el.classList.remove('wo-exo-card-dragging');
+
+  const list = document.getElementById('wo-exo-history-list');
+  const newOrderIdx = list
+    ? Array.from(list.querySelectorAll('[data-wo-ei]')).map(node => parseInt(node.getAttribute('data-wo-ei'), 10))
+    : [];
+  woExoDrag = null;
+
+  const draft = woDraftGet();
+  if(!draft){ woRenderSession(); return; }
+  const reordered = newOrderIdx.map(i => draft.exercises[i]).filter(Boolean);
+  if(reordered.length === draft.exercises.length){
+    draft.exercises = reordered;
+    woDraftSet(draft);
+    if(navigator.vibrate) navigator.vibrate(25);
+  }
+  woRenderSession(); // ré-numérote proprement les ei et repart d'un DOM propre
+}
+
 /* ── Chrono auto en direct (affiché dans le pill "Durée" tant qu'aucune durée n'est validée) ── */
 function woClearChronoInterval(){
   if(window._woChronoInterval){ clearInterval(window._woChronoInterval); window._woChronoInterval=null; }
@@ -28403,6 +28510,17 @@ else setTimeout(slInit,200);
   function getLastBackup(){ return parseInt(localStorage.getItem(LAST_BACKUP_KEY) || '0'); }
   function setLastBackup(ts){ localStorage.setItem(LAST_BACKUP_KEY, String(ts)); }
 
+  /* ── Suivi dédié du dernier UPLOAD réussi (distinct de "dernière sauvegarde"
+     ci-dessus, qui est aussi mise à jour par un simple téléchargement). C'est
+     précisément cette confusion qui a caché 60 jours d'échecs silencieux :
+     l'horodatage affiché restait "récent" à cause d'un ⬇️, alors qu'aucun ⬆️
+     n'avait réellement réussi depuis longtemps. On sépare les deux pour
+     pouvoir alerter sur l'état réel de la sauvegarde cloud. ── */
+  const LAST_UPLOAD_OK_KEY = 'kcalos_last_upload_ok';
+  const BACKUP_STALE_MS = 3 * 24 * 60 * 60 * 1000; // alerte si >3 jours sans upload complet réussi
+  function getLastUploadOk(){ return parseInt(localStorage.getItem(LAST_UPLOAD_OK_KEY) || '0'); }
+  function setLastUploadOk(ts){ localStorage.setItem(LAST_UPLOAD_OK_KEY, String(ts)); }
+
   function encodeKey(k){ return k.replace(/[^a-zA-Z0-9_-]/g,'_'); }
 
   /* Limite Firestore pour un champ string : 1 048 487 octets. */
@@ -28423,13 +28541,21 @@ else setTimeout(slInit,200);
      afficher la vraie raison de l'échec. ── */
   async function batchUpload(keys){
     if(!keys.length || !fbUser || !fbDb) return { ok:true };
-    try {
-      const ref = fbDb.collection('users').doc(fbUser.uid).collection('keys');
-      const ops = [];
-      for (const k of keys) {
-        const v = localStorage.getItem(k);
-        if (v === null) continue;
-        const docId = encodeKey(k);
+    const ref = fbDb.collection('users').doc(fbUser.uid).collection('keys');
+    const failedKeys = [];
+    let lastError = null;
+    // ── IMPORTANT : un commit indépendant PAR CLÉ, jamais un seul batch géant
+    // pour toutes les clés. Un commit Firestore est tout-ou-rien : si toutes
+    // les clés étaient envoyées ensemble, UNE seule clé trop grosse (ou en
+    // erreur) faisait échouer la sauvegarde de TOUTES les autres clés en
+    // silence (c'est ce qui a coûté 60 jours de données). Avec un commit par
+    // clé, l'échec d'une clé ne peut plus jamais bloquer les autres. ──
+    for (const k of keys) {
+      const v = localStorage.getItem(k);
+      if (v === null) continue;
+      const docId = encodeKey(k);
+      try {
+        const ops = [];
         if (byteLength(v) <= FIRESTORE_FIELD_MAX_BYTES) {
           ops.push({ ref: ref.doc(docId), data: { v, k, chunked:false, ts: firebase.firestore.FieldValue.serverTimestamp() } });
         } else {
@@ -28446,14 +28572,19 @@ else setTimeout(slInit,200);
             for (let i=n; i<prevCount; i++) ops.push({ ref: ref.doc(docId+'__c'+i), delete:true });
           } catch(_) { /* pas grave si le nettoyage des anciens morceaux échoue */ }
         }
+        for (let i=0; i<ops.length; i+=400){
+          const batch = fbDb.batch();
+          ops.slice(i,i+400).forEach(op => op.delete ? batch.delete(op.ref) : batch.set(op.ref, op.data));
+          await batch.commit();
+        }
+      } catch(e){
+        console.warn('[FB] batchUpload: échec pour la clé', k, e.message);
+        failedKeys.push(k);
+        lastError = e;
       }
-      for (let i=0; i<ops.length; i+=400){
-        const batch = fbDb.batch();
-        ops.slice(i,i+400).forEach(op => op.delete ? batch.delete(op.ref) : batch.set(op.ref, op.data));
-        await batch.commit();
-      }
-      return { ok:true };
-    } catch(e){ console.warn('[FB] batchUpload failed:', e.message); return { ok:false, error:e }; }
+    }
+    if (failedKeys.length) return { ok:false, error:lastError, failedKeys };
+    return { ok:true };
   }
 
   /* ── Sauvegarde vers le cloud (bouton ⬆️ ET auto-backup silencieux) ──
@@ -28467,28 +28598,46 @@ else setTimeout(slInit,200);
       const k = localStorage.key(i);
       if(k && k.startsWith('kcalos_eau_log_') && !allKeys.includes(k)) allKeys.push(k);
     }
-    const res = await batchUpload(allKeys.filter(k => localStorage.getItem(k) !== null));
-    const ok = res.ok;
+    const keysToSync = allKeys.filter(k => localStorage.getItem(k) !== null);
+    const res = await batchUpload(keysToSync);
+    // Sauvegarde partielle : au moins une clé est passée même si d'autres ont échoué.
+    // On la compte comme un succès (mieux que tout perdre) mais on prévient l'utilisateur.
+    const partial = !res.ok && res.failedKeys && res.failedKeys.length < keysToSync.length;
+    const ok = res.ok || partial;
     if(ok){
       setLastBackup(Date.now());
+      if(res.ok) setLastUploadOk(Date.now()); // seulement si TOUTES les clés sont passées
       updateBackupDisplay();
       if(!silent){
-        setStatus('synced');
-        if(typeof toast==='function') toast('☁️ Sauvegarde envoyée !','var(--teal)');
+        if(res.ok){
+          setStatus('synced');
+          if(typeof toast==='function') toast('☁️ Sauvegarde envoyée !','var(--teal)');
+        } else {
+          setStatus('error', 'partiel');
+          if(typeof toast==='function') toast('⚠️ Sauvegarde partielle — échec pour : '+res.failedKeys.join(', '),'var(--orange)');
+        }
       }
     } else if(!silent){
       const msg = (res.error && (res.error.code ? `${res.error.code} — ${res.error.message}` : res.error.message)) || 'inconnue';
       setStatus('error', msg);
       if(typeof toast==='function') toast('❌ Erreur de sauvegarde : '+msg,'var(--red)');
     }
+    checkBackupHealth();
     return ok;
   }
+
+  /* ── Filet de sécurité anti-écrasement ──
+     Avant toute restauration cloud → local, on garde une copie des valeurs
+     locales sur le point d'être remplacées. Si la sauvegarde cloud s'avère
+     plus vieille/incomplète (ex: bug d'upload passé inaperçu), l'utilisateur
+     peut annuler avec kcalosUndoRestore() et retrouver son état d'avant. ── */
+  const PRE_RESTORE_SNAPSHOT_KEY = 'kcalos_pre_restore_snapshot';
 
   /* ── Restauration manuelle cloud → local (bouton ⬇️) ──
      Seul chemin qui écrit des données cloud en local. Toujours confirmé. ── */
   async function downloadFromCloud(){
     if(!fbUser || !fbDb){ if(typeof toast==='function') toast('Non connecté','var(--red)'); return; }
-    if(!confirm('⚠️ Charger les données depuis le cloud ?\n\nTes données locales seront REMPLACÉES par la dernière sauvegarde cloud.\n\nContinuer ?')) return;
+    if(!confirm('⚠️ Charger les données depuis le cloud ?\n\nTes données locales seront REMPLACÉES par la dernière sauvegarde cloud.\n\nUne copie de tes données locales actuelles sera gardée et pourra être restaurée via "↩️ Annuler" si besoin.\n\nContinuer ?')) return;
     setStatus('syncing');
     try {
       const snap = await fbDb.collection('users').doc(fbUser.uid).collection('keys').get();
@@ -28504,6 +28653,17 @@ else setTimeout(slInit,200);
         if (d.isChunk) (chunksByKey[d.k] = chunksByKey[d.k] || []).push(d);
         else directDocs.push(d);
       });
+      // Copie de sécurité des valeurs locales qui vont être écrasées.
+      try {
+        const backup = { ts: Date.now(), data: {} };
+        directDocs.forEach(d => {
+          if (!d.k) return;
+          const cur = localStorage.getItem(d.k);
+          if (cur !== null) backup.data[d.k] = cur;
+        });
+        localStorage.setItem(PRE_RESTORE_SNAPSHOT_KEY, JSON.stringify(backup));
+      } catch(_) { /* si la copie échoue (quota plein), on continue quand même */ }
+
       directDocs.forEach(d => {
         if (!d.k) return;
         if (d.chunked) {
@@ -28517,7 +28677,7 @@ else setTimeout(slInit,200);
       setLastBackup(Date.now());
       setStatus('synced');
       updateBackupDisplay();
-      if(typeof toast==='function') toast('☁️ Données cloud chargées !','var(--teal)');
+      if(typeof toast==='function') toast('☁️ Données cloud chargées ! (copie de sécurité gardée)','var(--teal)');
       setTimeout(()=> window.location.reload(), 1400);
     } catch(e){
       setStatus('error', e.message);
@@ -28525,16 +28685,68 @@ else setTimeout(slInit,200);
     }
   }
 
+  /* ── Annule la dernière restauration cloud → local en réécrivant les
+     valeurs locales telles qu'elles étaient juste avant. Le snapshot est
+     remplacé à chaque nouvelle restauration, donc valable une seule fois. ── */
+  function undoLastRestore(){
+    const raw = localStorage.getItem(PRE_RESTORE_SNAPSHOT_KEY);
+    if(!raw){
+      if(typeof toast==='function') toast('Aucune copie de sécurité disponible','var(--orange)');
+      return;
+    }
+    let backup;
+    try { backup = JSON.parse(raw); } catch(e){ if(typeof toast==='function') toast('Copie de sécurité illisible','var(--red)'); return; }
+    const dateStr = new Date(backup.ts).toLocaleString('fr-FR');
+    if(!confirm('Restaurer tes données locales telles qu\'elles étaient avant ton dernier chargement cloud (sauvegardées le '+dateStr+') ?')) return;
+    Object.keys(backup.data).forEach(k => localStorage.setItem(k, backup.data[k]));
+    localStorage.removeItem(PRE_RESTORE_SNAPSHOT_KEY);
+    if(typeof toast==='function') toast('↩️ Données restaurées à leur état précédent','var(--teal)');
+    setTimeout(()=> window.location.reload(), 1400);
+  }
+
+  /* ── Diagnostic console : window.kcalosDiag() ──
+     Liste chaque clé synchronisée avec sa taille et, si des dates sont
+     détectables dans le JSON, la plus ancienne / la plus récente trouvée.
+     Utile pour vérifier précisément l'état des données sans deviner. ── */
+  window.kcalosDiag = function(){
+    const allKeys = [...SYNC_KEYS];
+    for(let i=0; i<localStorage.length; i++){
+      const k = localStorage.key(i);
+      if(k && k.startsWith('kcalos_eau_log_') && !allKeys.includes(k)) allKeys.push(k);
+    }
+    const rows = allKeys.map(k => {
+      const v = localStorage.getItem(k);
+      if (v === null) return { cle:k, taille:'(absent)', plus_ancien:'-', plus_recent:'-' };
+      let oldest = '-', newest = '-';
+      try {
+        const dates = [];
+        (function walk(o){
+          if (Array.isArray(o)) o.forEach(walk);
+          else if (o && typeof o === 'object') Object.entries(o).forEach(([kk,val]) => {
+            if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}/.test(val)) dates.push(val.slice(0,10));
+            else if (/date|jour|day/i.test(kk) && typeof val === 'number' && val > 1e9) dates.push(new Date(val).toISOString().slice(0,10));
+          });
+        })(JSON.parse(v));
+        if (dates.length){ dates.sort(); oldest = dates[0]; newest = dates[dates.length-1]; }
+      } catch(_) { /* pas du JSON structuré */ }
+      return { cle:k, taille: byteLength(v)+' o', plus_ancien:oldest, plus_recent:newest };
+    });
+    console.table(rows);
+    return rows;
+  };
+
   /* ── Auto-backup silencieux : upload seul, 1x/24h max, jamais de download ── */
   async function maybeAutoBackup(){
     if(!fbUser || !fbDb) return;
     if(Date.now() - getLastBackup() < AUTO_BACKUP_INTERVAL_MS){
       updateBackupDisplay();
       setStatus('synced');
+      checkBackupHealth();
       return;
     }
     await syncAllToCloud({ silent:true });
     if(!getLastBackup()) setStatus('offline'); // premier backup jamais réussi
+    checkBackupHealth();
   }
 
   /* ── Affichage "dernière sauvegarde" dans l'UI ── */
@@ -28544,7 +28756,27 @@ else setTimeout(slInit,200);
     const last = getLastBackup();
     if(!last){ el.textContent = 'Aucune sauvegarde cloud'; return; }
     const d = new Date(last);
-    el.textContent = 'Dernière sauvegarde : ' + d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    el.textContent = 'Dernière activité cloud : ' + d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  }
+
+  /* ── Bandeau d'alerte visible et permanent (pas un toast qui disparaît) si
+     aucun ⬆️ complet n'a réussi depuis plus de BACKUP_STALE_MS. C'est ce
+     bandeau qui aurait dû exister il y a 60 jours : sans lui, un échec
+     silencieux répété ne se voit qu'en creusant, ce qui est trop tard. ── */
+  function checkBackupHealth(){
+    const el = document.getElementById('fb-backup-health-warning');
+    if(!el || !fbUser) { if(el) el.style.display='none'; return; }
+    const lastOk = getLastUploadOk();
+    const age = Date.now() - lastOk;
+    if(!lastOk || age > BACKUP_STALE_MS){
+      const days = lastOk ? Math.floor(age/86400000) : null;
+      el.textContent = lastOk
+        ? `⚠️ Aucune sauvegarde cloud complète réussie depuis ${days} jour${days>1?'s':''}. Vérifie ta connexion et réessaie.`
+        : '⚠️ Aucune sauvegarde cloud complète n\'a encore réussi pour ce compte.';
+      el.style.display = 'block';
+    } else {
+      el.style.display = 'none';
+    }
   }
 
   /* ── Statut UI ── */
@@ -28573,6 +28805,7 @@ else setTimeout(slInit,200);
       const b=document.getElementById('account-bubble');
       if(b) b.title='Mon compte · '+(user.displayName||user.email);
       updateBackupDisplay();
+      checkBackupHealth();
     } else {
       if(loginV) loginV.style.display='block';
       if(userV)  userV.style.display='none';
@@ -28651,6 +28884,7 @@ else setTimeout(slInit,200);
 
   window.fbSyncNow          = function(){ syncAllToCloud({ silent:false }); };
   window.fbRestoreFromCloud = function(){ downloadFromCloud(); };
+  window.kcalosUndoRestore  = undoLastRestore;
 
   window.fbEditName = function(){
     const z=document.getElementById('fb-name-edit'),i=document.getElementById('fb-name-input');
