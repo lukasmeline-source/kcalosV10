@@ -2227,6 +2227,23 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
   cursor:pointer;-webkit-tap-highlight-color:transparent;
 }
 .qty-unit-inline-btn svg{flex-shrink:0;margin-top:2px}
+/* Indicateur « portions disponibles » : pastille en exposant sur le bouton d'unité.
+   Affichée uniquement quand .qty-panel a la classe .has-portions (posée par updatePortionIndicator). */
+.qty-unit-inline-btn{position:relative}
+.qty-portion-badge{
+  position:absolute;top:-2px;left:100%;margin-left:1px;
+  width:17px;height:17px;border-radius:50%;
+  display:none;align-items:center;justify-content:center;
+  background:var(--teal-bg);border:1px solid var(--teal);color:var(--teal);
+  pointer-events:none;
+}
+.qty-portion-badge svg{margin:0}
+.qty-panel.has-portions .qty-portion-badge{display:flex;animation:qtyBadgePop var(--trans-spring) both}
+@keyframes qtyBadgePop{from{transform:scale(0);opacity:0}to{transform:none;opacity:1}}
+/* Ligne « Portion » du sélecteur d'unité : compteur ou « Indisponible » */
+.qty-unit-hint{margin-left:8px;font-size:0.68rem;font-weight:600;color:var(--muted)}
+.qty-unit-option.has-portions .qty-unit-hint{color:var(--teal)}
+.qty-unit-option.no-portions{opacity:0.55}
 /* Règle graduée à glisser (façon Samsung Health) */
 .qty-ruler{
   position:relative;height:64px;margin:0.9rem 0 0.15rem;
@@ -4877,6 +4894,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
           <button class="qty-unit-inline-btn" onclick="openUnitPicker()">
             <span>g</span>
             <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+            <span class="qty-portion-badge" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 2v6h6"/></svg></span>
           </button>
         </div>
       </div>
@@ -4915,6 +4933,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
           <button class="qty-unit-inline-btn" onclick="openUnitPicker()">
             <span>kcal</span>
             <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+            <span class="qty-portion-badge" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 2v6h6"/></svg></span>
           </button>
         </div>
       </div>
@@ -6864,7 +6883,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <svg class="qty-unit-check" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 4.5"/></svg>
     </button>
     <button class="qty-unit-option" data-mode="portion" onclick="pickUnit('portion')">
-      <span>Portion</span>
+      <span>Portion<small class="qty-unit-hint" id="qty-unit-portion-hint"></small></span>
       <svg class="qty-unit-check" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 4.5"/></svg>
     </button>
     <button class="qty-unit-option" data-mode="kcal" onclick="pickUnit('kcal')">
@@ -6905,7 +6924,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-09-19.11';
+const APP_BUILD_VERSION = '2026-09-21.1';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -14940,8 +14959,28 @@ function selectProduct(productData) {
 }
 
 /* ── Sélecteur d'unité ── */
+
+/* Indicateur « portions disponibles » : pastille sur le bouton d'unité (mode g / kcal)
+   + compteur dans la ligne « Portion » du sélecteur. Basé sur AP.selectedFood.portions. */
+function updatePortionIndicator() {
+  const n = AP.selectedFood?.portions?.length || 0;
+  document.getElementById('qty-panel')?.classList.toggle('has-portions', n > 0);
+
+  const label = n > 0 ? `${n} portion${n > 1 ? 's' : ''} disponible${n > 1 ? 's' : ''}` : '';
+  document.querySelectorAll('#qmp-grams .qty-unit-inline-btn, #qmp-kcal .qty-unit-inline-btn').forEach(b => {
+    if (n > 0) { b.title = label; b.setAttribute('aria-label', 'Changer d\'unité — ' + label); }
+    else       { b.removeAttribute('title'); b.removeAttribute('aria-label'); }
+  });
+
+  const opt  = document.querySelector('.qty-unit-option[data-mode="portion"]');
+  const hint = document.getElementById('qty-unit-portion-hint');
+  if (opt)  { opt.classList.toggle('has-portions', n > 0); opt.classList.toggle('no-portions', n === 0); }
+  if (hint) hint.textContent = n > 0 ? `${n} dispo` : 'Indisponible';
+}
+
 function setQtyMode(mode) {
   AP._qtyMode = mode;
+  updatePortionIndicator();
   ['grams','portion','kcal'].forEach(m => {
     const panel = document.getElementById('qmp-'+m);
     if (panel) panel.style.display = m === mode ? '' : 'none';
