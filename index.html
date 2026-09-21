@@ -739,6 +739,57 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 .widget-edit-bubble:active{transform:scale(0.92)}
 .report-bubble-menu.open{display:flex}
 @keyframes reportMenuIn{from{opacity:0;transform:translateY(-6px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+/* ── Bulle flottante : timer de repos entre les séries ──
+   Position basse (au-dessus de la barre du bas) pour ne jamais entrer en
+   conflit avec le groupe de bulles du dashboard, en haut de l'écran. Appui
+   = agrandir/réduire pour révéler les boutons -15s/+15s. */
+.rest-timer-bubble{
+  display:none;position:fixed;
+  bottom:calc(env(safe-area-inset-bottom,0px) + 86px);right:16px;z-index:950;
+  align-items:center;justify-content:center;gap:8px;
+  height:50px;min-width:50px;padding:0 6px;
+  border-radius:25px;
+  background:linear-gradient(135deg,#1ab89c,#12957e);
+  color:#fff;box-shadow:0 4px 20px rgba(26,184,156,0.45);
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  transition:min-width 0.25s cubic-bezier(0.34,1.1,0.64,1),padding 0.25s ease,gap 0.25s ease;
+}
+.rest-timer-bubble.show{display:flex}
+.rest-timer-bubble.expanded{min-width:208px;padding:0 8px}
+.rest-timer-bubble .rtb-btn{
+  display:none;align-items:center;justify-content:center;
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  background:rgba(255,255,255,0.18);border:none;color:#fff;
+  font-size:1.2rem;font-weight:600;line-height:1;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.rest-timer-bubble.expanded .rtb-btn{display:flex}
+.rest-timer-bubble .rtb-btn:active{background:rgba(255,255,255,0.32)}
+.rest-timer-bubble .rtb-stop{background:rgba(255,90,90,0.3);font-size:0.95rem}
+.rest-timer-bubble .rtb-stop:active{background:rgba(255,90,90,0.48)}
+
+/* ── Message de fin de repos : à fermer explicitement (pas un toast qui
+   disparaît tout seul), pour ne pas rater la fin du repos. Même position
+   que la bulle puisqu'il apparaît juste après qu'elle ait disparu. ── */
+.rest-timer-done-banner{
+  display:none;position:fixed;
+  bottom:calc(env(safe-area-inset-bottom,0px) + 86px);right:16px;z-index:950;
+  align-items:center;gap:10px;
+  padding:0 8px 0 16px;height:50px;border-radius:25px;
+  background:linear-gradient(135deg,#1ab89c,#12957e);
+  color:#fff;box-shadow:0 4px 20px rgba(26,184,156,0.45);
+  font-family:Syne,sans-serif;font-weight:600;font-size:0.85rem;
+  white-space:nowrap;
+}
+.rest-timer-done-banner.show{display:flex}
+.rest-timer-done-banner button{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  background:rgba(255,255,255,0.18);border:none;color:#fff;
+  font-size:1rem;cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.rest-timer-done-banner button:active{background:rgba(255,255,255,0.32)}
+#rest-timer-display{font-family:Syne,sans-serif;font-weight:700;font-size:0.95rem;min-width:36px;text-align:center}
 .rbm-item{
   display:flex;align-items:center;gap:8px;
   padding:8px 10px;border-radius:8px;border:none;background:none;
@@ -2142,6 +2193,8 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
   border:1.5px solid var(--border2);background:var(--s2);
   color:var(--text);font-size:1.4rem;line-height:1;
   cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
 }
 /* Kcal mode */
 .qty-slider-section{
@@ -2985,6 +3038,23 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   </button>
 </div>
 
+<!-- Bulle flottante : timer de repos entre les séries (page Séance).
+     Indépendante du groupe ci-dessus : reste visible sur TOUTES les pages
+     tant qu'un repos est en cours, pas seulement sur le Dashboard. -->
+<div class="rest-timer-bubble" id="rest-timer-bubble" onclick="restTimerToggleExpand()">
+  <button class="rtb-btn" onclick="event.stopPropagation();restTimerAdjust(-15)" aria-label="Réduire de 15 secondes">−</button>
+  <span id="rest-timer-display">0:00</span>
+  <button class="rtb-btn" onclick="event.stopPropagation();restTimerAdjust(15)" aria-label="Ajouter 15 secondes">+</button>
+  <button class="rtb-btn rtb-stop" onclick="event.stopPropagation();restTimerStop()" aria-label="Couper le timer de repos jusqu'à la prochaine série" title="Couper">✕</button>
+</div>
+
+<!-- Message de fin de repos : reste affiché jusqu'à fermeture explicite,
+     pour ne pas le rater si le téléphone n'était pas regardé au bon moment. -->
+<div class="rest-timer-done-banner" id="rest-timer-done-banner">
+  <span>⏱️ Repos terminé !</span>
+  <button onclick="restTimerDismissDone()" aria-label="Fermer">✕</button>
+</div>
+
 <!-- ══ ACCOUNT PANEL ══ -->
 <div class="account-panel" id="account-panel">
   <div class="account-overlay" onclick="closeAccountPanel()"></div>
@@ -3082,6 +3152,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
         </div>
       </div>
       <!-- ══ FIN AUTH ZONE ══ -->
+
 
       <div class="row2">
         <div class="field"><label>Taille</label><div class="inp-wrap"><input type="number" id="ap-taille" placeholder="175" min="100" max="250"><span class="unit">cm</span></div></div>
@@ -4824,9 +4895,9 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     <div class="qty-portion-count-row" id="qty-portion-count-row" style="display:none">
       <span style="font-size:0.78rem;color:var(--muted)">Nombre de portions</span>
       <div style="display:flex;align-items:center;gap:14px;margin-top:8px">
-        <button class="qty-port-step" onclick="stepPortions(-1)">−</button>
+        <button type="button" class="qty-port-step" onclick="stepPortions(-1)">−</button>
         <span id="qty-portion-count" style="font-size:1.4rem;font-weight:700;min-width:28px;text-align:center">1</span>
-        <button class="qty-port-step" onclick="stepPortions(1)">+</button>
+        <button type="button" class="qty-port-step" onclick="stepPortions(1)">+</button>
       </div>
     </div>
     <div id="qty-portions-none" style="display:none;text-align:center;padding:1.2rem;font-size:0.82rem;color:var(--muted)">
@@ -6135,6 +6206,27 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 
     </div>
 
+    <!-- Réglages du timer de repos (activation + durée par défaut) -->
+    <div style="margin-bottom:1rem;padding:0.85rem 1rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:0.7rem">
+        <div>
+          <div style="font-size:0.82rem;font-weight:600;color:var(--text)">⏱️ Timer de repos</div>
+          <div style="font-size:0.68rem;color:var(--muted2);margin-top:2px">Bulle de repos après chaque série ajoutée</div>
+        </div>
+        <button id="rest-timer-enable-toggle" onclick="toggleRestTimerEnabled()" role="switch" aria-checked="true" aria-label="Activer ou désactiver le timer de repos" style="width:46px;height:26px;border-radius:var(--r-pill);border:none;position:relative;cursor:pointer;background:var(--teal);transition:background 0.2s;flex-shrink:0;-webkit-tap-highlight-color:transparent">
+          <span id="rest-timer-enable-knob" style="position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform 0.2s;transform:translateX(20px)"></span>
+        </button>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:0.65rem;border-top:1px solid var(--border)">
+        <span style="font-size:0.75rem;color:var(--muted)">Durée du repos</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button onclick="woRestTimerAdjustDefault(-15)" aria-label="Réduire de 15 secondes" style="width:24px;height:24px;border-radius:50%;border:1.5px solid var(--border2);background:var(--s1);color:var(--text);font-size:0.95rem;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent">−</button>
+          <span id="wo-rest-timer-default-display" style="min-width:34px;text-align:center;font-weight:600;color:var(--text)">1:30</span>
+          <button onclick="woRestTimerAdjustDefault(15)" aria-label="Ajouter 15 secondes" style="width:24px;height:24px;border-radius:50%;border:1.5px solid var(--border2);background:var(--s1);color:var(--text);font-size:0.95rem;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent">+</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Boutons bas de séance -->
     <div style="display:flex;gap:8px;margin-bottom:0.5rem;margin-top:0.75rem">
       <button class="btn secondary" id="wo-pause-btn" style="flex:1;font-size:0.88rem;padding:0.75rem 1rem;min-height:50px" onclick="woBackToPicker()">Pause →</button>
@@ -6427,10 +6519,10 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     </div>
     <div id="poids-quick-delta" style="text-align:center;font-size:0.68rem;color:var(--muted2);margin-bottom:0.9rem;min-height:1em"></div>
     <div style="display:flex;gap:0;background:var(--s2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1.25rem">
-      <button type="button" onmousedown="event.preventDefault()" onclick="poidsQuickStep(-0.5)" style="flex:1;padding:0.6rem;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;font-family:DM Sans,sans-serif;transition:all var(--trans);border-right:1px solid var(--border)" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background='none'">−0.5</button>
-      <button type="button" onmousedown="event.preventDefault()" onclick="poidsQuickStep(-0.1)" style="flex:1;padding:0.6rem;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;font-family:DM Sans,sans-serif;transition:all var(--trans);border-right:1px solid var(--border)" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background='none'">−0.1</button>
-      <button type="button" onmousedown="event.preventDefault()" onclick="poidsQuickStep(0.1)"  style="flex:1;padding:0.6rem;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;font-family:DM Sans,sans-serif;transition:all var(--trans);border-right:1px solid var(--border)" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background='none'">+0.1</button>
-      <button type="button" onmousedown="event.preventDefault()" onclick="poidsQuickStep(0.5)"  style="flex:1;padding:0.6rem;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;font-family:DM Sans,sans-serif;transition:all var(--trans)" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background='none'">+0.5</button>
+      <button type="button" onmousedown="event.preventDefault()" onclick="poidsQuickStep(-0.5)" style="flex:1;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-user-select:none;-webkit-touch-callout:none;padding:0.6rem;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;font-family:DM Sans,sans-serif;transition:all var(--trans);border-right:1px solid var(--border)" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background='none'">−0.5</button>
+      <button type="button" onmousedown="event.preventDefault()" onclick="poidsQuickStep(-0.1)" style="flex:1;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-user-select:none;-webkit-touch-callout:none;padding:0.6rem;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;font-family:DM Sans,sans-serif;transition:all var(--trans);border-right:1px solid var(--border)" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background='none'">−0.1</button>
+      <button type="button" onmousedown="event.preventDefault()" onclick="poidsQuickStep(0.1)"  style="flex:1;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-user-select:none;-webkit-touch-callout:none;padding:0.6rem;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;font-family:DM Sans,sans-serif;transition:all var(--trans);border-right:1px solid var(--border)" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background='none'">+0.1</button>
+      <button type="button" onmousedown="event.preventDefault()" onclick="poidsQuickStep(0.5)"  style="flex:1;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-user-select:none;-webkit-touch-callout:none;padding:0.6rem;background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;font-family:DM Sans,sans-serif;transition:all var(--trans)" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background='none'">+0.5</button>
     </div>
     <!-- Body fat optionnel -->
     <div style="margin-bottom:1.25rem">
@@ -6813,7 +6905,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-09-19.2';
+const APP_BUILD_VERSION = '2026-09-19.11';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -6952,6 +7044,33 @@ function kcBubblesToggleShow(){
   vv.addEventListener('resize', schedule);
   vv.addEventListener('scroll', schedule);
 })();
+
+/* ── Fix iOS Safari : bouton "gelé" visuellement après l'ouverture d'un
+   panneau plein écran (recherche d'aliment, quantité) ── Ces panneaux
+   s'ouvrent avec une animation de glissement (slideUp) et contiennent un
+   en-tête position:sticky avec effet de flou (backdrop-filter) ; le champ
+   de recherche reçoit en plus le focus (clavier) pendant que l'animation
+   tourne encore. Cette combinaison peut faire que Safari iOS fige le calque
+   visuel de l'en-tête à une position intermédiaire de l'animation : il
+   reste affiché plus haut que sa position finale réelle, alors que la zone
+   qui répond au toucher, elle, est déjà à la bonne place — d'où
+   l'impression de devoir taper "en dessous" du bouton visible (Retour,
+   Ajouter au repas...). On force Safari à recomposer proprement ce calque
+   juste après la fin de l'animation, via un minuscule décalage de scroll
+   (1px, immédiatement annulé) : invisible pour l'utilisateur, mais ça
+   oblige un repaint complet du panneau. ── */
+function kcNudgeRepaint(el){
+  if(!el) return;
+  requestAnimationFrame(() => {
+    const y = el.scrollTop;
+    el.scrollTop = y + 1;
+    requestAnimationFrame(() => { el.scrollTop = y; });
+  });
+}
+['food-search-panel','qty-panel'].forEach(id => {
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('animationend', () => kcNudgeRepaint(el));
+});
 
 /* ── ICON MAP ── */
 const ICONS={
@@ -14914,6 +15033,7 @@ function selectPortion(idx) {
 }
 
 function stepPortions(delta) {
+  if(!kcTapGuard('stepPortions')) return;
   AP._portionCount = Math.max(1, Math.min(20, (AP._portionCount||1) + delta));
   document.getElementById('qty-portion-count').textContent = AP._portionCount;
   const f = AP.selectedFood;
@@ -19001,7 +19121,25 @@ function closePoidsQuickEdit(){
   const modal = document.getElementById('poids-quick-modal');
   if(modal){ modal.style.display='none'; kcUnlockScroll(); }
 }
+/* ── Garde-fou anti-rafale de taps ── Sur iOS, taper très rapidement
+   plusieurs fois de suite sur un bouton +/- peut faire dérailler le focus
+   (le clavier textuel s'ouvre sans raison apparente, l'écran ne répond
+   plus) : les événements tactiles arrivent plus vite que le rendu ne peut
+   suivre, et le geste finit par être mal interprété par Safari. On ignore
+   tout appel qui arrive à moins de 90ms du précédent pour une même action
+   — largement en dessous du rythme d'un tap volontaire, donc invisible en
+   usage normal. */
+const _kcTapGuardLast = {};
+function kcTapGuard(key, ms){
+  ms = ms || 90;
+  const now = Date.now();
+  if(_kcTapGuardLast[key] && now - _kcTapGuardLast[key] < ms) return false;
+  _kcTapGuardLast[key] = now;
+  return true;
+}
+
 function poidsQuickStep(delta){
+  if(!kcTapGuard('poidsQuickStep')) return;
   const inp = document.getElementById('poids-quick-input');
   if(!inp) return;
   const cur = parseFloat(inp.value)||0;
@@ -19793,6 +19931,7 @@ function woDraftClear(type, date){
   const map = woDraftsAll();
   delete map[woDraftKey(type,date)];
   woDraftsSaveAll(map);
+  if(typeof restTimerStop==='function') restTimerStop(); // la séance n'est plus en cours
 }
 /* Trouve un brouillon non terminé pour une date donnée, tous types confondus
    (utilisé au démarrage de l'app pour proposer de reprendre la séance du jour) */
@@ -19935,6 +20074,20 @@ window.addEventListener('popstate', function(e){
 // Pousser un état initial pour capturer le premier retour
 if(window.history) history.pushState(null,'',location.href);
 
+/* ── Empêche le geste "glisser depuis le bord gauche" de Safari iOS (retour
+   dans l'historique du navigateur) ── L'app pousse des états d'historique
+   factices ci-dessus (pour intercepter le bouton retour Android) : ce sont
+   des états "virtuels", sans vraie page derrière. Quand iOS tente
+   d'afficher un aperçu de la page précédente pendant le glissement, il n'a
+   rien de réel à montrer → flash de page blanche pendant/après le geste.
+   On intercepte le toucher dès qu'il démarre tout près du bord gauche pour
+   empêcher iOS de déclencher ce geste. Zone volontairement étroite (15px)
+   pour ne gêner aucun bouton réel de l'interface. ── */
+document.addEventListener('touchstart', function(e){
+  if(e.touches.length !== 1) return;
+  if(e.touches[0].clientX <= 15) e.preventDefault();
+}, { passive:false });
+
 function woShowScreen(name){
   document.getElementById('wo-picker-screen').style.display = name==='picker'?'':'none';
   document.getElementById('wo-session-screen').style.display = name==='session'?'':'none';
@@ -19944,6 +20097,12 @@ function woShowScreen(name){
   if(bubble) bubble.style.display = name==='session' ? 'none' : '';
   hidePWABanner?.();
   if(name!=='session'){ woClearChronoInterval(); woCloseRecap?.(); }
+  if(name==='session' && typeof updateRestTimerToggleUI==='function'){
+    // Synchronise la carte de réglages du timer de repos (activation + durée)
+    updateRestTimerToggleUI();
+    const defEl = document.getElementById('wo-rest-timer-default-display');
+    if(defEl) defEl.textContent = restTimerFmt(restTimerDefaultDuration());
+  }
 }
 
 /* ════════════════════════════════════════
@@ -21514,6 +21673,7 @@ const WO_MUSCLE_COLORS = {
 // même moteur de calcul que le tableau de la page Séance (onglet Volume, cf
 // woRenderVolumeTable), factorisé ici pour être réutilisable ailleurs (ex :
 // checklist Récap). Retourne { muscle: weekSets } (séries/semaine estimées).
+const WO_VOL_WINDOW_WEEKS = 4; // fenêtre d'observation fixe (28 jours = 4 semaines calendaires)
 function woComputeMuscleWeeklyVolume(){
   const allTypes = woGetAllTypes();
   const allSessionsFlat = Object.entries(allTypes).flatMap(([tid])=>woV2GetSessions(tid));
@@ -21528,18 +21688,19 @@ function woComputeMuscleWeeklyVolume(){
       const activeSets = (exo.sets||[]).filter(s=>!s.skipped).length;
       if(!activeSets) return;
       const muscle = woGetMuscle(exo);
-      const wk = woWeekKey(sess.date);
-      if(!exoMap[exo.name]) exoMap[exo.name]={ sets:0, sessions:0, weeks:new Set(), muscle };
+      if(!exoMap[exo.name]) exoMap[exo.name]={ sets:0, sessions:0, muscle };
       exoMap[exo.name].sets     += activeSets;
       exoMap[exo.name].sessions += 1;
-      exoMap[exo.name].weeks.add(wk);
     });
   });
   const byMuscleTotal = {};
   Object.values(exoMap).forEach(d=>{
     const avgPerSess  = d.sets / d.sessions;
-    const weeksActive = d.weeks.size;
-    const freqPerWeek = d.sessions / weeksActive;
+    // Fréquence = nb de séances sur la fenêtre ÷ 4 semaines calendaires FIXES —
+    // pas ÷ nb de semaines où l'exo a été fait (ça gonflerait la fréquence des
+    // exos irréguliers : 3 séances sur 2 semaines actives ≠ 1.5×/sem sur la
+    // fenêtre de 4 semaines, qui est en réalité de 0.75×/sem).
+    const freqPerWeek = d.sessions / WO_VOL_WINDOW_WEEKS;
     byMuscleTotal[d.muscle] = (byMuscleTotal[d.muscle]||0) + avgPerSess*freqPerWeek;
   });
   return byMuscleTotal;
@@ -21607,11 +21768,9 @@ function woRenderVolumeTable(){
       const activeSets = (exo.sets||[]).filter(s=>!s.skipped).length;
       if(!activeSets) return;
       const muscle = woGetMuscle(exo);
-      const wk = woWeekKey(sess.date);
-      if(!exoMap[exo.name]) exoMap[exo.name]={ sets:0, sessions:0, weeks:new Set(), muscle };
+      if(!exoMap[exo.name]) exoMap[exo.name]={ sets:0, sessions:0, muscle };
       exoMap[exo.name].sets     += activeSets;
       exoMap[exo.name].sessions += 1;
-      exoMap[exo.name].weeks.add(wk);
       musclesTouched.add(muscle);
     });
     musclesTouched.forEach(m=>{
@@ -21645,8 +21804,9 @@ function woRenderVolumeTable(){
     const m = d.muscle;
     if(!byMuscle[m]) byMuscle[m]=[];
     const avgPerSess  = d.sets / d.sessions;
-    const weeksActive = d.weeks.size;
-    const freqPerWeek = d.sessions / weeksActive;
+    // Fréquence = nb de séances sur la fenêtre ÷ 4 semaines calendaires FIXES
+    // (voir woComputeMuscleWeeklyVolume pour l'explication du choix).
+    const freqPerWeek = d.sessions / WO_VOL_WINDOW_WEEKS;
     const weekSets    = avgPerSess * freqPerWeek;
     byMuscle[m].push({ name, avgPerSess, freqPerWeek, weekSets, sessions:d.sessions });
   });
@@ -21694,11 +21854,11 @@ function woRenderVolumeTable(){
         refHint=`<span style="font-size:0.58rem;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-d);border-radius:var(--r-pill);padding:1px 7px;white-space:nowrap">✓ zone optimale</span>`;
     }
 
-    // Fréquence de CE muscle : séances distinctes (pas la somme par exercice, qui
-    // double-compterait une séance avec 2 exos du même muscle) / semaines actives.
+    // Fréquence de CE muscle : séances distinctes sur la fenêtre ÷ 4 semaines
+    // calendaires fixes (pas ÷ nb de semaines où le muscle a été travaillé —
+    // ça gonflerait la fréquence des muscles entraînés irrégulièrement).
     const datesRecent  = muscleDatesRecent[muscle] || new Set();
-    const weeksActiveM = new Set([...datesRecent].map(d=>woWeekKey(d))).size || 1;
-    const freqAvgM      = datesRecent.size / weeksActiveM;
+    const freqAvgM      = datesRecent.size / WO_VOL_WINDOW_WEEKS;
     const freqRealM      = (muscleDatesLastWk[muscle]||new Set()).size;
     const realSetsM       = muscleRealSets[muscle] || 0;
 
@@ -21750,10 +21910,11 @@ function woRenderUserExoList(){
   const typeOrder = woGetTypeOrder();
   // Collecter tous les exercices vus dans toutes les séances
   const seen = {}; // name → { muscle, lastDate }
+  const deleted = new Set(woDeletedExosGet());
   typeOrder.forEach(tid=>{
     woV2GetSessions(tid).forEach(sess=>{
       (sess.exercises||[]).forEach(exo=>{
-        if(!exo.name) return;
+        if(!exo.name || deleted.has(exo.name)) return;
         if(!seen[exo.name] || (sess.date > (seen[exo.name].lastDate||''))){
           seen[exo.name] = { muscle: woGetMuscle(exo), lastDate: sess.date||'' };
         }
@@ -22230,6 +22391,7 @@ function woStartChronoDisplay(){
 function woDraftAddSet(ei){
   const d=woDraftGet(); if(!d||!d.exercises[ei]) return;
   const exo = d.exercises[ei];
+  woDeletedExosRemove(exo.name); // réhabilite si l'exo avait été "supprimé" mais est réutilisé
   exo.sets = exo.sets||[];
   const idx = exo.sets.length;
   // Historique de cet exo (toutes séances antérieures, tous types confondus),
@@ -22265,6 +22427,7 @@ function woDraftAddSet(ei){
   if(!d.startedAt) d.startedAt = Date.now();
   woDraftSet(d);
   woRenderSession();
+  if(typeof restTimerStart==='function') restTimerStart();
 }
 function woDraftDelSet(ei,si){
   const d=woDraftGet(); if(!d||!d.exercises[ei]) return;
@@ -22293,6 +22456,163 @@ function woDraftUpdateSet(ei,si,field,val){
   woUpdateExoLiveBadge(ei);
   woUpdateGlobalProgBanner();
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   TIMER DE REPOS ENTRE LES SÉRIES
+   Bulle flottante (voir #rest-timer-bubble), visible sur TOUTES les pages
+   tant qu'un repos est en cours — indépendante du groupe de bulles du
+   dashboard. Démarré automatiquement à chaque série ajoutée (voir
+   woDraftAddSet), arrêté quand la séance se termine ou est abandonnée
+   (voir woDraftClear). Persisté via localStorage (et non une simple
+   variable) pour survivre à une fermeture/réouverture de l'app pendant le
+   repos : on stocke l'heure de fin (endsAt), pas juste un compte à rebours,
+   donc le temps restant reste exact même après une pause du navigateur.
+   ═══════════════════════════════════════════════════════════════ */
+const REST_TIMER_ENABLED_KEY  = 'kcalos_rest_timer_enabled';
+const REST_TIMER_DURATION_KEY = 'kcalos_rest_timer_duration'; // secondes, durée par défaut
+const REST_TIMER_STATE_KEY    = 'kcalos_rest_timer_state';    // {endsAt} JSON, absent = pas de repos en cours
+
+function restTimerEnabled(){ return localStorage.getItem(REST_TIMER_ENABLED_KEY) !== '0'; } // activé par défaut
+function setRestTimerEnabled(v){ localStorage.setItem(REST_TIMER_ENABLED_KEY, v ? '1' : '0'); }
+function restTimerDefaultDuration(){ return parseInt(localStorage.getItem(REST_TIMER_DURATION_KEY) || '90', 10); }
+function setRestTimerDefaultDuration(sec){ localStorage.setItem(REST_TIMER_DURATION_KEY, String(Math.max(10, Math.min(600, sec)))); }
+
+let _restTimerInterval = null;
+let _restTimerExpanded = false;
+
+function restTimerFmt(sec){
+  sec = Math.max(0, Math.round(sec));
+  return Math.floor(sec/60) + ':' + String(sec%60).padStart(2,'0');
+}
+
+/* Démarre (ou relance) un repos. Appelé automatiquement à chaque série. */
+function restTimerStart(customDuration){
+  if(!restTimerEnabled()) return;
+  restTimerDismissDone();
+  const duration = customDuration || restTimerDefaultDuration();
+  localStorage.setItem(REST_TIMER_STATE_KEY, JSON.stringify({ endsAt: Date.now() + duration*1000 }));
+  if(navigator.vibrate) navigator.vibrate(12);
+  restTimerShow();
+}
+
+function restTimerStop(){
+  localStorage.removeItem(REST_TIMER_STATE_KEY);
+  if(_restTimerInterval){ clearInterval(_restTimerInterval); _restTimerInterval = null; }
+  _restTimerExpanded = false;
+  document.getElementById('rest-timer-bubble')?.classList.remove('show','expanded');
+  document.getElementById('rest-timer-done-banner')?.classList.remove('show');
+}
+
+/* Boutons -/+ de la bulle agrandie : rallonge/raccourcit le repos EN COURS. */
+function restTimerAdjust(deltaSec){
+  const raw = localStorage.getItem(REST_TIMER_STATE_KEY);
+  if(!raw) return;
+  try {
+    const st = JSON.parse(raw);
+    st.endsAt = Math.max(Date.now(), st.endsAt + deltaSec*1000);
+    localStorage.setItem(REST_TIMER_STATE_KEY, JSON.stringify(st));
+    if(navigator.vibrate) navigator.vibrate(8);
+    restTimerTick();
+  } catch(_) { /* état corrompu : on laisse le prochain tick nettoyer */ }
+}
+
+function restTimerShow(){
+  const bubble = document.getElementById('rest-timer-bubble');
+  if(!bubble) return;
+  bubble.classList.add('show');
+  if(_restTimerInterval) clearInterval(_restTimerInterval);
+  restTimerTick();
+  _restTimerInterval = setInterval(restTimerTick, 1000);
+}
+
+function restTimerTick(){
+  const raw = localStorage.getItem(REST_TIMER_STATE_KEY);
+  if(!raw){ restTimerStop(); return; }
+  let st;
+  try { st = JSON.parse(raw); } catch(_) { restTimerStop(); return; }
+  const remaining = (st.endsAt - Date.now()) / 1000;
+  const display = document.getElementById('rest-timer-display');
+  if(display) display.textContent = restTimerFmt(remaining);
+  if(remaining <= 0){
+    if(navigator.vibrate) navigator.vibrate([40,60,40]);
+    restTimerComplete();
+  }
+}
+
+/* Fin du repos : au lieu d'un toast qui disparaît tout seul, un message
+   qu'il faut fermer explicitement — pour ne pas le rater si le téléphone
+   n'était pas regardé pile au bon moment. */
+function restTimerComplete(){
+  localStorage.removeItem(REST_TIMER_STATE_KEY);
+  if(_restTimerInterval){ clearInterval(_restTimerInterval); _restTimerInterval = null; }
+  _restTimerExpanded = false;
+  document.getElementById('rest-timer-bubble')?.classList.remove('show','expanded');
+  document.getElementById('rest-timer-done-banner')?.classList.add('show');
+}
+function restTimerDismissDone(){
+  document.getElementById('rest-timer-done-banner')?.classList.remove('show');
+}
+
+function restTimerToggleExpand(){
+  _restTimerExpanded = !_restTimerExpanded;
+  document.getElementById('rest-timer-bubble')?.classList.toggle('expanded', _restTimerExpanded);
+}
+
+/* Un tap n'importe où ailleurs sur l'écran réduit la bulle agrandie — les
+   boutons de la bulle ont leur propre stopPropagation() donc ce gestionnaire
+   ne s'exécute que pour un tap réellement extérieur à la bulle. */
+document.addEventListener('click', function(e){
+  if(!_restTimerExpanded) return;
+  const bubble = document.getElementById('rest-timer-bubble');
+  if(bubble && !bubble.contains(e.target)){
+    _restTimerExpanded = false;
+    bubble.classList.remove('expanded');
+  }
+});
+
+/* Réglage sur la page Séance : durée PAR DÉFAUT du prochain repos. */
+function woRestTimerAdjustDefault(deltaSec){
+  setRestTimerDefaultDuration(restTimerDefaultDuration() + deltaSec);
+  const el = document.getElementById('wo-rest-timer-default-display');
+  if(el) el.textContent = restTimerFmt(restTimerDefaultDuration());
+}
+
+/* Bascule dans Profil : active/désactive complètement la fonctionnalité —
+   ce n'est pas obligatoire de l'avoir. */
+function toggleRestTimerEnabled(){
+  const now = !restTimerEnabled();
+  setRestTimerEnabled(now);
+  updateRestTimerToggleUI();
+  if(!now) restTimerStop(); // désactiver coupe net un repos en cours
+}
+function updateRestTimerToggleUI(){
+  const btn = document.getElementById('rest-timer-enable-toggle');
+  const knob = document.getElementById('rest-timer-enable-knob');
+  if(!btn || !knob) return;
+  const on = restTimerEnabled();
+  btn.setAttribute('aria-checked', String(on));
+  btn.style.background = on ? 'var(--teal)' : 'var(--s3)';
+  knob.style.transform = on ? 'translateX(20px)' : 'translateX(0)';
+}
+
+/* Reprise après fermeture/réouverture de l'app pendant un repos en cours. */
+(function restTimerResumeOnLoad(){
+  const raw = localStorage.getItem(REST_TIMER_STATE_KEY);
+  if(raw){
+    try {
+      const st = JSON.parse(raw);
+      if(st.endsAt > Date.now() && restTimerEnabled()) restTimerShow();
+      else localStorage.removeItem(REST_TIMER_STATE_KEY);
+    } catch(_) { localStorage.removeItem(REST_TIMER_STATE_KEY); }
+  }
+  // Initialise l'affichage de la durée par défaut sur la page Séance et
+  // la bascule dans Profil, avec les valeurs déjà enregistrées.
+  const defEl = document.getElementById('wo-rest-timer-default-display');
+  if(defEl) defEl.textContent = restTimerFmt(restTimerDefaultDuration());
+  updateRestTimerToggleUI();
+})();
+
+
 
 /* Recalcule juste le badge PR/% "AUJ." d'un exercice (déclenché à chaque frappe
    reps/poids). Miroir du calcul fait dans woRenderSession pour cet exercice,
@@ -22401,13 +22721,20 @@ function woDraftRenameExo(ei, oldName){
   const oldId = exo.id;
   exo.name = name;
   woDraftSet(d);
-  // Propager le renommage dans toutes les séances sauvegardées du même type
-  const sessions = woV2GetSessions(d.type);
-  sessions.forEach(sess=>{
-    const found = sess.exercises?.find(e=>e.id===oldId||e.name===oldName);
-    if(found){ found.name = name; }
+  // Propager le renommage dans TOUTES les séances sauvegardées, tous types
+  // confondus (le même exercice peut apparaître dans plusieurs types de
+  // séance — se limiter au type courant fragmenterait l'historique en deux
+  // noms différents).
+  const allTypes = woGetAllTypes();
+  Object.keys(allTypes).forEach(tid=>{
+    const sessions = woV2GetSessions(tid);
+    let changed = false;
+    sessions.forEach(sess=>{
+      const found = sess.exercises?.find(e=>e.id===oldId||e.name===oldName);
+      if(found){ found.name = name; changed = true; }
+    });
+    if(changed) woV2SaveSessions(tid, sessions);
   });
-  woV2SaveSessions(d.type, sessions);
   // Mettre à jour la liste en veille si l'ancien nom y était
   if(woPausedHas(oldName)){ woPausedRemove(oldName); woPausedAdd(name); }
   toast(`Exercice renommé en "${name}"`,'var(--teal)');
@@ -22430,6 +22757,7 @@ function woDraftPauseExo(ei){
 function woGetExoHistory(){
   const draft=woDraftGet(); if(!draft) return [];
   const existing=new Set(draft.exercises.map(e=>e.name));
+  const deleted=new Set(woDeletedExosGet());
   const typeOrder=woGetTypeOrder();
   const seen=new Set(); const list=[];
   // Collecter depuis toutes les séances de tous les types, plus récentes en premier
@@ -22440,7 +22768,7 @@ function woGetExoHistory(){
   allSess.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   allSess.forEach(sess=>{
     (sess.exercises||[]).forEach(exo=>{
-      if(!seen.has(exo.name)&&!existing.has(exo.name)){
+      if(!seen.has(exo.name)&&!existing.has(exo.name)&&!deleted.has(exo.name)){
         seen.add(exo.name);
         list.push({name:exo.name,muscle:exo.muscle||woGetMuscle(exo)});
       }
@@ -22575,30 +22903,37 @@ function woDraftRemoveExo(ei){
 }
 
 /* ── Supprimer définitivement un exercice de toute la base de données ── */
+/* ── Liste des exercices supprimés définitivement ──
+   Contrairement à avant, on ne touche plus jamais aux séances déjà
+   enregistrées : seul le NOM est mémorisé ici pour ne plus être reproposé
+   à l'ajout. L'historique (graphiques, progression, séances passées) reste
+   entièrement intact et consultable. */
+function woDeletedExosGet(){ return JSON.parse(localStorage.getItem('kcalos_wo_deleted_exos')||'[]'); }
+function woDeletedExosAdd(name){ const d=new Set(woDeletedExosGet()); d.add(name); localStorage.setItem('kcalos_wo_deleted_exos', JSON.stringify([...d])); }
+/* Réhabilite un exercice précédemment "supprimé" dès qu'une série lui est
+   à nouveau ajoutée quelque part (ex: une autre séance qui le contenait
+   déjà) — sinon il resterait exclu des suggestions alors qu'on l'utilise
+   activement. */
+function woDeletedExosRemove(name){
+  const d = woDeletedExosGet();
+  const filtered = d.filter(n=>n!==name);
+  if(filtered.length !== d.length) localStorage.setItem('kcalos_wo_deleted_exos', JSON.stringify(filtered));
+}
+
 function woDraftDeleteExoPermanent(ei, exoName){
-  const msg = `⚠️ Supprimer définitivement "${exoName}" ?\n\nCet exercice sera supprimé de TOUTES les séances enregistrées et ne pourra pas être récupéré.`;
+  const msg = `Supprimer "${exoName}" de la liste des exercices disponibles ?\n\nIl ne sera plus proposé pour de nouvelles séances, mais ton historique (séances passées, progression) avec cet exercice sera entièrement conservé.`;
   if(!confirm(msg)) return;
   const d = woDraftGet();
   if(d){ d.exercises.splice(ei,1); woDraftSet(d); }
-  // Supprimer de toutes les séances sauvegardées
-  const allTypes = woGetAllTypes();
-  Object.keys(allTypes).forEach(tid=>{
-    const sessions = woV2GetSessions(tid);
-    let changed = false;
-    sessions.forEach(sess=>{
-      const before = (sess.exercises||[]).length;
-      sess.exercises = (sess.exercises||[]).filter(e=>e.name!==exoName);
-      if(sess.exercises.length !== before) changed = true;
-    });
-    if(changed) woV2SaveSessions(tid, sessions.filter(s=>(s.exercises||[]).length>0 || s.date));
-  });
+  // Ne plus le reproposer à l'ajout — l'historique des séances passées n'est PAS touché.
+  woDeletedExosAdd(exoName);
   // Supprimer des exercices en veille
   woPausedRemove(exoName);
   // Supprimer des exercices personnalisés si présent
   const customExos = JSON.parse(localStorage.getItem('kcalos_custom_exos')||'[]');
   const filtered = customExos.filter(e=>e.name!==exoName);
   if(filtered.length !== customExos.length) localStorage.setItem('kcalos_custom_exos',JSON.stringify(filtered));
-  toast(`"${exoName}" supprimé définitivement`,'var(--red)');
+  toast(`"${exoName}" retiré de la liste des exercices`,'var(--red)');
   woRenderSession();
   woRenderVolumeTable();
   woRenderUserExoList();
@@ -22609,16 +22944,20 @@ function woDraftSetMuscle(ei, muscle){
   const d = woDraftGet(); if(!d || !d.exercises[ei]) return;
   d.exercises[ei].muscle = muscle;
   woDraftSet(d);
-  // Propager aussi dans toutes les séances sauvegardées du même type pour cet exercice
+  // Propager aussi dans TOUTES les séances sauvegardées, tous types confondus
+  // (même exercice possible dans plusieurs types — voir woDraftRenameExo).
   const exo = d.exercises[ei];
-  if(!exo || !d.type) return;
-  const sessions = woV2GetSessions(d.type);
-  let changed = false;
-  sessions.forEach(sess=>{
-    const found = sess.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
-    if(found && found.muscle !== muscle){ found.muscle = muscle; changed = true; }
+  if(!exo) return;
+  const allTypes = woGetAllTypes();
+  Object.keys(allTypes).forEach(tid=>{
+    const sessions = woV2GetSessions(tid);
+    let changed = false;
+    sessions.forEach(sess=>{
+      const found = sess.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
+      if(found && found.muscle !== muscle){ found.muscle = muscle; changed = true; }
+    });
+    if(changed) woV2SaveSessions(tid, sessions);
   });
-  if(changed) woV2SaveSessions(d.type, sessions);
 }
 
 /* ── Terminer la séance ── */
@@ -28495,7 +28834,9 @@ else setTimeout(slInit,200);
     'kcalos_food_favs','kcalos_food_recents','kcalos_food_search_hist',
     'kcalos_widgets_config','kcalos_widgets_order','kcalos_widgets_sizes',
     'kcalos_eau_goal','kcalos_theme',
-    'kcalos_food_custom','kcalos_food_last_qty'
+    'kcalos_food_custom','kcalos_food_last_qty',
+    'kcalos_wo_deleted_exos','kcalos_wo_paused',
+    'kcalos_rest_timer_enabled','kcalos_rest_timer_duration'
   ];
 
   let fbAuth, fbDb, fbUser = null;
