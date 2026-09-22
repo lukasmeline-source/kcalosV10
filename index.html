@@ -5068,6 +5068,20 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
         <div class="inp-wrap"><input type="number" id="cf-potassium" placeholder="—" min="0" max="9000" step="1"><span class="unit">mg</span></div>
       </div>
     </div>
+    <div style="font-size:0.68rem;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:0.06em;margin:1.1rem 0 0.7rem">Portion (optionnel)</div>
+    <div style="font-size:0.72rem;color:var(--muted2);margin-bottom:0.7rem;line-height:1.4">
+      Renseigne les deux champs pour pouvoir saisir cet aliment en portion plutôt qu'en grammes (ex : « 1 part » = 180 g).
+    </div>
+    <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:0.7rem">
+      <div class="field">
+        <label for="cf-portion-label">Nom de la portion</label>
+        <div class="inp-wrap"><input type="text" id="cf-portion-label" placeholder="1 part" maxlength="24" autocomplete="off"></div>
+      </div>
+      <div class="field">
+        <label for="cf-portion-grams">Poids</label>
+        <div class="inp-wrap"><input type="number" id="cf-portion-grams" placeholder="180" min="1" max="5000" step="1"><span class="unit">g</span></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -6333,7 +6347,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 
 <!-- WORKOUT: Récap de fin de séance (avant enregistrement) -->
 <div id="wo-recap-sheet" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)" onclick="if(event.target===this)woCloseRecap()">
-  <div style="position:absolute;bottom:0;left:0;right:0;background:var(--s1);border-radius:20px 20px 0 0;padding:1.25rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom,0px));max-width:480px;margin:0 auto;border-top:1px solid var(--border2);animation:slideUp 0.22s ease">
+  <div style="position:absolute;bottom:0;left:0;right:0;background:var(--s1);border-radius:20px 20px 0 0;padding:1.25rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom,0px));max-width:480px;margin:0 auto;border-top:1px solid var(--border2);animation:slideUp 0.22s ease;max-height:88vh;overflow-y:auto">
     <div style="width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1rem"></div>
     <div id="wo-recap-title" style="font-size:0.63rem;color:var(--muted2);text-transform:uppercase;letter-spacing:0.1em;font-weight:600;text-align:center;margin-bottom:0.5rem"></div>
     <div style="text-align:center;margin-bottom:0.9rem">
@@ -6350,6 +6364,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <span id="wo-recap-prog-val" style="font-size:1rem;font-weight:700;flex-shrink:0"></span>
     </div>
     <div id="wo-recap-pr" style="display:none;font-size:0.72rem;line-height:1.6;color:var(--lime-d);background:var(--lime-bg);border:1px solid var(--lime-d);border-radius:var(--r-sm);padding:0.6rem 0.9rem;margin-top:0.6rem"></div>
+    <div id="wo-recap-muscles"></div>
     <div style="display:flex;gap:8px;margin-top:1rem">
       <button class="btn secondary" onclick="woCloseRecap()" style="flex:1;font-size:0.88rem;min-height:50px">← Modifier</button>
       <button class="btn teal" onclick="woCommitSession()" style="flex:2;font-size:0.95rem;font-weight:700;min-height:50px">✓ Enregistrer</button>
@@ -6924,7 +6939,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-09-21.1';
+const APP_BUILD_VERSION = '2026-09-21.3';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -13928,7 +13943,10 @@ const _HOME_PORTIONS = [
   { kw:'pain complet',       portions:[{l:'1 tranche',                 g:35}]  },
   { kw:'baguette',           portions:[{l:'1/4 de baguette',           g:65}]  },
   { kw:'pain',               portions:[{l:'1 tranche',                 g:35}]  },
+  { kw:'jus',                portions:[{l:'1 verre',                   g:200}] },
   { kw:'banane',             portions:[{l:'1 banane',                  g:120}] },
+  { kw:'pommes de terre',    portions:[{l:'1 pomme de terre',          g:150}] },
+  { kw:'pomme de terre',     portions:[{l:'1 pomme de terre',          g:150}] },
   { kw:'pomme',              portions:[{l:'1 pomme',                   g:150}] },
   { kw:'orange',             portions:[{l:'1 orange',                  g:180}] },
   { kw:'kiwi',               portions:[{l:'1 kiwi',                    g:75}]  },
@@ -13936,22 +13954,26 @@ const _HOME_PORTIONS = [
   { kw:'oeuf',               portions:[{l:'1 oeuf',                    g:60}]  },
   { kw:'tomate',             portions:[{l:'1 tomate',                  g:120}] },
   { kw:'carotte',            portions:[{l:'1 carotte',                 g:80}]  },
-  { kw:'pomme de terre',     portions:[{l:'1 pomme de terre',          g:150}] },
   { kw:'beurre',             portions:[{l:'1 noix',                    g:10},{l:'1 c. à soupe', g:15}] },
   { kw:'huile',              portions:[{l:'1 c. à soupe',              g:14},{l:'1 c. à café',  g:5}]  },
   { kw:'miel',               portions:[{l:'1 c. à soupe',              g:20},{l:'1 c. à café',  g:7}]  },
   { kw:'sucre',              portions:[{l:'1 morceau',                 g:5}, {l:'1 c. à café',  g:5}]  },
   { kw:'riz',                portions:[{l:'1 portion cuite',           g:180}] },
   { kw:'pates',              portions:[{l:'1 portion cuite',           g:200}] },
+  { kw:'chocolat',           portions:[{l:'1 carré',                   g:6}]   },
   { kw:'lait',               portions:[{l:'1 verre',                  g:200}] },
   { kw:'amande',             portions:[{l:'1 poignée (~20 amandes)',   g:30}]  },
+  { kw:'noix de coco',       portions:[] },
   { kw:'noix',               portions:[{l:'1 poignée (~8 noix)',       g:30}]  },
-  { kw:'chocolat',           portions:[{l:'1 carré',                   g:6}]   },
   { kw:'jambon',             portions:[{l:'1 tranche',                 g:25}]  },
   { kw:'fromage',            portions:[{l:'1 portion',                 g:30}]  },
 ];
 function _homePortionsFor(name) {
-  const n = (name||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  // Les mots-clés les plus spécifiques (ex: "pomme de terre") doivent précéder les plus
+  // génériques (ex: "pomme") dans _HOME_PORTIONS ci-dessus, sinon le générique gagnerait
+  // toujours en premier. Les ligatures (œ/æ) sont dépliées avant de retirer les accents,
+  // sinon "œuf" ne matche jamais le mot-clé "oeuf".
+  const n = (name||'').toLowerCase().replace(/œ/g,'oe').replace(/æ/g,'ae').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   const hit = _HOME_PORTIONS.find(hp => n.includes(hp.kw));
   return hit ? hit.portions : [];
 }
@@ -13986,6 +14008,7 @@ function _searchCustomFoods(query) {
       },
       serving_size:'', serving_quantity:null, code:'', image: x.img || '',
       _src:'custom', _frScore:15, // priorité légèrement > CIQUAL : c'est exactement ce que l'utilisateur a demandé
+      _customPortion: x.por || null,
     }));
 }
 
@@ -14025,7 +14048,7 @@ function cfClearPhoto(){
 function openCustomFoodPanel(prefillName) {
   const existing = prefillName ? getCustomFoods().find(x => x.n.toLowerCase() === prefillName.toLowerCase()) : null;
   const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
-  ['cf-name','cf-kcal','cf-prot','cf-gluc','cf-lip','cf-sucres','cf-fibres','cf-sodium','cf-potassium'].forEach(id => {
+  ['cf-name','cf-kcal','cf-prot','cf-gluc','cf-lip','cf-sucres','cf-fibres','cf-sodium','cf-potassium','cf-portion-label','cf-portion-grams'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -14040,6 +14063,8 @@ function openCustomFoodPanel(prefillName) {
     setVal('cf-fibres', existing.f || '');
     setVal('cf-sodium', existing.s || '');
     setVal('cf-potassium', existing.ka || '');
+    setVal('cf-portion-label', existing.por?.l || '');
+    setVal('cf-portion-grams', existing.por?.g || '');
     _cfEditingName = existing.n;
     _cfImage = existing.img || null;
     if (titleEl) titleEl.textContent = "Modifier l'aliment";
@@ -14066,10 +14091,15 @@ function saveCustomFood() {
   if (isNaN(kcal) || kcal < 0) { toast('❌ Renseigne les calories / 100g', 'var(--red)'); return; }
 
   const num = id => { const v = parseFloat(document.getElementById(id)?.value); return isNaN(v) ? 0 : v; };
+  const portionLabel = document.getElementById('cf-portion-label')?.value.trim();
+  const portionGrams = num('cf-portion-grams');
   const entry = {
     n: name, k: Math.round(kcal), p: num('cf-prot'), g: num('cf-gluc'), l: num('cf-lip'),
     su: num('cf-sucres'), f: num('cf-fibres'), s: num('cf-sodium'), ka: num('cf-potassium'), ts: Date.now(),
     img: _cfImage || null,
+    // Portion optionnelle : les deux champs doivent être renseignés, sinon on ne stocke rien
+    // (évite une portion "1 part = 0g" si l'utilisateur ne remplit qu'un seul des deux champs)
+    por: (portionLabel && portionGrams > 0) ? { l: portionLabel, g: portionGrams } : null,
   };
 
   const wasEditing = !!_cfEditingName;
@@ -14102,7 +14132,9 @@ function saveCustomFood() {
       const prodObj = {
         name: normalized.product_name, brand: '', kcal: entry.k, hasNutrition: true,
         prot: entry.p, gluc: entry.g, sucres: entry.su, lip: entry.l, satfat: 0,
-        fibres: entry.f, sodium: entry.s, potassium: entry.ka, portions: [], image: entry.img || '', _src: 'custom',
+        fibres: entry.f, sodium: entry.s, potassium: entry.ka,
+        portions: entry.por ? [{l: entry.por.l, g: entry.por.g}] : [],
+        image: entry.img || '', _src: 'custom',
       };
       selectProduct(prodObj);
     }
@@ -14177,7 +14209,9 @@ function caUseFood(name){
   selectProduct({
     name: f.n, brand: '', kcal: f.k, hasNutrition: true,
     prot: f.p||0, gluc: f.g||0, sucres: f.su||0, lip: f.l||0, satfat: 0,
-    fibres: f.f||0, sodium: f.s||0, potassium: f.ka||0, portions: [], image: f.img || '', _src: 'custom',
+    fibres: f.f||0, sodium: f.s||0, potassium: f.ka||0,
+    portions: f.por ? [{l: f.por.l, g: f.por.g}] : [],
+    image: f.img || '', _src: 'custom',
   });
 }
 
@@ -14833,6 +14867,7 @@ function renderSearchResults(products) {
     const servQty = parseFloat(p.serving_quantity) || null;
     const portions = [
       ..._homePortionsFor(nm),
+      ...(p._customPortion ? [{l: p._customPortion.l, g: p._customPortion.g}] : []),
       ...(servQty ? [{l:`1 portion (${servQty}g)`, g: servQty}] : []),
     ];
     const src   = SRC_LABEL(p);
@@ -14940,14 +14975,21 @@ function selectProduct(productData) {
   const lastQty = getLastQty(productData.name, productData.brand);
   const defaultGrams = lastQty?.grams || 100;
 
-  AP._qtyMode = 'grams';
-  AP._portionIdx = 0;
-  AP._portionCount = 1;
+  // Si la dernière saisie pour cet aliment se faisait en portion, et que l'aliment a
+  // toujours au moins autant de portions disponibles (elles sont recalculées à chaque
+  // recherche, l'index peut donc ne plus exister), on rouvre directement en mode Portion
+  // plutôt que de repartir en grammes. Le mode Kcal, plus rare, n'est pas mémorisé : on
+  // retombe alors sur les grammes, ce qui reste le comportement d'origine.
+  const canRestorePortion = lastQty?.mode === 'portion'
+    && Array.isArray(productData.portions)
+    && productData.portions.length > (lastQty.portionIdx || 0);
+
+  AP._portionIdx = canRestorePortion ? lastQty.portionIdx : 0;
+  AP._portionCount = canRestorePortion ? (lastQty.portionCount || 1) : 1;
   if (gramsEl) gramsEl.value = defaultGrams;
   if (dispEl)  dispEl.value = String(defaultGrams);
 
-  // Mode par défaut : Grammes
-  setQtyMode('grams');
+  setQtyMode(canRestorePortion ? 'portion' : 'grams');
 
   updateQtyPanel();
 
@@ -15703,7 +15745,7 @@ function confirmAddFood() {
   } else {
     saveMealItem(AP.date, AP.currentMeal, item);
     addToRecents(item);
-    setLastQty(f.name, f.brand, grams);
+    setLastQty(f.name, f.brand, grams, AP._qtyMode, AP._portionIdx, AP._portionCount);
   }
 
   // Fermer qty-panel (+ search si ajout depuis la recherche), rester dans le détail repas
@@ -18759,13 +18801,20 @@ function getLastQty(name, brand){
   const m = getLastQtyMap();
   return m[_lastQtyId(name, brand)] || null;
 }
-function setLastQty(name, brand, grams){
+function setLastQty(name, brand, grams, mode, portionIdx, portionCount){
   const m = getLastQtyMap();
   const keys = Object.keys(m);
   if (keys.length > 300) { // purge des plus anciennes si ça grossit trop
     keys.sort((a,b) => (m[a].ts||0) - (m[b].ts||0)).slice(0, 50).forEach(k => delete m[k]);
   }
-  m[_lastQtyId(name, brand)] = { grams: Math.round(grams), ts: Date.now() };
+  m[_lastQtyId(name, brand)] = {
+    grams: Math.round(grams), ts: Date.now(),
+    // Mode ('grams'/'portion') + index/quantité de la portion utilisée, pour rouvrir
+    // directement dans le même mode la prochaine fois (ex: toujours "2 bananes").
+    mode: mode || 'grams',
+    portionIdx: portionIdx || 0,
+    portionCount: portionCount || 1,
+  };
   localStorage.setItem(FOOD_LAST_QTY_KEY, JSON.stringify(m));
 }
 
@@ -21708,6 +21757,58 @@ const WO_MUSCLE_COLORS = {
   'Abdos':'#a78bfa','Cardio':'#fb923c','Autre':'#7a8499'
 };
 
+/* ════════════════════════════════════════
+   CARDIO — modèle MET indépendant du calcul musculation
+   Les exercices cardio (EXERCISE_DB, champ cardio:true, ou exo custom créé
+   avec muscle='Cardio') stockent leurs séries sous la forme {duration, distance}
+   (minutes / km) plutôt que {weight, reps} — cf woDraftAddCardioSet. Le calcul
+   de kcal est donc entièrement séparé de woV2CalcKcal (musculation) et
+   additionné à la fin, cf woCardioKcalTotal. ════════════════════════════════════════ */
+
+// MET (Compendium of Physical Activities) par activité, effort modéré/soutenu —
+// ajusté ensuite par le curseur d'intensité de la séance (±20%, cf woCardioKcalTotal).
+const WO_CARDIO_MET = {
+  run:9.8, bike:7.5, rower:7.0, jump_rope:11.0, elliptic:5.0,
+  hiit:8.0, swim:8.3, walk:4.3
+};
+const WO_CARDIO_MET_DEFAULT = 6.0; // exercice cardio personnalisé sans correspondance connue
+
+function woCardioMET(exo){
+  return WO_CARDIO_MET[exo.id] ?? WO_CARDIO_MET_DEFAULT;
+}
+
+// Durée cardio totale (minutes) d'une séance — sert à la fois à l'affichage
+// et à retirer ce temps de la composante "durée" du calcul musculation
+// (cf woV2CalcKcal) pour ne jamais compter deux fois le même intervalle.
+function woCardioTotalDuration(session){
+  let mins = 0;
+  (session.exercises||[]).forEach(exo=>{
+    if(!exo.cardio) return;
+    (exo.sets||[]).filter(s=>!s.skipped).forEach(s=>{ mins += parseFloat(s.duration)||0; });
+  });
+  return mins;
+}
+
+/* Kcal du cardio d'une séance : (MET-1) × poids × durée(h), même logique "EAT net"
+   que le bloc musculation de woV2CalcKcal (le TDEE couvre déjà le BMR sur 24h).
+   Calculée sur la durée propre de chaque intervalle cardio saisi, jamais sur la
+   durée globale de la séance (qui peut aussi inclure du temps de musculation). */
+function woCardioKcalTotal(session, pw, gF, aF){
+  const intensity = woNormalizeIntensity(session.intensity ?? 5);
+  const intensF = 0.8 + ((intensity-1)/9) * 0.4; // 0.8..1.2 autour du MET de référence
+  let total = 0;
+  (session.exercises||[]).forEach(exo=>{
+    if(!exo.cardio) return;
+    const met = woCardioMET(exo) * intensF;
+    (exo.sets||[]).filter(s=>!s.skipped).forEach(s=>{
+      const durH = (parseFloat(s.duration)||0)/60;
+      if(durH<=0) return;
+      total += (met-1) * pw * durH * gF * aF;
+    });
+  });
+  return total;
+}
+
 // Volume hebdomadaire par groupe musculaire, fenêtre glissante de 28 jours —
 // même moteur de calcul que le tableau de la page Séance (onglet Volume, cf
 // woRenderVolumeTable), factorisé ici pour être réutilisable ailleurs (ex :
@@ -23064,6 +23165,78 @@ function woTypeLabel(typeId){
   return (woGetAllTypes()[typeId] || WO_SESSION_TYPES[typeId])?.label || 'Séance';
 }
 
+/* Détail par groupe musculaire pour le récap de fin de séance : volume (tonnage brut,
+   cf woSessVol), nombre de séries actives et progression par groupe (moyenne des %
+   de progression des exercices de ce groupe vs leur dernière occurrence — jamais une
+   somme, même règle que le % global, cf workout-logic.md §2-3). Réutilise
+   woMatchedProgressDeep pour rester cohérent avec woDraftGlobalPct plutôt que de
+   comparer seulement à la toute dernière séance. */
+function woDraftMuscleBreakdown(draft){
+  if(!draft?.exercises?.length) return [];
+  const allSessionsAll = woGetAllSessionsAll();
+  const byMuscle = {}; // muscle -> {vol, sets, pcts:[]}
+  draft.exercises.forEach(exo=>{
+    const sets = (exo.sets||[]).filter(s=>!s.skipped);
+    if(!sets.length) return;
+    const muscle = woGetMuscle(exo);
+    if(!byMuscle[muscle]) byMuscle[muscle] = { vol:0, sets:0, pcts:[] };
+    byMuscle[muscle].vol += sets.reduce((s,x)=>s+(parseFloat(x.weight)||0)*(parseFloat(x.reps)||0),0);
+    byMuscle[muscle].sets += sets.length;
+
+    const occs = allSessionsAll.map(sess=>{
+      if(sess.date >= draft.date) return null;
+      const found = sess.exercises?.find(e=>e.id===exo.id||e.name===exo.name);
+      return found && found.sets?.length ? {date:sess.date, sets:found.sets} : null;
+    }).filter(Boolean).sort((a,b)=>a.date.localeCompare(b.date));
+    if(occs.length){
+      const mp = woMatchedProgressDeep(exo.sets||[], occs);
+      if(mp.pct !== null) byMuscle[muscle].pcts.push(mp.pct);
+    }
+  });
+
+  return WO_MUSCLE_ORDER.filter(m=>byMuscle[m])
+    .concat(Object.keys(byMuscle).filter(m=>!WO_MUSCLE_ORDER.includes(m)))
+    .map(m=>{
+      const d = byMuscle[m];
+      return {
+        muscle: m,
+        vol: Math.round(d.vol),
+        sets: d.sets,
+        pct: d.pcts.length ? d.pcts.reduce((a,b)=>a+b,0)/d.pcts.length : null,
+      };
+    });
+}
+
+/* Rendu de la liste "Détail par groupe" du récap : une ligne par muscle travaillé,
+   avec une barre de volume relative (au groupe le plus sollicité de CETTE séance,
+   pas à une référence absolue — cf tableau Volume de l'onglet dédié pour ça) et,
+   quand disponible, le % de progression du groupe. */
+function woRenderRecapMuscles(breakdown){
+  const el = document.getElementById('wo-recap-muscles');
+  if(!el) return;
+  if(!breakdown.length){ el.innerHTML=''; return; }
+  const maxVol = Math.max(...breakdown.map(b=>b.vol), 1);
+  const esc = s => String(s).replace(/[<>&]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+  el.innerHTML = `
+    <div style="font-size:0.63rem;color:var(--muted2);text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin:0.9rem 0 0.5rem">Détail par groupe</div>
+    <div style="display:flex;flex-direction:column;gap:5px">
+      ${breakdown.map(b=>{
+        const col = WO_MUSCLE_COLORS[b.muscle] || '#7a8499';
+        const pctStr = b.pct===null ? '' : `<span style="font-size:0.68rem;font-weight:700;color:${b.pct>0?'var(--lime)':b.pct<0?'var(--red)':'var(--muted)'};flex-shrink:0;white-space:nowrap">${b.pct>0?'+':b.pct<0?'−':''}${Math.abs(b.pct).toFixed(1)}%</span>`;
+        const barPct = Math.round((b.vol/maxVol)*100);
+        return `<div style="display:flex;align-items:center;gap:8px;padding:0.45rem 0.65rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm)">
+          <span style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0"></span>
+          <span style="font-size:0.74rem;color:var(--text);flex-shrink:0;min-width:62px">${esc(b.muscle)}</span>
+          <div style="flex:1;height:5px;background:var(--s3);border-radius:3px;overflow:hidden">
+            <div style="height:100%;width:${barPct}%;background:${col}"></div>
+          </div>
+          <span style="font-size:0.66rem;color:var(--muted);white-space:nowrap;flex-shrink:0">${b.sets} série${b.sets>1?'s':''} · ${b.vol.toLocaleString('fr-FR')} kg</span>
+          ${pctStr}
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
 function woOpenRecap(){
   const draft = woDraftGet(); if(!draft) return;
   const activeExos = draft.exercises.filter(e=>e.sets?.length>0);
@@ -23105,6 +23278,9 @@ function woOpenRecap(){
       prBox.style.display='block';
     } else { prBox.style.display='none'; }
   }
+  // Détail par groupe musculaire (volume + progression) — cf woDraftMuscleBreakdown
+  woRenderRecapMuscles(woDraftMuscleBreakdown(draft));
+
   const sheet = document.getElementById('wo-recap-sheet');
   if(sheet) sheet.style.display='block';
 }
