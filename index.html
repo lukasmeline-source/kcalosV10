@@ -6952,7 +6952,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-09-23.6';
+const APP_BUILD_VERSION = '2026-09-23.7';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -13947,6 +13947,7 @@ function _searchCiqual(query) {
         'carbohydrates_100g': x.g, 'sugars_100g': x.su,
         'fat_100g': x.l, 'fiber-energy_100g': x.f,
         'sodium_100g': x.s / 1000, 'potassium_100g': (x.ka || 0) / 1000,
+        'glycemic-index_100g': (x.ig ?? null),
       },
       serving_size:'', serving_quantity:null, code:'',
       _src:'ciqual', _frScore:10,
@@ -14033,6 +14034,7 @@ function _searchCustomFoods(query) {
         'carbohydrates_100g': x.g, 'sugars_100g': x.su || 0,
         'fat_100g': x.l, 'fiber-energy_100g': x.f || 0,
         'sodium_100g': (x.s || 0) / 1000, 'potassium_100g': (x.ka || 0) / 1000,
+        'glycemic-index_100g': (x.ig ?? null),
       },
       serving_size:'', serving_quantity:null, code:'', image: x.img || '',
       _src:'custom', _frScore:15, // priorité légèrement > CIQUAL : c'est exactement ce que l'utilisateur a demandé
@@ -14160,7 +14162,7 @@ function saveCustomFood() {
       const prodObj = {
         name: normalized.product_name, brand: '', kcal: entry.k, hasNutrition: true,
         prot: entry.p, gluc: entry.g, sucres: entry.su, lip: entry.l, satfat: 0,
-        fibres: entry.f, sodium: entry.s, potassium: entry.ka,
+        fibres: entry.f, sodium: entry.s, potassium: entry.ka, ig: entry.ig ?? null,
         portions: entry.por ? [{l: entry.por.l, g: entry.por.g}] : [],
         image: entry.img || '', _src: 'custom',
       };
@@ -14237,7 +14239,7 @@ function caUseFood(name){
   selectProduct({
     name: f.n, brand: '', kcal: f.k, hasNutrition: true,
     prot: f.p||0, gluc: f.g||0, sucres: f.su||0, lip: f.l||0, satfat: 0,
-    fibres: f.f||0, sodium: f.s||0, potassium: f.ka||0,
+    fibres: f.f||0, sodium: f.s||0, potassium: f.ka||0, ig: f.ig ?? null,
     portions: f.por ? [{l: f.por.l, g: f.por.g}] : [],
     image: f.img || '', _src: 'custom',
   });
@@ -14430,6 +14432,7 @@ function _normalizeOFFProduct(p, src) {
     'fiber-energy_100g'  : n['fiber-energy_100g']    || n['fibers_100g']    || n['fiber_100g'] || 0,
     'sodium_100g'        : n['sodium_100g']          || 0,
     'potassium_100g'     : n['potassium_100g']       || n['mineral-potassium_100g'] || 0,
+    'glycemic-index_100g': n['glycemic-index_100g']  ?? null,
   };
   return {
     product_name     : p.product_name_fr || p.product_name || '',
@@ -14909,6 +14912,7 @@ function renderSearchResults(products) {
       fibres:   Math.round((n['fiber-energy_100g']||0)*10)/10,
       sodium:   Math.round((n['sodium_100g']||0)*1000*10)/10,
       potassium:Math.round((n['potassium_100g']||0)*1000*10)/10,
+      ig: (n['glycemic-index_100g'] ?? null), // indice glycémique estimé, non scalé par grammage
       portions, image: p.image || '', _src: p._src||'',
     };
     const pid = _regProd(prodObj);
@@ -15661,6 +15665,7 @@ function confirmAddFood() {
       ing.sodium    = f.sodium    > 0 ? Math.round(f.sodium    * ratio * 10) / 10 : 0;
       ing.potassium = f.potassium > 0 ? Math.round(f.potassium * ratio * 10) / 10 : 0;
       ing.satfat    = f.satfat    > 0 ? Math.round(f.satfat    * ratio * 10) / 10 : 0;
+      ing.ig = f.ig ?? ing.ig ?? null; // indice glycémique — propriété de l'aliment, pas de la quantité
     }
     closeQtyPanel();
     mrRenderIngList();
@@ -15684,6 +15689,7 @@ function confirmAddFood() {
       ing.sodium    = f.sodium    > 0 ? Math.round(f.sodium    * ratio * 10) / 10 : 0;
       ing.potassium = f.potassium > 0 ? Math.round(f.potassium * ratio * 10) / 10 : 0;
       ing.satfat    = f.satfat    > 0 ? Math.round(f.satfat    * ratio * 10) / 10 : 0;
+      ing.ig = f.ig ?? ing.ig ?? null; // indice glycémique — propriété de l'aliment, pas de la quantité
     }
     closeQtyPanel();
     mrRenderUseDetail();
@@ -15709,6 +15715,7 @@ function confirmAddFood() {
       kcal100: f.kcal || 0, prot100: f.prot || 0, gluc100: f.gluc || 0, lip100: f.lip || 0,
       sucres100: f.sucres || 0, fibres100: f.fibres || 0, sodium100: f.sodium || 0, potassium100: f.potassium || 0,
       satfat100: f.satfat || 0,
+      ig: f.ig ?? null, // indice glycémique — non scalé par le grammage
       image: f.image || '', _src: f._src || '',
     });
     AP.addingIngredientTo = null;
@@ -15738,6 +15745,7 @@ function confirmAddFood() {
       kcal100: f.kcal || 0, prot100: f.prot || 0, gluc100: f.gluc || 0, lip100: f.lip || 0,
       sucres100: f.sucres || 0, fibres100: f.fibres || 0, sodium100: f.sodium || 0, potassium100: f.potassium || 0,
       satfat100: f.satfat || 0,
+      ig: f.ig ?? null, // indice glycémique — non scalé par le grammage
       image: f.image || '', _src: f._src || '',
     });
     AP.addingIngredientTo = null;
@@ -15761,6 +15769,7 @@ function confirmAddFood() {
     sodium:    (f.sodium    > 0) ? Math.round(f.sodium    * ratio * 10) / 10 : 0,  // mg
     potassium: (f.potassium > 0) ? Math.round(f.potassium * ratio * 10) / 10 : 0,  // mg
     satfat:    (f.satfat    > 0) ? Math.round(f.satfat    * ratio * 10) / 10 : 0,  // g
+    ig:    (f.ig ?? null),  // indice glycémique estimé — propriété de l'aliment, pas de la quantité ; utilisé par computeGlycemiaCurve
     image: f.image || '',
     _src:  f._src  || '',
     ts:    Date.now(),
@@ -20275,6 +20284,15 @@ let _glycemiaChartInst = null;
 let _glycWidgetChartInst = null; // instance Chart.js du widget dashboard (distincte de la page Tendances)
 let _glycemiaLastStats = null; // pour modal info
 
+/* ── Conversion IG (indice glycémique, 0-100) → facteur de vitesse d'absorption ──
+   Même échelle que le fallback sugarRatio existant (0.82 lent → 1.27 rapide),
+   pour que les deux méthodes restent comparables. Bornes larges (IG 25→100)
+   car les glucides nets nuls/quasi nuls (ex: viande) ne passent jamais ici. */
+function _igToSpeedFactor(ig) {
+  const igNorm = Math.max(0, Math.min(1, (ig - 25) / 75));
+  return 0.82 + igNorm * 0.45;
+}
+
 /* ── Calcul pur de la courbe glycémique estimée (sans DOM) ──
    Réutilisé par la page Tendances (renderGlycemiaChart) ET le widget
    dashboard (_renderGlycWidget) — une seule source de vérité, en mg/dL. */
@@ -20309,7 +20327,19 @@ function computeGlycemiaCurve(date) {
     const prot   = items.reduce((s, it) => s + (it.prot   || 0), 0);
     const sucres = items.reduce((s, it) => s + (it.sucres || 0), 0);
     const fibres = items.reduce((s, it) => s + (it.fibres || 0), 0);
-    if (gluc > 0) events.push({ h, gluc, kcal, lip, prot, sucres, fibres, slot });
+
+    // IG pondéré par les glucides, pour les aliments qui en fournissent un (recettes
+    // maison enrichies, cf. CIQUAL_DB). Les aliments sans IG connu (immense majorité
+    // de la base) ne contribuent pas à cette moyenne : igCoverage reste à 0 pour eux
+    // et le calcul retombe intégralement sur l'heuristique sugarRatio existante.
+    let glucWithIg = 0, igWeightedSum = 0;
+    items.forEach(it => {
+      if (it.ig && it.gluc > 0) { glucWithIg += it.gluc; igWeightedSum += it.ig * it.gluc; }
+    });
+    const avgIg = glucWithIg > 0 ? igWeightedSum / glucWithIg : null;
+    const igCoverage = gluc > 0 ? Math.min(1, glucWithIg / gluc) : 0;
+
+    if (gluc > 0) events.push({ h, gluc, kcal, lip, prot, sucres, fibres, slot, avgIg, igCoverage });
   });
 
   const START_H = 6, END_H = 23, STEP = 5;
@@ -20342,7 +20372,13 @@ function computeGlycemiaCurve(date) {
       // par la table Ciqual). Repas à dominante amidon/complexe → pic plus tardif et étalé ;
       // repas à dominante sucres simples → pic plus précoce et marqué.
       const sugarRatio  = ev.gluc > 0 ? Math.min(1, ev.sucres / ev.gluc) : 0.4;
-      const speedFactor = 0.82 + sugarRatio * 0.45; // 0.82 (lent) → 1.27 (rapide)
+      const heuristicSpeedFactor = 0.82 + sugarRatio * 0.45; // 0.82 (lent) → 1.27 (rapide)
+      // Si une partie des glucides du repas vient d'aliments avec IG connu (recettes
+      // maison), on mélange les deux méthodes au prorata de la couverture ; sinon
+      // (immense majorité des cas) speedFactor reste strictement l'heuristique d'origine.
+      const speedFactor = ev.avgIg != null
+        ? heuristicSpeedFactor * (1 - ev.igCoverage) + _igToSpeedFactor(ev.avgIg) * ev.igCoverage
+        : heuristicSpeedFactor;
 
       // Lipides, protéines ET fibres ralentissent tous la vidange gastrique / l'absorption.
       const slowFactor = Math.max(0.55, 1 - (ev.lip * 0.003 + ev.prot * 0.001 + ev.fibres * 0.012));
@@ -20371,7 +20407,10 @@ function computeGlycemiaCurve(date) {
 
   const peaks = events.map(ev => {
     const sugarRatio  = ev.gluc > 0 ? Math.min(1, ev.sucres / ev.gluc) : 0.4;
-    const speedFactor = 0.82 + sugarRatio * 0.45;
+    const heuristicSpeedFactor = 0.82 + sugarRatio * 0.45;
+    const speedFactor = ev.avgIg != null
+      ? heuristicSpeedFactor * (1 - ev.igCoverage) + _igToSpeedFactor(ev.avgIg) * ev.igCoverage
+      : heuristicSpeedFactor;
     const slowFactor  = Math.max(0.55, 1 - (ev.lip * 0.003 + ev.prot * 0.001 + ev.fibres * 0.012));
     const tPeakAdj = (T_PEAK / slowFactor) / speedFactor;
     const peakH    = ev.h + tPeakAdj / 60;
