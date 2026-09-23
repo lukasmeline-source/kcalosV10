@@ -1842,6 +1842,11 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 .ap-sub-title.mrud-title-clickable{cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:0.3rem;width:100%}
 .ap-sub-title.mrud-title-clickable::after{content:'';width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin-top:-3px}
 .ap-sub-title.mrud-title-clickable:active{opacity:0.6}
+/* L'input date imbriqué (overlay transparent, cf mrud-title) ne doit intercepter
+   les taps QUE lorsque le titre est réellement cliquable (mode "repas précédent"),
+   sinon un tap sur "Repas" en mode normal ouvrirait le picker sans raison. */
+#mrud-title input[type="date"]{pointer-events:none}
+#mrud-title.mrud-title-clickable input[type="date"]{pointer-events:auto}
 .ap-sub-body{padding:0.85rem 1rem;padding-bottom:calc(80px + env(safe-area-inset-bottom,0))}
 
 /* AI Photo panel — boîtes de capture */
@@ -3919,10 +3924,14 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     <!-- DATE NAVIGATION -->
     <div class="ap-date-nav">
       <button class="ap-date-btn" onclick="apChangeDay(-1)">‹</button>
-      <div class="ap-date-label" id="ap-date-label" onclick="apPickDate()">Aujourd'hui</div>
+      <div class="ap-date-label" id="ap-date-label" onclick="apPickDate()" style="position:relative"><span id="ap-date-label-txt">Aujourd'hui</span><input type="date" id="ap-date-picker" style="position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:none;background:none;opacity:0;cursor:pointer" onchange="apSetDate(this.value)"></div>
       <button class="ap-date-btn" onclick="apChangeDay(1)">›</button>
     </div>
-    <input type="date" id="ap-date-picker" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px" onchange="apSetDate(this.value)">
+    <!-- Le date picker natif est désormais imbriqué dans .ap-date-label ci-dessus
+         (overlay transparent en position absolute) plutôt qu'un input caché
+         déclenché en JS : sur iOS Safari, showPicker()/.click() programmatique
+         sur un input invisible n'ouvre pas le picker natif — seul un vrai tap
+         direct sur l'input le fait. apPickDate() reste en repli. -->
 
     <!-- DAY SUMMARY BANNER — fusionne "mangé" et "restant" via un switch -->
     <div class="ap-day-banner" id="ap-kcal-rest-card">
@@ -4728,10 +4737,11 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <div class="mr-use-detail-panel" id="mr-use-detail-panel">
   <div class="ap-sub-header">
     <button class="ap-back-btn" onclick="mrCloseUseDetail()">‹</button>
-    <div class="ap-sub-title" id="mrud-title" onclick="mrudTitleTap()">Repas</div>
+    <div class="ap-sub-title" id="mrud-title" onclick="mrudTitleTap()" style="position:relative"><span id="mrud-title-txt">Repas</span><input type="date" id="mrud-date-picker" style="position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:none;background:none;opacity:0;cursor:pointer" onchange="mrudSetPrevDate(this.value)"></div>
     <div style="width:38px"></div>
   </div>
-  <input type="date" id="mrud-date-picker" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px" onchange="mrudSetPrevDate(this.value)">
+  <!-- input imbriqué dans .ap-sub-title ci-dessus (overlay transparent) : cf commentaire page Apports. -->
+
   <div class="ap-sub-body">
     <div class="meal-summary-strip">
       <div class="mss-item"><div class="mss-val" id="mrud-kcal">0</div><div class="mss-lbl">kcal</div></div>
@@ -5265,10 +5275,11 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   <!-- ── DATE NAV ── -->
   <div class="ap-date-nav" style="margin-bottom:1rem">
     <button class="ap-date-btn" onclick="stepsChangeDay(-1)">&#8249;</button>
-    <div class="ap-date-label" id="steps-date-label" onclick="stepsPickDate()">Aujourd'hui</div>
+    <div class="ap-date-label" id="steps-date-label" onclick="stepsPickDate()" style="position:relative"><span id="steps-date-label-txt">Aujourd'hui</span><input type="date" id="steps-date-picker" style="position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:none;background:none;opacity:0;cursor:pointer" onchange="stepsSetDate(this.value)"></div>
     <button class="ap-date-btn" onclick="stepsChangeDay(1)">&#8250;</button>
   </div>
-  <input type="date" id="steps-date-picker" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px" onchange="stepsSetDate(this.value)">
+  <!-- input imbriqué dans .ap-date-label ci-dessus (overlay transparent) : cf commentaire page Apports. -->
+
 
   <!-- ── LIVE STEP COUNTER ── -->
   <div class="stepcounter-card">
@@ -5794,10 +5805,12 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     <!-- Navigation par date -->
     <div class="ap-date-nav" style="margin-bottom:1rem">
       <button class="ap-date-btn" onclick="woPickerChangeDay(-1)">&#8249;</button>
-      <div class="ap-date-label" id="wo-picker-date-label" onclick="woPickerPickDate()">Aujourd'hui</div>
+      <div class="ap-date-label" id="wo-picker-date-label" onclick="woPickerPickDate()" style="position:relative"><span id="wo-picker-date-label-txt">Aujourd'hui</span><input type="date" id="wo-picker-date-input" style="position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:none;background:none;opacity:0;cursor:pointer" onchange="woPickerSetDate(this.value)"></div>
       <button class="ap-date-btn" onclick="woPickerChangeDay(1)">&#8250;</button>
     </div>
-    <input type="date" id="wo-picker-date-input" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px" onchange="woPickerSetDate(this.value)">
+    <!-- input imbriqué dans .ap-date-label ci-dessus (overlay transparent),
+         cf commentaire équivalent page Apports : nécessaire pour iOS Safari. -->
+
 
 
     <!-- Draft / suggestion banner -->
@@ -6154,9 +6167,6 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
         <h2 id="wo-sess-type-title" style="font-family:Playfair Display,serif;font-size:1.45rem;font-weight:400;letter-spacing:-0.3px"></h2>
         <p id="wo-sess-date-label" style="font-size:0.7rem;color:var(--muted);margin-top:1px;text-transform:uppercase;letter-spacing:0.06em"></p>
       </div>
-      <button onclick="openWoDurPanel()"
-        style="background:var(--s2);border:1px solid var(--border2);color:var(--muted);border-radius:var(--r-sm);padding:0.6rem 0.9rem;cursor:pointer;font-size:0.88rem;flex-shrink:0;min-height:42px;-webkit-tap-highlight-color:transparent"
-        title="Durée"><span class="ico"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><circle cx="8" cy="9" r="5.5"/><path d="M8 6v3l2 1.5"/><line x1="6" y1="1" x2="10" y2="1"/><line x1="8" y1="1" x2="8" y2="3.5"/></svg></span></button>
       <button onclick="woDeleteSession()"
         style="background:var(--red-bg);border:1px solid rgba(232,56,56,0.25);color:var(--red);border-radius:var(--r-sm);padding:0.6rem 0.9rem;cursor:pointer;font-size:0.88rem;flex-shrink:0;min-height:42px;-webkit-tap-highlight-color:transparent"
         title="Supprimer la séance"><span class="ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="4.5" x2="13" y2="4.5"/><path d="M5.5 4.5V3.5h5v1"/><path d="M5.5 4.5l.5 9h4l.5-9"/></svg></span></button>
@@ -6202,6 +6212,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <div class="wo-stat-pill"><div class="wsp-lbl">Séries</div><div class="wsp-val" id="wo-sess-set-count">0</div></div>
       <div class="wo-stat-pill"><div class="wsp-lbl">Volume</div><div class="wsp-val" id="wo-sess-volume">0</div></div>
       <div class="wo-stat-pill" style="border-color:rgba(184,224,48,0.2)"><div class="wsp-lbl">Durée</div><div class="wsp-val" style="color:var(--lime)" id="wo-sess-duration">—</div></div>
+      <div class="wo-stat-pill" style="border-color:rgba(240,96,48,0.2)"><div class="wsp-lbl">Kcal</div><div class="wsp-val" style="color:#f06030" id="wo-sess-kcal">—</div></div>
     </div>
 
     <!-- Bandeau progression globale vs séance précédente -->
@@ -6353,6 +6364,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     <div style="text-align:center;margin-bottom:0.9rem">
       <span class="wo-recap-kcal" id="wo-recap-kcal">0</span><span style="font-size:0.85rem;color:var(--lime-d);font-weight:600;margin-left:4px">kcal</span>
       <div style="font-size:0.6rem;color:var(--muted2);margin-top:4px">dépensées · estimation</div>
+      <div id="wo-recap-kcal-split" style="display:none;font-size:0.66rem;color:var(--muted);margin-top:6px;gap:10px;justify-content:center;align-items:center"></div>
     </div>
     <div class="wo-recap-grid">
       <div class="wo-recap-cell"><div class="wrc-lbl">Durée</div><div class="wrc-val" id="wo-recap-dur">—</div></div>
@@ -6535,10 +6547,11 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     <div style="margin-bottom:1rem">
       <div class="ap-date-nav" style="margin-bottom:0.6rem">
         <button type="button" class="ap-date-btn" onclick="pqShiftDate(-1)" aria-label="Jour précédent">‹</button>
-        <div class="ap-date-label" id="pq-date-label" onclick="pqPickDate()">Aujourd'hui</div>
+        <div class="ap-date-label" id="pq-date-label" onclick="pqPickDate()" style="position:relative"><span id="pq-date-label-txt">Aujourd'hui</span><input type="date" id="poids-quick-date" style="position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:none;background:none;opacity:0;cursor:pointer" onchange="pqSetDate(this.value)"></div>
         <button type="button" class="ap-date-btn" onclick="pqShiftDate(1)" aria-label="Jour suivant">›</button>
       </div>
-      <input type="date" id="poids-quick-date" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px" onchange="pqSetDate(this.value)">
+      <!-- input imbriqué dans .ap-date-label ci-dessus (overlay transparent) : cf commentaire page Apports. -->
+
       <div id="pq-curve-wrap" style="position:relative;height:70px;border-radius:14px;background:var(--s2);border:1.5px solid var(--border2);touch-action:pan-y;user-select:none;cursor:grab">
         <svg id="pq-curve-svg" viewBox="0 0 280 70" preserveAspectRatio="none" style="width:100%;height:100%;display:block"></svg>
       </div>
@@ -6939,7 +6952,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-09-21.3';
+const APP_BUILD_VERSION = '2026-09-23.6';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -9061,7 +9074,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v32';
+    const CACHE_NAME = 'kcalos-v35';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -9248,12 +9261,14 @@ function shSaveSteps(){
 const SP = { date: today() };
 
 function stepsRefreshDateUI(){
-  const lbl = document.getElementById('steps-date-label');
+  const lbl = document.getElementById('steps-date-label-txt');
   const title = document.getElementById('steps-card-title');
   if(!lbl) return;
   const isToday = SP.date === today();
   lbl.textContent = isToday ? 'Aujourd\'hui' : fmtDL(SP.date);
-  lbl.classList.toggle('today-lbl', isToday);
+  document.getElementById('steps-date-label')?.classList.toggle('today-lbl', isToday);
+  const stepsPicker = document.getElementById('steps-date-picker');
+  if(stepsPicker) stepsPicker.value = SP.date;
   if(title) title.textContent = isToday ? 'Pas aujourd\'hui' : 'Pas du ' + fmtDL(SP.date);
   // Update counter with that day\'s data
   const fit = DB.getFitness().find(d => d.date === SP.date);
@@ -9422,16 +9437,19 @@ function getMealTotals(date, mealKey) {
 /* ── Date navigation ── */
 function apRefreshDateUI() {
   const d = AP.date;
-  const lbl = document.getElementById('ap-date-label');
+  const lbl = document.getElementById('ap-date-label-txt');
+  const wrap = document.getElementById('ap-date-label');
   if (!lbl) return;
   const t = today();
   if (d === t) {
     lbl.textContent = "Aujourd\'hui";
-    lbl.className = 'ap-date-label today-lbl';
+    if(wrap) wrap.className = 'ap-date-label today-lbl';
   } else {
     lbl.textContent = fmtDL(d);
-    lbl.className = 'ap-date-label';
+    if(wrap) wrap.className = 'ap-date-label';
   }
+  const picker = document.getElementById('ap-date-picker');
+  if(picker) picker.value = d;
 }
 
 function apChangeDay(delta) {
@@ -9836,7 +9854,7 @@ function _mrudNormalizeLoggedItems(items) {
 
 function _mrudSetTitleForDate(dateStr) {
   const dateLabel = new Date(dateStr).toLocaleDateString('fr-FR', { day:'numeric', month:'long' });
-  const titleEl = document.getElementById('mrud-title');
+  const titleEl = document.getElementById('mrud-title-txt');
   if (titleEl) titleEl.textContent = `Repas du ${dateLabel}`;
 }
 
@@ -9855,6 +9873,16 @@ function mrOpenUseDetailFromPrevMeal(prev) {
   }
   mrRenderUseDetail();
   document.getElementById('mrud-title')?.classList.add('mrud-title-clickable');
+  // Prépare min/max/value du picker natif dès l'entrée en mode "repas précédent"
+  // (et pas seulement au clic) : sur iOS l'input reçoit désormais un vrai tap
+  // direct qui peut ouvrir le picker avant que mrudTitleTap() n'ait tourné.
+  const mrudPicker = document.getElementById('mrud-date-picker');
+  if(mrudPicker){
+    mrudPicker.value = MR.useDetailPrevDate || AP.date;
+    const maxD = new Date(AP.date + 'T00:00:00');
+    maxD.setDate(maxD.getDate() - 1);
+    mrudPicker.max = maxD.toISOString().slice(0, 10);
+  }
   document.getElementById('mr-use-detail-panel')?.classList.add('open');
   kcLockScroll();
 }
@@ -19025,11 +19053,12 @@ function pqRefreshUI(){
   const todayStr = today();
   const isToday = PQ.date === todayStr;
   const yestStr = toLocalDateStr(new Date(Date.now()-86400000));
-  const lbl = document.getElementById('pq-date-label');
+  const lbl = document.getElementById('pq-date-label-txt');
+  const wrap = document.getElementById('pq-date-label');
   if(lbl){
     lbl.textContent = isToday ? "Aujourd'hui" : (PQ.date===yestStr ? 'Hier' :
       new Date(PQ.date+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}));
-    lbl.className = 'ap-date-label' + (isToday ? ' today-lbl' : '');
+    if(wrap) wrap.className = 'ap-date-label' + (isToday ? ' today-lbl' : '');
   }
   const fitness = DB.getFitness();
   const entry = fitness.find(f=>f.date===PQ.date);
@@ -19929,15 +19958,17 @@ const EXERCISE_DB = [
   {id:'ab_wheel',   name:'Ab wheel',            muscle:'Abdos'},
   {id:'russian_tw', name:'Russian twist',       muscle:'Abdos'},
   {id:'side_plank', name:'Planche latérale',    muscle:'Abdos'},
-  // Cardio
-  {id:'run',        name:'Course à pied',       muscle:'Cardio', cardio:true},
-  {id:'bike',       name:'Vélo / spinning',     muscle:'Cardio', cardio:true},
-  {id:'rower',      name:'Rameur',              muscle:'Cardio', cardio:true},
-  {id:'jump_rope',  name:'Corde à sauter',      muscle:'Cardio', cardio:true},
-  {id:'elliptic',   name:'Elliptique',          muscle:'Cardio', cardio:true},
-  {id:'hiit',       name:'HIIT',                muscle:'Cardio', cardio:true},
-  {id:'swim',       name:'Natation',            muscle:'Cardio', cardio:true},
-  {id:'walk',       name:'Marche rapide',       muscle:'Cardio', cardio:true},
+  // Cardio — liste de base fixe (cf WO_CARDIO_FIELDS pour les champs de saisie
+  // spécifiques à chaque exo : durée/vitesse/distance/inclinaison au lieu de
+  // reps/poids). N'apparaissent dans "Mes exercices" que s'ils sont utilisés
+  // (woRenderUserExoList ne liste que les exos réellement présents dans
+  // l'historique) — ils sont seulement disponibles ici, dans le panneau
+  // d'ajout à une séance.
+  {id:'stepmaster',   name:'Stepmaster',    muscle:'Cardio', cardio:true},
+  {id:'tapis_marche', name:'Marche tapis',  muscle:'Cardio', cardio:true},
+  {id:'tapis_course', name:'Course tapis',  muscle:'Cardio', cardio:true},
+  {id:'bike',         name:'Vélo',          muscle:'Cardio', cardio:true},
+  {id:'rower',        name:'Rameur',        muscle:'Cardio', cardio:true},
 ];
 
 const WO_MUSCLES = ['Tous', ...new Set(EXERCISE_DB.map(e=>e.muscle))];
@@ -20077,28 +20108,54 @@ function woNormalizeIntensity(raw){
 // Borne une valeur entre min et max.
 function woClamp(v, min, max){ return Math.min(Math.max(v, min), max); }
 
+// Wrapper léger : la plupart des appelants ne veulent que le total. Le détail
+// muscu/cardio (pour le récap de fin de séance) est calculé par
+// woV2CalcKcalBreakdown ci-dessous, qui fait le calcul réel.
 function woV2CalcKcal(session){
+  return woV2CalcKcalBreakdown(session).total;
+}
+
+function woV2CalcKcalBreakdown(session){
   const profile  = JSON.parse(localStorage.getItem('kcalos_profile')||'{}');
   const sorted   = DB.getFitness().slice().sort((a,b)=>b.date.localeCompare(a.date));
   const pw       = parseFloat(profile.poids || sorted.find(d=>d.poids)?.poids || 70);
   const age      = parseFloat(profile.age) || 30;
   const sexe     = profile.sexe || 'homme';
-  const dur      = parseFloat(session.duration) || 0;
+  // Durée "musculation" uniquement : on retire le temps cardio (déjà compté à
+  // part via woCardioKcalTotal, cf. plus bas) de la durée totale de séance,
+  // sinon le MET musculation s'appliquerait aussi aux minutes de cardio.
+  const dur      = Math.max(0, (parseFloat(session.duration)||0) - woCardioTotalDuration(session));
   const intensity = woNormalizeIntensity(session.intensity ?? 5);
 
   const gF = sexe==='femme' ? 0.90 : 1.0;
   const aF = 1 - Math.max(0,(age-30)/1000);
 
-  // ── Analyse des séries ──
+  // ── Analyse des séries (hors cardio : son kcal est calculé séparément par
+  // woCardioKcalTotal et additionné à la fin — sinon ses intervalles seraient
+  // comptés ici comme des "séries" de 40s et double-compteraient l'effort). ──
   let volume=0, totalSets=0, totalReps=0;
   (session.exercises||[]).forEach(exo=>{
+    if(exo.cardio) return;
     (exo.sets||[]).filter(s=>!s.skipped).forEach(s=>{
       const w=parseFloat(s.weight)||0, r=parseFloat(s.reps)||0;
       volume += w*r; totalReps += r; totalSets++;
     });
   });
 
-  if(dur===0 && totalSets===0) return 0;
+  // Kcal cardio (durée/vitesse/inclinaison propres à chaque intervalle),
+  // entièrement indépendant du modèle musculation ci-dessous — cf. le bloc
+  // CARDIO plus bas dans le fichier pour le détail du calcul.
+  const cardioKcal = woCardioKcalTotal(session, pw, gF, aF);
+
+  // Séance sans aucune série musculation (ex : 100% cardio, ou cardio en cours
+  // de saisie avant que sa durée soit renseignée) → pas de MET musculation à
+  // calculer, même si un reliquat de "dur" existe (temps écoulé au chrono non
+  // encore attribué à un intervalle cardio) : ce temps ne doit jamais être
+  // requalifié en effort musculation qu'il n'est pas.
+  if(totalSets===0){
+    const c = Math.max(0, Math.round(cardioKcal));
+    return {total:c, cardio:c, muscu:0};
+  }
 
   // ── MET_base : mapping intensité 1-10 → MET, borné à la plage validée par
   // le Compendium of Physical Activities 2024 pour la musculation "classique"
@@ -20146,7 +20203,9 @@ function woV2CalcKcal(session){
     total = (metEffectif - 1) * pw * estDurH * gF * aF;
   }
 
-  return Math.max(0, Math.round(total));
+  const muscuKcal = Math.max(0, Math.round(total));
+  const cardioR   = Math.max(0, Math.round(cardioKcal));
+  return {total: muscuKcal + cardioR, cardio: cardioR, muscu: muscuKcal};
 }
 
 /* ── Screen management ── */
@@ -20634,11 +20693,14 @@ function woPickerSetDate(val){
   woRenderPicker();
 }
 function woRefreshPickerDateUI(){
-  const lbl = document.getElementById('wo-picker-date-label');
+  const lbl = document.getElementById('wo-picker-date-label-txt');
+  const wrap = document.getElementById('wo-picker-date-label');
   if(!lbl) return;
   const isToday = WO2.pickerDate === today();
   lbl.textContent = isToday ? "Aujourd\'hui" : fmtDL(WO2.pickerDate);
-  lbl.className = 'ap-date-label' + (isToday ? ' today-lbl' : '');
+  if(wrap) wrap.className = 'ap-date-label' + (isToday ? ' today-lbl' : '');
+  const picker = document.getElementById('wo-picker-date-input');
+  if(picker) picker.value = WO2.pickerDate;
 }
 
 /* ════════════════════════════════════════
@@ -21766,15 +21828,161 @@ const WO_MUSCLE_COLORS = {
    additionné à la fin, cf woCardioKcalTotal. ════════════════════════════════════════ */
 
 // MET (Compendium of Physical Activities) par activité, effort modéré/soutenu —
-// ajusté ensuite par le curseur d'intensité de la séance (±20%, cf woCardioKcalTotal).
-const WO_CARDIO_MET = {
-  run:9.8, bike:7.5, rower:7.0, jump_rope:11.0, elliptic:5.0,
-  hiit:8.0, swim:8.3, walk:4.3
-};
+// utilisé uniquement en repli pour un exo cardio custom (créé par l'utilisateur,
+// donc absent de WO_CARDIO_FIELDS) sans vitesse/distance saisie. Pour les 5 exos
+// de base (cf EXERCISE_DB), voir woCardioSetMET ci-dessous qui calcule un MET
+// dynamique à partir de la vitesse/inclinaison/distance réellement saisies.
+const WO_CARDIO_MET = { bike:7.5, rower:7.0 };
 const WO_CARDIO_MET_DEFAULT = 6.0; // exercice cardio personnalisé sans correspondance connue
 
 function woCardioMET(exo){
   return WO_CARDIO_MET[exo.id] ?? WO_CARDIO_MET_DEFAULT;
+}
+
+/* Champs de saisie spécifiques à chaque exo cardio de base, affichés à la
+   place de "reps × poids" (cf woDraftAddCardioSet + rendu dans woRenderSession).
+   Chaque champ : {key, label, unit, step, ph} — ph = placeholder affiché dans
+   l'input (sert de repère d'unité une fois la valeur saisie). 'duration' est
+   toujours présent car réutilisé par woCardioTotalDuration/woV2CalcKcal. */
+const WO_CARDIO_FIELDS = {
+  stepmaster:   [ {key:'duration',label:'Durée', unit:'min', step:1,   ph:'min'},
+                   {key:'speed',   label:'Niveau',unit:'',    step:1,   ph:'niv.'} ],
+  tapis_marche: [ {key:'duration',label:'Durée', unit:'min', step:1,   ph:'min'},
+                   {key:'speed',   label:'Vitesse',unit:'km/h',step:0.1,ph:'km/h'},
+                   {key:'incline', label:'Inclin.',unit:'%',  step:0.5, ph:'%'},
+                   {key:'distance',label:'Distance',unit:'km', step:0.1, ph:'km'} ],
+  tapis_course: [ {key:'duration',label:'Durée', unit:'min', step:1,   ph:'min'},
+                   {key:'speed',   label:'Vitesse',unit:'km/h',step:0.1,ph:'km/h'},
+                   {key:'incline', label:'Inclin.',unit:'%',  step:0.5, ph:'%'},
+                   {key:'distance',label:'Distance',unit:'km', step:0.1, ph:'km'} ],
+  bike:         [ {key:'duration',label:'Durée', unit:'min', step:1,   ph:'min'},
+                   {key:'speed',   label:'Vitesse',unit:'km/h',step:0.5,ph:'km/h'},
+                   {key:'distance',label:'Distance',unit:'km', step:0.1, ph:'km'} ],
+  rower:        [ {key:'duration',label:'Durée', unit:'min', step:1,   ph:'min'},
+                   {key:'distance',label:'Distance',unit:'km', step:0.1, ph:'km'} ],
+};
+// Exo cardio custom (créé via "Créer un exercice", muscle=Cardio) sans config connue.
+const WO_CARDIO_FIELDS_DEFAULT = [
+  {key:'duration',label:'Durée',   unit:'min', step:1,  ph:'min'},
+  {key:'distance',label:'Distance',unit:'km',  step:0.1,ph:'km'},
+];
+function woCardioFields(exo){
+  return WO_CARDIO_FIELDS[exo.id] || WO_CARDIO_FIELDS_DEFAULT;
+}
+// Un intervalle cardio "incomplet" peut l'être de deux façons distinctes,
+// toutes deux invisibles sans indicateur car aucune n'empêche de "Terminer" :
+//  - 'duration' : un champ effort est rempli mais pas la durée → l'intervalle
+//    est ignoré en bloc par woCardioKcalTotal (durH<=0), 0 kcal comptée.
+//  - 'effort'   : la durée est remplie mais ni vitesse ni distance ne le sont
+//    (inclinaison seule ne suffit pas à déduire un effort) → MET retombe au
+//    plancher minimal (~1, "aucun effort attribué", cf woCardioSetMET) et les
+//    kcal de l'intervalle sont quasi nulles sans que rien ne le signale.
+// Retourne le motif (string) ou null si l'intervalle est complet.
+function woCardioSetIncomplete(exo, s){
+  if(!exo?.cardio || !s) return null;
+  const fields = woCardioFields(exo);
+  const durFilled = (parseFloat(s.duration)||0) > 0;
+  const otherFilled = fields.some(f=>f.key!=='duration' && (parseFloat(s[f.key])||0) > 0);
+  if(!durFilled && otherFilled) return 'duration';
+  const effortFields = fields.filter(f=>f.key!=='duration' && f.key!=='incline');
+  if(durFilled && effortFields.length){
+    const effortFilled = effortFields.some(f=>(parseFloat(s[f.key])||0) > 0);
+    if(!effortFilled) return 'effort';
+  }
+  return null;
+}
+// Message affiché au clic sur l'icône ⚠, recalculé à chaque clic (plutôt que
+// figé au rendu) pour toujours refléter l'état courant des champs.
+function woCardioWarnClick(ei, si){
+  const d = woDraftGet(); if(!d) return;
+  const exo = d.exercises[ei]; const s = exo?.sets?.[si]; if(!exo || !s) return;
+  const reason = woCardioSetIncomplete(exo, s);
+  if(reason==='duration'){
+    alert('Durée manquante : sans elle, cet intervalle ne compte aucune calorie (vitesse, inclinaison ou distance seules ne suffisent pas). Ajoute la durée pour le prendre en compte.');
+  } else if(reason==='effort'){
+    alert('Vitesse ou distance manquante : sans l\'une des deux, aucun effort n\'est détecté sur cet intervalle (kcal quasi nulles). Renseigne la vitesse ou la distance — l\'une déduit l\'autre si tu connais la durée.');
+  }
+}
+// Valeur "déduite" à afficher en placeholder quand la vitesse ou la distance
+// est vide mais peut être calculée depuis les deux autres champs (même calcul
+// que woCardioEffectiveSpeed, dans l'autre sens pour la distance) — pour que
+// l'utilisateur voie tout de suite ce que l'app va utiliser, même si le champ
+// lui-même reste vide (on ne force jamais une valeur non saisie par l'user).
+function woCardioFieldHint(exo, s, key){
+  if(!['tapis_marche','tapis_course','bike'].includes(exo.id)) return null;
+  const dur   = parseFloat(s.duration) || 0;
+  const speed = parseFloat(s.speed)    || 0;
+  const dist  = parseFloat(s.distance) || 0;
+  if(key==='distance' && dist<=0 && speed>0 && dur>0) return (speed*dur/60).toFixed(1);
+  if(key==='speed'    && speed<=0 && dist>0 && dur>0) return (dist/(dur/60)).toFixed(1);
+  return null;
+}
+
+/* MET dynamique par set cardio, calculé à partir des données réellement
+   saisies (vitesse, inclinaison, distance) plutôt qu'une constante par
+   activité — bien plus précis vu ce qu'on a dans l'app.
+   Sources :
+   - Marche/course : équations métaboliques ACSM (VO2 = a×v + b×v×pente + 3.5,
+     v en m/min, pente en fraction), converties en MET (VO2/3.5).
+   - Vélo/rameur : paliers du Compendium of Physical Activities par vitesse
+     moyenne (vélo loisir) / allure déduite distance÷durée (rameur).
+   - Stepmaster : pas de référence Compendium standardisée par "niveau" →
+     interpolation linéaire raisonnable entre effort léger et très soutenu. */
+// Vitesse "effective" : utilise le champ Vitesse s'il est rempli, sinon la
+// déduit de distance÷durée (comme le fait déjà le Rameur) — pour que Vélo,
+// Marche et Course tapis acceptent indifféremment l'un ou l'autre champ.
+function woCardioEffectiveSpeed(speed, dist, durMin){
+  if(speed>0) return speed;
+  if(dist>0 && durMin>0) return dist/(durMin/60);
+  return 0;
+}
+function woCardioSetMET(exo, s){
+  const durMin  = parseFloat(s.duration)|| 0;
+  const dist    = parseFloat(s.distance)|| 0; // km
+  const incline = parseFloat(s.incline) || 0; // %
+  const rawSpeed = parseFloat(s.speed)  || 0; // km/h (ou niveau pour stepmaster)
+  const speed   = ['tapis_marche','tapis_course','bike'].includes(exo.id)
+    ? woCardioEffectiveSpeed(rawSpeed, dist, durMin) : rawSpeed;
+  switch(exo.id){
+    case 'tapis_marche': {
+      const vMmin = speed*1000/60;
+      const vo2 = 0.1*vMmin + 1.8*vMmin*(incline/100) + 3.5;
+      const raw = vo2/3.5;
+      // Le plancher "marche" (MET 2) ne s'applique que si une vitesse est
+      // réellement connue (saisie ou déduite) — sinon (aucune donnée) on
+      // retombe sur ~1 MET plutôt que de créditer une marche qui n'a pas eu lieu.
+      return speed>0 ? Math.max(raw, 2) : raw;
+    }
+    case 'tapis_course': {
+      const vMmin = speed*1000/60;
+      const vo2 = 0.2*vMmin + 0.9*vMmin*(incline/100) + 3.5;
+      const raw = vo2/3.5;
+      // Même logique que la marche : le plancher "course" (MET 6) ne
+      // s'applique que si une vitesse est réellement connue.
+      return speed>0 ? Math.max(raw, 6) : raw;
+    }
+    case 'bike':
+      if(speed<=0) return 1.0; // aucune vitesse connue (ni saisie ni déductible) → pas d'effort attribué
+      if(speed<16) return 4.0;
+      if(speed<19) return 6.8;
+      if(speed<22) return 8.0;
+      if(speed<25) return 10.0;
+      if(speed<30) return 12.0;
+      return 15.8;
+    case 'rower': {
+      const kmh = durMin>0 ? dist/(durMin/60) : 0;
+      if(kmh<7)    return 3.5;
+      if(kmh<9.5)  return 7.0;
+      if(kmh<11.5) return 8.5;
+      return 12.0;
+    }
+    case 'stepmaster': {
+      const niv = Math.min(Math.max(rawSpeed,1),20);
+      return 4 + niv*0.55;
+    }
+    default:
+      return null; // pas de modèle dynamique connu → repli sur woCardioMET (voir woCardioKcalTotal)
+  }
 }
 
 // Durée cardio totale (minutes) d'une séance — sert à la fois à l'affichage
@@ -21795,14 +22003,18 @@ function woCardioTotalDuration(session){
    durée globale de la séance (qui peut aussi inclure du temps de musculation). */
 function woCardioKcalTotal(session, pw, gF, aF){
   const intensity = woNormalizeIntensity(session.intensity ?? 5);
-  const intensF = 0.8 + ((intensity-1)/9) * 0.4; // 0.8..1.2 autour du MET de référence
+  // Modulation RPE (±20%) uniquement pour le repli "MET fixe" : les exos avec
+  // modèle dynamique (woCardioSetMET) tirent déjà leur effort de la vitesse/
+  // inclinaison saisie, l'appliquer en plus ferait double emploi.
+  const intensF = 0.8 + ((intensity-1)/9) * 0.4;
   let total = 0;
   (session.exercises||[]).forEach(exo=>{
     if(!exo.cardio) return;
-    const met = woCardioMET(exo) * intensF;
     (exo.sets||[]).filter(s=>!s.skipped).forEach(s=>{
       const durH = (parseFloat(s.duration)||0)/60;
       if(durH<=0) return;
+      const dynMet = woCardioSetMET(exo, s);
+      const met = dynMet !== null ? dynMet : woCardioMET(exo) * intensF;
       total += (met-1) * pw * durH * gF * aF;
     });
   });
@@ -21825,6 +22037,7 @@ function woComputeMuscleWeeklyVolume(){
   const exoMap = {};
   recent.forEach(sess=>{
     (sess.exercises||[]).forEach(exo=>{
+      if(exo.cardio) return; // pas de notion de "séries" pour le cardio
       const activeSets = (exo.sets||[]).filter(s=>!s.skipped).length;
       if(!activeSets) return;
       const muscle = woGetMuscle(exo);
@@ -21875,6 +22088,7 @@ function woRenderVolumeTable(){
   let prevWeekSets = 0;
   lastWeekSessions.forEach(sess=>{
     (sess.exercises||[]).forEach(exo=>{
+      if(exo.cardio) return; // pas de notion de "séries" pour le cardio
       // Pas de filtre "paused" ici (ni dans "Moyenne · 4 sem." ci-dessous) : "paused"
       // est un état courant sans date, il ne doit pas effacer des séries réellement
       // faites — ni dans le total réel de la semaine, ni dans la moyenne.
@@ -21905,6 +22119,7 @@ function woRenderVolumeTable(){
   recent.forEach(sess=>{
     const musclesTouched = new Set();
     (sess.exercises||[]).forEach(exo=>{
+      if(exo.cardio) return; // pas de notion de "séries" pour le cardio
       const activeSets = (exo.sets||[]).filter(s=>!s.skipped).length;
       if(!activeSets) return;
       const muscle = woGetMuscle(exo);
@@ -21921,6 +22136,7 @@ function woRenderVolumeTable(){
   lastWeekSessions.forEach(sess=>{
     const musclesTouched = new Set();
     (sess.exercises||[]).forEach(exo=>{
+      if(exo.cardio) return; // pas de notion de "séries" pour le cardio
       const activeSets = (exo.sets||[]).filter(s=>!s.skipped).length;
       if(!activeSets) return;
       const muscle = woGetMuscle(exo);
@@ -21975,8 +22191,8 @@ function woRenderVolumeTable(){
 
   el.innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:0.9rem">
-      ${miniCard(fmt1(grandTotal),'sér./sem','Moyenne · 4 sem.','',  'var(--lime)')}
-      ${miniCard(prevWeekSets,'séries','Réel · sem. dernière',pwRange,'var(--text)')}
+      ${miniCard(prevWeekSets,'séries','Réel · sem. dernière',pwRange,'var(--lime)')}
+      ${miniCard(fmt1(grandTotal),'sér./sem','Moyenne · 4 sem.','',  'var(--muted)')}
     </div>`
   + sorted.map(muscle=>{
     const exos  = byMuscle[muscle].sort((a,b)=>b.weekSets-a.weekSets);
@@ -22017,13 +22233,13 @@ function woRenderVolumeTable(){
         <div class="sub-card-row" style="margin-bottom:0.7rem">
           <div class="sub-card">
             <div class="sub-card-lbl">Volume</div>
-            <div class="sub-card-val" style="color:${col}">${fmt1(total)} <span style="font-size:0.62rem;font-weight:400;color:var(--muted)">sér./sem</span></div>
-            <div class="sub-card-sub">Réel sem. dernière : <strong style="color:var(--text)">${realSetsM}</strong> sér.</div>
+            <div class="sub-card-val" style="color:${col}">${realSetsM} <span style="font-size:0.62rem;font-weight:400;color:var(--muted)">sér.</span></div>
+            <div class="sub-card-sub">Moyenne 4 sem. : <strong style="color:var(--text)">${fmt1(total)}</strong> sér./sem</div>
           </div>
           <div class="sub-card">
             <div class="sub-card-lbl">Fréquence</div>
-            <div class="sub-card-val" style="color:${col}">${fmt1(freqAvgM)} <span style="font-size:0.62rem;font-weight:400;color:var(--muted)">×/sem</span></div>
-            <div class="sub-card-sub">Réel sem. dernière : <strong style="color:var(--text)">${freqRealM}</strong> ${freqRealM>1?'séances':'séance'}</div>
+            <div class="sub-card-val" style="color:${col}">${freqRealM} <span style="font-size:0.62rem;font-weight:400;color:var(--muted)">${freqRealM>1?'séances':'séance'}</span></div>
+            <div class="sub-card-sub">Moyenne 4 sem. : <strong style="color:var(--text)">${fmt1(freqAvgM)}</strong> ×/sem</div>
           </div>
         </div>
         ${exos.map(e=>{
@@ -22049,18 +22265,32 @@ function woRenderUserExoList(){
   const allTypes = woGetAllTypes();
   const typeOrder = woGetTypeOrder();
   // Collecter tous les exercices vus dans toutes les séances
-  const seen = {}; // name → { muscle, lastDate }
+  const seen = {}; // name → { muscle, lastDate, used }
   const deleted = new Set(woDeletedExosGet());
   typeOrder.forEach(tid=>{
     woV2GetSessions(tid).forEach(sess=>{
       (sess.exercises||[]).forEach(exo=>{
         if(!exo.name || deleted.has(exo.name)) return;
         if(!seen[exo.name] || (sess.date > (seen[exo.name].lastDate||''))){
-          seen[exo.name] = { muscle: woGetMuscle(exo), lastDate: sess.date||'' };
+          seen[exo.name] = { muscle: woGetMuscle(exo), lastDate: sess.date||'', used:true };
         }
       });
     });
   });
+  const usedCount = Object.keys(seen).length;
+
+  // Le cardio de base (cf EXERCISE_DB) reste toujours visible ici, même non
+  // utilisé, pour que l'utilisateur sache qu'il existe et comment l'ajouter —
+  // contrairement aux autres groupes, où la liste ne montre que ce qui a déjà
+  // été pratiqué. On ignore volontairement `deleted` ici : supprimer un exo
+  // cardio d'une séance ne doit pas le faire disparaître du catalogue, juste
+  // lui faire perdre son statut "utilisé" (retour à l'état pointillé).
+  EXERCISE_DB.filter(e=>e.cardio).forEach(e=>{
+    if(!seen[e.name]){
+      seen[e.name] = { muscle:'Cardio', lastDate:'', used:false };
+    }
+  });
+
   const names = Object.keys(seen);
   if(!names.length){ el.innerHTML=''; return; }
 
@@ -22074,7 +22304,7 @@ function woRenderUserExoList(){
   const sortedMuscles = WO_MUSCLE_ORDER.filter(m=>byMuscle[m])
     .concat(Object.keys(byMuscle).filter(m=>!WO_MUSCLE_ORDER.includes(m)));
 
-  el.innerHTML = `<div style="font-size:0.63rem;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:0.09em;margin-bottom:0.65rem">Mes exercices (${names.length})</div>`
+  el.innerHTML = `<div style="font-size:0.63rem;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:0.09em;margin-bottom:0.65rem">Mes exercices (${usedCount})</div>`
   + sortedMuscles.map(muscle=>{
     const col = WO_MUSCLE_COLORS[muscle]||'#7a8499';
     const r=parseInt(col.slice(1,3),16),g=parseInt(col.slice(3,5),16),b=parseInt(col.slice(5,7),16);
@@ -22082,7 +22312,13 @@ function woRenderUserExoList(){
     return `<div style="margin-bottom:0.75rem">
       <div style="font-size:0.57rem;font-weight:700;color:${col};text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">${muscle}</div>
       <div style="display:flex;flex-wrap:wrap;gap:4px">
-        ${exos.map(n=>`<span style="font-size:0.68rem;color:${col};background:rgba(${r},${g},${b},0.12);border:1px solid rgba(${r},${g},${b},0.3);border-radius:var(--r-pill);padding:2px 8px">${n}</span>`).join('')}
+        ${exos.map(n=>{
+          const used = seen[n].used !== false;
+          const style = used
+            ? `font-size:0.68rem;color:${col};background:rgba(${r},${g},${b},0.12);border:1px solid rgba(${r},${g},${b},0.3);border-radius:var(--r-pill);padding:2px 8px`
+            : `font-size:0.68rem;color:${col};background:transparent;border:1px dashed rgba(${r},${g},${b},0.55);border-radius:var(--r-pill);padding:2px 8px;opacity:0.8`;
+          return `<span style="${style}">${n}</span>`;
+        }).join('')}
       </div>
     </div>`;
   }).join('');
@@ -22207,11 +22443,11 @@ function woRenderSession(){
     btn.style.fontWeight = active ? '600' : '400';
   });
 
-  // Stats du header (les kcal ne sont plus affichées en direct : elles le sont
-  // dans le récap de fin de séance — cf woOpenRecap)
+  // Stats du header
   let totalSets=0, totalVol=0, activeExos=0;
   draft.exercises.forEach(e=>{
     if(e.sets?.length) activeExos++;
+    if(e.cardio) return; // pas de notion de "série"/volume pour le cardio
     (e.sets||[]).filter(s=>!s.skipped).forEach(s=>{ totalSets++; totalVol+=(parseFloat(s.weight)||0)*(parseFloat(s.reps)||0); });
   });
   const st=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
@@ -22221,6 +22457,9 @@ function woRenderSession(){
   if(draft.duration){ woClearChronoInterval(); st('wo-sess-duration', draft.duration+' min'); }
   else if(draft.startedAt){ woStartChronoDisplay(); }
   else { woClearChronoInterval(); st('wo-sess-duration', '—'); }
+  // Pill "Kcal" : aperçu en direct (voir woLiveKcalEstimate) — pas encore la
+  // valeur finale sauvegardée, qui reste calculée dans woFinishSession/woOpenRecap.
+  woUpdateLiveKcalPill(draft);
 
   // ── Exercise list ──
   const list = document.getElementById('wo-exo-history-list');
@@ -22308,9 +22547,14 @@ function woRenderSession(){
         }
       }
       const evolBadge = evolStr ? `<span style="font-size:0.48rem;color:${evolColor};font-weight:700;margin-left:3px">${evolStr}</span>` : '';
+      // Cardio : pas de % évolution (pas de progression calculée), on affiche
+      // juste les champs saisis (durée/vitesse/km/inclinaison selon l'exo).
+      const setsHtml = exo.cardio
+        ? h.sets.map(s=>`<div style="font-size:0.72rem;color:var(--muted);white-space:nowrap;line-height:1.6">${woCardioFields(exo).map(f=>(parseFloat(s[f.key])||0)+(f.unit?f.unit:'')).join(' · ')}</div>`).join('')
+        : h.sets.map(s=>`<div style="font-size:0.78rem;color:var(--muted);white-space:nowrap;line-height:1.6">${s.reps}<span style="opacity:0.5;font-size:0.62rem">×</span>${s.weight}</div>`).join('');
       return `<div style="padding:6px 10px;border-right:1px solid var(--border);background:${colBg};min-width:62px">
-        <div style="font-size:0.54rem;color:${colDate};margin-bottom:4px;text-transform:uppercase;letter-spacing:0.06em;font-weight:${pCol?'600':'500'};display:flex;align-items:center;gap:2px">${shortDate}${evolBadge}</div>
-        ${h.sets.map(s=>`<div style="font-size:0.78rem;color:var(--muted);white-space:nowrap;line-height:1.6">${s.reps}<span style="opacity:0.5;font-size:0.62rem">×</span>${s.weight}</div>`).join('')}
+        <div style="font-size:0.54rem;color:${colDate};margin-bottom:4px;text-transform:uppercase;letter-spacing:0.06em;font-weight:${pCol?'600':'500'};display:flex;align-items:center;gap:2px">${shortDate}${exo.cardio?'':evolBadge}</div>
+        ${setsHtml}
       </div>`;
     }).join('');
 
@@ -22353,9 +22597,36 @@ function woRenderSession(){
         +(isLivePR1RM?`<span style="display:inline-flex;align-items:center;font-size:0.48rem;font-weight:800;color:var(--lime);background:var(--lime-bg);border:1px solid var(--lime-d);border-radius:4px;padding:1px 4px;animation:woPRFlash 1s ease-in-out infinite alternate">⭐1RM ${Math.round(allTimeMax1RM)}→${Math.round(live1RM)}kg</span>`:'')
         +`</span>`
       : '';
-    const todayCol = `<div id="wo-todaycol-${ei}" style="padding:6px 10px;background:${todayBg};min-width:110px;${hasHistory?'border-left:2px solid '+(isLivePR?'var(--lime)':inputBorderColor):''}">
-      <div id="wo-todaylabel-${ei}" style="font-size:0.54rem;color:${isLivePR?'var(--lime)':inputBorderColor};margin-bottom:5px;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;display:flex;align-items:center">${draftColLabel}${todayEvolBadge}${livePRBadge}</div>
-      ${currentSets.map((s,si)=>`
+    // Cardio : champs adaptés à l'exo (durée/vitesse/km/inclinaison, cf
+    // WO_CARDIO_FIELDS) au lieu de reps×poids — pas de badge PR/% (pas de
+    // progression calculée pour le cardio, cf todayEvolBadge/livePRBadge
+    // toujours vides ici puisque reps/weight sont absents des sets).
+    const cFields = exo.cardio ? woCardioFields(exo) : null;
+    const cInputW = cFields ? Math.max(36, Math.floor(96/cFields.length)) : 0;
+    const cLabelsRow = cFields
+      ? `<div style="display:flex;gap:4px;margin-bottom:3px">${cFields.map(f=>`<span style="width:${cInputW}px;text-align:center;font-size:0.44rem;color:var(--muted2);text-transform:uppercase;letter-spacing:0.03em">${f.label}</span>`).join('')}</div>`
+      : '';
+    const todayRowsHtml = cFields
+      ? currentSets.map((s,si)=>{
+          const incompleteReason = woCardioSetIncomplete(exo, s);
+          const warnTitle = incompleteReason==='duration' ? 'Durée manquante' : incompleteReason==='effort' ? 'Vitesse/distance manquante' : '';
+          const warnBtn = `<button type="button" id="wo-cardio-warn-${ei}-${si}" onclick="event.stopPropagation();woCardioWarnClick(${ei},${si})"
+            title="${warnTitle}" style="display:${incompleteReason?'inline-flex':'none'};align-items:center;justify-content:center;background:none;border:none;color:var(--red);cursor:pointer;font-size:0.8rem;padding:2px;min-width:18px;min-height:30px;flex-shrink:0;-webkit-tap-highlight-color:transparent">⚠️</button>`;
+          return `
+        <div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">
+          ${cFields.map(f=>{
+            const hint = woCardioFieldHint(exo, s, f.key);
+            const ph = hint ? `≈${hint}${f.unit||''}` : f.ph;
+            return `<input type="number" id="wo-cardio-input-${ei}-${si}-${f.key}" value="${s[f.key]||''}" placeholder="${ph}" step="${f.step}" min="0" inputmode="decimal"
+            style="width:${cInputW}px;height:36px;padding:4px 2px;font-size:0.72rem;font-weight:600;border-radius:6px;border:2px solid ${inputBorderColor};background:var(--s3);color:var(--text);text-align:center;font-family:DM Sans,sans-serif"
+            onfocus="this.select()" oninput="woDraftUpdateSet(${ei},${si},'${f.key}',this.value)">`;
+          }).join('')}
+          ${warnBtn}
+          <button onclick="woDraftDelSet(${ei},${si})"
+            style="background:none;border:none;color:var(--muted2);cursor:pointer;font-size:0.75rem;padding:4px 3px;min-width:24px;min-height:30px;-webkit-tap-highlight-color:transparent">✕</button>
+        </div>`;
+        }).join('')
+      : currentSets.map((s,si)=>`
         <div style="display:flex;align-items:center;gap:4px;margin-bottom:5px">
           <input type="number" value="${s.reps||''}" placeholder="r" min="1" max="99" inputmode="numeric"
             style="width:42px;height:36px;padding:4px 3px;font-size:0.9rem;font-weight:600;border-radius:6px;border:2px solid ${inputBorderColor};background:var(--s3);color:var(--text);text-align:center;font-family:DM Sans,sans-serif"
@@ -22366,14 +22637,23 @@ function woRenderSession(){
             onfocus="this.select()" oninput="woDraftUpdateSet(${ei},${si},'weight',this.value)">
           <button onclick="woDraftDelSet(${ei},${si})"
             style="background:none;border:none;color:var(--muted2);cursor:pointer;font-size:0.75rem;padding:4px 3px;min-width:24px;min-height:30px;-webkit-tap-highlight-color:transparent">✕</button>
-        </div>`).join('')}
+        </div>`).join('');
+    const todayCol = `<div id="wo-todaycol-${ei}" style="padding:6px 10px;background:${todayBg};min-width:${cFields?cFields.length*cInputW+40:110}px;${hasHistory?'border-left:2px solid '+(isLivePR?'var(--lime)':inputBorderColor):''}">
+      <div id="wo-todaylabel-${ei}" style="font-size:0.54rem;color:${isLivePR?'var(--lime)':inputBorderColor};margin-bottom:5px;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;display:flex;align-items:center">${draftColLabel}${cFields?'':todayEvolBadge+livePRBadge}</div>
+      ${cLabelsRow}
+      ${todayRowsHtml}
       <button onclick="woDraftAddSet(${ei})"
-        style="margin-top:4px;font-size:0.72rem;color:${t.color};background:${t.colorBg||'transparent'};border:1px dashed ${t.colorD||'var(--border2)'};border-radius:6px;cursor:pointer;padding:5px 10px;width:100%;font-family:DM Sans,sans-serif;-webkit-tap-highlight-color:transparent">+ série</button>
+        style="margin-top:4px;font-size:0.72rem;color:${t.color};background:${t.colorBg||'transparent'};border:1px dashed ${t.colorD||'var(--border2)'};border-radius:6px;cursor:pointer;padding:5px 10px;width:100%;font-family:DM Sans,sans-serif;-webkit-tap-highlight-color:transparent">+ ${cFields?'intervalle':'série'}</button>
     </div>`;
 
     const activeSetsCount = currentSets.filter(s=>!s.skipped).length;
+    // Cardio : pas de "X kg vol." (pas de volume/série au sens musculation) —
+    // on affiche plutôt la durée totale saisie sur cet exo.
+    const cardioTotalDur = exo.cardio ? currentSets.filter(s=>!s.skipped).reduce((a,s)=>a+(parseFloat(s.duration)||0),0) : 0;
     const subInfo = hasCurrent
-      ? `<div style="font-size:0.61rem;color:${t.color};margin-top:1px">${activeSetsCount} série${activeSetsCount!==1?'s':''}${currentSets.length!==activeSetsCount?' (+'+(currentSets.length-activeSetsCount)+' skip)':''} · ${Math.round(volExo)} kg vol.</div>`
+      ? (exo.cardio
+          ? `<div style="font-size:0.61rem;color:${t.color};margin-top:1px">${activeSetsCount} intervalle${activeSetsCount!==1?'s':''} · ${cardioTotalDur} min</div>`
+          : `<div style="font-size:0.61rem;color:${t.color};margin-top:1px">${activeSetsCount} série${activeSetsCount!==1?'s':''}${currentSets.length!==activeSetsCount?' (+'+(currentSets.length-activeSetsCount)+' skip)':''} · ${Math.round(volExo)} kg vol.</div>`)
       : hasHistory
         ? `<div style="font-size:0.61rem;color:var(--muted2);margin-top:1px">${history.length} session${history.length>1?'s':''} passée${history.length>1?'s':''}</div>`
         : `<div style="font-size:0.61rem;color:var(--muted2);margin-top:1px">Premier passage</div>`;
@@ -22421,7 +22701,7 @@ function woRenderSession(){
           ${loadMoreCol}${histCols}${todayCol}
         </div>
       </div>`:
-      `<button onclick="woDraftAddSet(${ei})" style="width:100%;padding:12px;border:1.5px dashed ${t.colorD||'var(--border2)'};border-radius:var(--r-sm);background:${t.colorBg||'transparent'};color:${t.color};cursor:pointer;font-size:0.82rem;font-weight:600;font-family:DM Sans,sans-serif;-webkit-tap-highlight-color:transparent">+ Commencer les séries</button>`}
+      `<button onclick="woDraftAddSet(${ei})" style="width:100%;padding:12px;border:1.5px dashed ${t.colorD||'var(--border2)'};border-radius:var(--r-sm);background:${t.colorBg||'transparent'};color:${t.color};cursor:pointer;font-size:0.82rem;font-weight:600;font-family:DM Sans,sans-serif;-webkit-tap-highlight-color:transparent">+ Commencer ${exo.cardio?'le cardio':'les séries'}</button>`}
     </div>`;
   }).join('');
 
@@ -22510,6 +22790,29 @@ function woExoDragEnd(){
   woRenderSession(); // ré-numérote proprement les ei et repart d'un DOM propre
 }
 
+/* ── Estimation kcal en direct (pill "Kcal" juste à côté de "Durée") ──
+   Réutilise le même moteur que le calcul final (woV2CalcKcal), sur une copie
+   temporaire jamais persistée du brouillon : seule sa durée est remplacée par
+   le temps réellement écoulé (chrono) quand aucune durée n'a encore été
+   validée manuellement. Purement un aperçu — le vrai calcul sauvegardé reste
+   celui fait dans woFinishSession/woOpenRecap. */
+function woLiveKcalEstimate(draft){
+  if(!draft) return 0;
+  let durMin = parseFloat(draft.duration) || 0;
+  if(!durMin && draft.startedAt) durMin = Math.max(0, Math.round((Date.now()-draft.startedAt)/60000));
+  if(!durMin) return 0;
+  try{ return woV2CalcKcal({...draft, duration:durMin}); }
+  catch(e){ return 0; }
+}
+function woUpdateLiveKcalPill(draft){
+  const el = document.getElementById('wo-sess-kcal');
+  if(!el) return;
+  const d = draft || woDraftGet();
+  if(!d){ el.textContent = '—'; return; }
+  const kcal = woLiveKcalEstimate(d);
+  el.textContent = kcal>0 ? Math.round(kcal).toLocaleString('fr-FR') : '—';
+}
+
 /* ── Chrono auto en direct (affiché dans le pill "Durée" tant qu'aucune durée n'est validée) ── */
 function woClearChronoInterval(){
   if(window._woChronoInterval){ clearInterval(window._woChronoInterval); window._woChronoInterval=null; }
@@ -22523,6 +22826,8 @@ function woStartChronoDisplay(){
     const elapsedSec = Math.floor((Date.now()-d.startedAt)/1000);
     const h = Math.floor(elapsedSec/3600), m = Math.floor((elapsedSec%3600)/60), s = elapsedSec%60;
     el.textContent = h>0 ? `⏱ ${h}h${m.toString().padStart(2,'0')}` : `⏱ ${m}:${s.toString().padStart(2,'0')}`;
+    // Le kcal live suit le même tick que le chrono (pas besoin d'un 2e interval).
+    woUpdateLiveKcalPill(d);
   };
   tick();
   window._woChronoInterval = setInterval(tick, 1000);
@@ -22530,6 +22835,7 @@ function woStartChronoDisplay(){
 
 function woDraftAddSet(ei){
   const d=woDraftGet(); if(!d||!d.exercises[ei]) return;
+  if(d.exercises[ei].cardio){ woDraftAddCardioSet(ei); return; }
   const exo = d.exercises[ei];
   woDeletedExosRemove(exo.name); // réhabilite si l'exo avait été "supprimé" mais est réutilisé
   exo.sets = exo.sets||[];
@@ -22569,6 +22875,22 @@ function woDraftAddSet(ei){
   woRenderSession();
   if(typeof restTimerStart==='function') restTimerStart();
 }
+/* Ajout d'un intervalle cardio (durée/vitesse/distance/inclinaison selon
+   l'exo, cf WO_CARDIO_FIELDS) — pas de recherche d'historique/série précédente
+   ici : le cardio n'a pas de notion de progression, volume ou nombre de
+   séries à reproduire (consigne produit), contrairement à woDraftAddSet. */
+function woDraftAddCardioSet(ei){
+  const d=woDraftGet(); if(!d||!d.exercises[ei]) return;
+  const exo = d.exercises[ei];
+  woDeletedExosRemove(exo.name);
+  exo.sets = exo.sets||[];
+  const set = {};
+  woCardioFields(exo).forEach(f=>{ set[f.key] = 0; });
+  exo.sets.push(set);
+  if(!d.startedAt) d.startedAt = Date.now();
+  woDraftSet(d);
+  woRenderSession();
+}
 function woDraftDelSet(ei,si){
   const d=woDraftGet(); if(!d||!d.exercises[ei]) return;
   d.exercises[ei].sets.splice(si,1);
@@ -22577,24 +22899,56 @@ function woDraftDelSet(ei,si){
 }
 function woDraftUpdateSet(ei,si,field,val){
   const d=woDraftGet(); if(!d||!d.exercises[ei]) return;
-  d.exercises[ei].sets[si][field]=field==='weight'?parseFloat(val)||0:parseInt(val)||0;
+  // 'reps' reste un entier ; tous les autres champs (poids, et les champs
+  // cardio durée/vitesse/distance/inclinaison) acceptent les décimales.
+  d.exercises[ei].sets[si][field]=field==='reps'?parseInt(val)||0:parseFloat(val)||0;
   woDraftSet(d);
-  // Stats légères du header (pas de kcal ici : voir le récap de fin de séance)
+  // Stats légères du header (le cardio n'a pas de notion de "série"/volume au
+  // sens musculation → exclu de ces compteurs, consigne produit).
   let totalSets=0,totalVol=0,activeExos=0;
   d.exercises.forEach(e=>{
     if(e.sets?.length) activeExos++;
+    if(e.cardio) return;
     (e.sets||[]).filter(s=>!s.skipped).forEach(s=>{totalSets++;totalVol+=(parseFloat(s.weight)||0)*(parseFloat(s.reps)||0);});
   });
   const st=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
   st('wo-sess-exo-count',activeExos);
   st('wo-sess-set-count',totalSets);
   st('wo-sess-volume',Math.round(totalVol).toLocaleString('fr-FR'));
+  // Pill "Kcal" : les champs cardio (durée/vitesse/inclinaison) passent aussi
+  // par cette fonction, donc l'aperçu kcal doit se rafraîchir ici aussi.
+  woUpdateLiveKcalPill(d);
   // Rafraîchit le badge PR/% du jour et la bannière globale SANS re-render complet
   // (woRenderSession recrée tous les <input>, ce qui ferait perdre le focus/curseur
   // pendant la frappe). Avant ce correctif, il fallait ajouter puis supprimer une
   // série pour forcer un woRenderSession et voir le % se mettre à jour.
   woUpdateExoLiveBadge(ei);
   woUpdateGlobalProgBanner();
+  // Icône ⚠ "durée manquante" / "vitesse-distance manquante" sur l'intervalle
+  // cardio concerné (voir woCardioSetIncomplete) : doit suivre la frappe sans
+  // attendre un re-render.
+  if(d.exercises[ei].cardio){
+    const exo = d.exercises[ei], s = exo.sets[si];
+    const reason = woCardioSetIncomplete(exo, s);
+    const warnBtn = document.getElementById('wo-cardio-warn-'+ei+'-'+si);
+    if(warnBtn){
+      warnBtn.style.display = reason ? 'inline-flex' : 'none';
+      warnBtn.title = reason==='duration' ? 'Durée manquante' : reason==='effort' ? 'Vitesse/distance manquante' : '';
+    }
+    // Placeholder "≈déduit" sur vitesse/distance : mis à jour à chaque frappe
+    // sur les 3 champs concernés (une modif de durée peut rendre déductible
+    // un champ qui ne l'était pas). On ne touche jamais au champ qu'on est
+    // en train de saisir (field) pour ne pas perturber sa frappe.
+    ['speed','distance'].forEach(key=>{
+      if(key===field) return;
+      const input = document.getElementById(`wo-cardio-input-${ei}-${si}-${key}`);
+      if(!input) return;
+      const f = woCardioFields(exo).find(ff=>ff.key===key);
+      if(!f) return;
+      const hint = woCardioFieldHint(exo, s, key);
+      input.placeholder = hint ? `≈${hint}${f.unit||''}` : f.ph;
+    });
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -22760,6 +23114,7 @@ function updateRestTimerToggleUI(){
 function woUpdateExoLiveBadge(ei){
   const draft = woDraftGet(); if(!draft || !draft.exercises[ei]) return;
   const exo = draft.exercises[ei];
+  if(exo.cardio) return; // pas de PR/% de progression pour le cardio
   const allTypes = woGetAllTypes();
   const t = allTypes[draft.type] || WO_SESSION_TYPES[draft.type];
   const inputBorderColor = draft.phase ? WO_PHASE_COLORS[draft.phase] : t?.colorD;
@@ -22910,9 +23265,19 @@ function woGetExoHistory(){
     (sess.exercises||[]).forEach(exo=>{
       if(!seen.has(exo.name)&&!existing.has(exo.name)&&!deleted.has(exo.name)){
         seen.add(exo.name);
-        list.push({name:exo.name,muscle:exo.muscle||woGetMuscle(exo)});
+        list.push({id:exo.id||null, name:exo.name, muscle:exo.muscle||woGetMuscle(exo), cardio:exo.cardio||false});
       }
     });
+  });
+  // Le cardio de base (EXERCISE_DB) est toujours proposé ici, même jamais
+  // utilisé — c'est le seul point d'ajout d'exercice réellement utilisé dans
+  // l'app (le panneau "openAddExercise" n'est plus branché à l'UI), donc sans
+  // ça ces exos seraient invisibles et impossibles à ajouter.
+  EXERCISE_DB.filter(e=>e.cardio).forEach(e=>{
+    if(!seen.has(e.name) && !existing.has(e.name)){
+      seen.add(e.name);
+      list.push({id:e.id, name:e.name, muscle:e.muscle, cardio:true});
+    }
   });
   return list;
 }
@@ -22927,7 +23292,7 @@ function woShowExoSuggestions(){
   if(!results.length){drop.style.display='none';return;}
   drop.style.display='block';
   drop.innerHTML=results.slice(0,8).map(e=>`
-    <div onclick="woPickSuggestion('${e.name.replace(/'/g,"\'")}','${(e.muscle||'').replace(/'/g,"\'")}');"
+    <div onclick="woPickSuggestion('${e.name.replace(/'/g,"\'")}','${(e.muscle||'').replace(/'/g,"\'")}','${(e.id||'').replace(/'/g,"\'")}',${e.cardio?'true':'false'});"
       style="padding:7px 10px;cursor:pointer;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);-webkit-tap-highlight-color:transparent"
       onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background=''">
       <div style="flex:1;font-size:0.82rem;color:var(--text)">${e.name}</div>
@@ -22935,12 +23300,12 @@ function woShowExoSuggestions(){
     </div>`).join('');
 }
 
-function woPickSuggestion(name,muscle){
+function woPickSuggestion(name,muscle,id,cardio){
   const inp=document.getElementById('wo-inline-exo-input');
   const drop=document.getElementById('wo-exo-suggestions');
   if(inp) inp.value=name;
   if(drop) drop.style.display='none';
-  woAddExoInline(muscle);
+  woAddExoInline(muscle, id||null, cardio===true);
 }
 
 function woHideSuggestions(){
@@ -22950,15 +23315,25 @@ function woHideSuggestions(){
   },200);
 }
 
-/* ── Ajouter exercice inline ── */
-function woAddExoInline(forceMuscle){
+/* ── Ajouter exercice inline ──
+   forceId/forceCardio viennent de woPickSuggestion (clic sur une suggestion) :
+   indispensables pour le cardio, dont l'id sert à retrouver les bons champs
+   de saisie (WO_CARDIO_FIELDS) et à garder une progression unique par exo.
+   Si l'utilisateur tape le nom exact sans passer par la suggestion, on
+   retrouve quand même l'exo connu (base ou custom) par son nom. */
+function woAddExoInline(forceMuscle, forceId, forceCardio){
   const inp = document.getElementById('wo-inline-exo-input');
   const name = inp?.value.trim();
   if(!name){ inp?.focus(); return; }
   const d = woDraftGet(); if(!d) return;
-  const muscle = forceMuscle || 'Autre';
-  const id = 'custom_'+ name.toLowerCase().replace(/\s+/g,'_')+'_'+Date.now();
-  d.exercises.push({id, name, muscle, sets:[]});
+  const nameKey = name.toLowerCase();
+  const customExos = JSON.parse(localStorage.getItem('kcalos_custom_exos')||'[]');
+  const known = EXERCISE_DB.find(e=>e.name.toLowerCase()===nameKey)
+             || customExos.find(e=>(e.name||'').toLowerCase()===nameKey);
+  const muscle = forceMuscle || known?.muscle || 'Autre';
+  const cardio = forceCardio!==undefined && forceCardio!==null ? forceCardio : (known?.cardio || false);
+  const id = forceId || known?.id || ('custom_'+ name.toLowerCase().replace(/\s+/g,'_')+'_'+Date.now());
+  d.exercises.push({id, name, muscle, cardio, sets:[]});
   woDraftSet(d);
   // Si l'exo était en veille, le fait de le rajouter manuellement le réactive :
   // sinon il resterait exclu du pré-remplissage des séances futures malgré
@@ -23176,6 +23551,7 @@ function woDraftMuscleBreakdown(draft){
   const allSessionsAll = woGetAllSessionsAll();
   const byMuscle = {}; // muscle -> {vol, sets, pcts:[]}
   draft.exercises.forEach(exo=>{
+    if(exo.cardio) return; // pas de notion de "série"/volume pour le cardio (même règle que woComputeMuscleWeeklyVolume)
     const sets = (exo.sets||[]).filter(s=>!s.skipped);
     if(!sets.length) return;
     const muscle = woGetMuscle(exo);
@@ -23242,12 +23618,28 @@ function woOpenRecap(){
   const activeExos = draft.exercises.filter(e=>e.sets?.length>0);
   if(!activeExos.length) return;
   let totalSets=0, totalVol=0;
-  activeExos.forEach(e=>(e.sets||[]).filter(s=>!s.skipped).forEach(s=>{
+  // Le cardio n'a pas de notion de "série"/volume (même règle que le header en
+  // direct et le tableau de volume hebdo) — sinon un intervalle cardio compté
+  // comme une "série" fausserait wo-recap-sets.
+  activeExos.filter(e=>!e.cardio).forEach(e=>(e.sets||[]).filter(s=>!s.skipped).forEach(s=>{
     totalSets++; totalVol += (parseFloat(s.weight)||0)*(parseFloat(s.reps)||0);
   }));
   const st=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
   st('wo-recap-title', `${woTypeLabel(draft.type)} · ${activeExos.length} exercice${activeExos.length>1?'s':''}`);
-  st('wo-recap-kcal', woV2CalcKcal(draft));
+  const kcalBd = woV2CalcKcalBreakdown(draft);
+  st('wo-recap-kcal', kcalBd.total);
+  // Détail muscu/cardio : affiché seulement si la séance mélange les deux
+  // (séance 100% muscu ou 100% cardio → la ventilation n'apporte rien).
+  const splitEl = document.getElementById('wo-recap-kcal-split');
+  if(splitEl){
+    if(kcalBd.cardio>0 && kcalBd.muscu>0){
+      splitEl.style.display = 'flex';
+      splitEl.innerHTML = `<span>💪 ${kcalBd.muscu} kcal muscu</span><span>·</span><span>🏃 ${kcalBd.cardio} kcal cardio</span>`;
+    } else {
+      splitEl.style.display = 'none';
+      splitEl.innerHTML = '';
+    }
+  }
   st('wo-recap-dur', draft.duration ? draft.duration+' min' : '—');
   st('wo-recap-sets', totalSets);
   st('wo-recap-vol', Math.round(totalVol).toLocaleString('fr-FR')+' kg');
@@ -24052,8 +24444,9 @@ function mrOpenUseDetail(id){
   MR.useDetailId = id;
   MR.useDetailFromPrevMeal = false;
   MR.useDetailIngredients = t.ingredients.map(i => ({...i}));
-  const titleEl = document.getElementById('mrud-title');
-  if(titleEl){ titleEl.textContent = t.name; titleEl.classList.remove('mrud-title-clickable'); }
+  const titleEl = document.getElementById('mrud-title-txt');
+  if(titleEl){ titleEl.textContent = t.name; }
+  document.getElementById('mrud-title')?.classList.remove('mrud-title-clickable');
   const btnEl = document.getElementById('mrud-choose-btn');
   if(btnEl){
     btnEl.textContent = AP.currentMeal
