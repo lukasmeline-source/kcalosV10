@@ -6,11 +6,12 @@
    E. Leclerc, Système U, Intermarché), derniers ajouts le 2026-08-26.
 
    Rôle : dépanner la recherche "marques" quand le réseau OFF (Search-
-   a-licious / API v2) est indisponible. Ce n'est PAS une source vivante :
-   les valeurs sont figées à la date de l'export et peuvent devenir
-   obsolètes si un produit est reformulé ou retiré. À régénérer
-   périodiquement à la demande (pas de mécanisme de rafraîchissement
-   automatique).
+   a-licious / API v2) est indisponible. La majorité du fichier vient
+   d'exports OFF figés à leur date (peuvent devenir obsolètes si un
+   produit est reformulé/retiré — à régénérer périodiquement). Contient
+   aussi, depuis 2026-09-23, des recettes maison ajoutées à la main
+   (b:'maison', c:'') qui elles ne viennent PAS d'un export OFF : à
+   NE PAS écraser lors d'une régénération/réimport, à fusionner avec.
 
    Ne JAMAIS mettre en cache (mémoire/Firestore) un résultat issu de ce
    fichier : on veut retenter le réseau OFF live à la recherche suivante.
@@ -18,14 +19,18 @@
    Couverture approximative (avant dédoublonnage global) :
      Lidl ~6523 · Carrefour ~12195 · McDonald's ~73 · KFC ~18 · Burger King ~18
      · E. Leclerc ~3910 · Système U ~7718 · Intermarché ~2518
-     (+ quelques autres enseignes, ajouts 2026-08-26)
-   Total après dédoublonnage (code-barre) : 32973 produits.
+     (+ quelques autres enseignes, ajouts 2026-08-26 ; + 10 recettes maison
+     ajoutées le 2026-09-23)
+   Total après dédoublonnage (code-barre) : 32983 produits.
 
    Champs compacts (mêmes unités que CIQUAL_DB) :
      n=nom, b=marque, c=code-barre, k=kcal/100g, p=protéines/100g,
      g=glucides/100g, su=sucres/100g, l=lipides/100g, sf=acides gras
      saturés/100g, f=fibres/100g, s=sodium en mg/100g (converti depuis
      le sel OFF : sodium = sel / 2.5).
+     Champs optionnels (absents sur la plupart des produits OFF, présents
+     sur les recettes maison) : ka=potassium en mg/100g, ig=indice
+     glycémique estimé du plat (0-100, PAS une valeur mesurée en labo).
 
    Source des données : Open Food Facts (odbl), https://openfoodfacts.org
 ════════════════════════════════════════════════════════════════ */
@@ -33002,7 +33007,27 @@ const OFF_MINI_DB = [
 {n:'Parmigiano reggiano aop rape 12 mois lc 60g',b:'itineraire-des-saveurs',c:'3250392334352',k:34.24,p:3.23,g:4.91,su:4.85,l:0.19,sf:0.11,f:0,s:355.31},
 {n:'Blé précuit',b:'intermarche',c:'3250390722779',k:362,p:12.7,g:71,su:0.6,l:1.8,sf:0.3,f:5.5,s:4},
 {n:'HACHIS PARMENTIER 300g',b:'monique-ranou',c:'3250392227685',k:124,p:5.2,g:11,su:0.8,l:6.2,sf:3.6,f:1.5,s:240},
-{n:'Yaourt sucré au sucre de canne',b:'paturages, paturages-intermarche',c:'3250390007364',k:94.17,p:3.21,g:12.89,su:12.29,l:3.31,sf:2.19,f:0,s:42.97}
+{n:'Yaourt sucré au sucre de canne',b:'paturages, paturages-intermarche',c:'3250390007364',k:94.17,p:3.21,g:12.89,su:12.29,l:3.31,sf:2.19,f:0,s:42.97},
+
+/* ── Recettes maison (plats composés courants, non issues d'un export OFF) ──
+   Ajoutées manuellement, pas de code-barre réel (c:'') donc b:'maison' pour
+   les repérer comme telles. Valeurs pour 100g de plat cuit/fini, estimées à
+   partir d'une recette type et recoupées avec des plats du commerce
+   similaires — PAS des valeurs mesurées en laboratoire.
+   ka = potassium (mg/100g), ig = indice glycémique estimé du plat (0-100) :
+   ces deux champs sont propres à ces entrées, cf. élargissement de
+   _searchOffMini() juste en dessous pour qu'ils soient bien renvoyés à
+   index.html (potassium_100g / glycemic-index_100g). */
+{n:'Pâtes à la bolognaise, faites maison',b:'maison',c:'',k:155,p:7.2,g:17.5,su:3.2,l:6,sf:2.3,f:1.8,s:340,ka:280,ig:48},
+{n:'Pâtes à la carbonara, faites maison',b:'maison',c:'',k:225,p:8.8,g:20.5,su:1.5,l:12,sf:6.5,f:1,s:380,ka:140,ig:46},
+{n:'Lasagnes à la bolognaise, faites maison',b:'maison',c:'',k:175,p:8.5,g:14.5,su:3.5,l:9.5,sf:4.5,f:1.5,s:360,ka:230,ig:50},
+{n:'Gratin dauphinois, fait maison',b:'maison',c:'',k:155,p:3.5,g:13.5,su:2.5,l:9.5,sf:5.5,f:1.3,s:200,ka:330,ig:75},
+{n:'Tartiflette, faite maison',b:'maison',c:'',k:210,p:8.5,g:12.5,su:1.8,l:14,sf:7.5,f:1.2,s:450,ka:350,ig:72},
+{n:'Chili con carne, fait maison',b:'maison',c:'',k:130,p:9,g:11,su:2.8,l:5.5,sf:2.2,f:4,s:380,ka:420,ig:38},
+{n:'Risotto aux champignons, fait maison',b:'maison',c:'',k:160,p:4.5,g:22,su:1,l:5.5,sf:2.8,f:1.2,s:300,ka:140,ig:65},
+{n:'Poulet basquaise, fait maison',b:'maison',c:'',k:125,p:13,g:6.5,su:4.5,l:5.5,sf:1.3,f:1.8,s:350,ka:380,ig:42},
+{n:'Blanquette de veau, faite maison',b:'maison',c:'',k:160,p:13.5,g:5.5,su:1.5,l:9.5,sf:4.5,f:0.8,s:330,ka:270,ig:40},
+{n:'Hachis parmentier, fait maison',b:'maison',c:'',k:150,p:7,g:14,su:2.2,l:7.5,sf:3.8,f:1.5,s:320,ka:310,ig:78}
 ];
 
 /* Recherche locale dans OFF_MINI_DB — même logique de scoring que
@@ -33043,6 +33068,8 @@ function _searchOffMini(query) {
         'carbohydrates_100g': x.g, 'sugars_100g': x.su,
         'fat_100g': x.l, 'saturated-fat_100g': x.sf,
         'fiber-energy_100g': x.f, 'sodium_100g': x.s / 1000,
+        'potassium_100g': (x.ka || 0) / 1000,
+        'glycemic-index_100g': (x.ig ?? null),
       },
       serving_size:'', serving_quantity:null,
       nutriscore_grade:null, image:'',
