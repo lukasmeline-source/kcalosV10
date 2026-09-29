@@ -4989,21 +4989,22 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   </div>
   <!-- Correction manuelle des macros — uniquement pour les aliments ajoutés via Analyse IA photo -->
   <div id="qty-ai-edit-section" style="display:none;margin:0 1rem 0.75rem;padding:0.75rem;background:var(--s2);border:1px solid var(--border2);border-radius:var(--r-sm)">
-    <div style="font-size:0.68rem;font-weight:600;color:var(--muted2);margin-bottom:8px">✨ Estimation IA — corrige si besoin</div>
+    <div style="font-size:0.68rem;font-weight:600;color:var(--muted2);margin-bottom:8px">✨ Estimation IA — valeurs pour 100g, corrige si besoin</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
       <div>
-        <div style="font-size:0.58rem;color:var(--muted2);margin-bottom:2px">Protéines (g)</div>
+        <div style="font-size:0.58rem;color:var(--muted2);margin-bottom:2px">Protéines (g/100g)</div>
         <input type="number" step="0.1" min="0" id="qty-ai-prot" oninput="onQtyAiMacroInput('prot',this)" style="width:100%;background:var(--s1);border:1.5px solid var(--border2);border-radius:6px;padding:6px 8px;font-size:0.8rem;color:var(--text);font-family:Syne,sans-serif;outline:none">
       </div>
       <div>
-        <div style="font-size:0.58rem;color:var(--muted2);margin-bottom:2px">Glucides (g)</div>
+        <div style="font-size:0.58rem;color:var(--muted2);margin-bottom:2px">Glucides (g/100g)</div>
         <input type="number" step="0.1" min="0" id="qty-ai-gluc" oninput="onQtyAiMacroInput('gluc',this)" style="width:100%;background:var(--s1);border:1.5px solid var(--border2);border-radius:6px;padding:6px 8px;font-size:0.8rem;color:var(--text);font-family:Syne,sans-serif;outline:none">
       </div>
       <div>
-        <div style="font-size:0.58rem;color:var(--muted2);margin-bottom:2px">Lipides (g)</div>
+        <div style="font-size:0.58rem;color:var(--muted2);margin-bottom:2px">Lipides (g/100g)</div>
         <input type="number" step="0.1" min="0" id="qty-ai-lip" oninput="onQtyAiMacroInput('lip',this)" style="width:100%;background:var(--s1);border:1.5px solid var(--border2);border-radius:6px;padding:6px 8px;font-size:0.8rem;color:var(--text);font-family:Syne,sans-serif;outline:none">
       </div>
     </div>
+    <div id="qty-ai-kcal100" style="font-size:0.62rem;color:var(--muted2);margin-top:8px"></div>
   </div>
   <!-- Détails nutritionnels complets -->
   <div id="qty-details-block" style="display:none;margin:0.75rem 1rem 0.75rem;border-top:1px solid var(--border);padding-top:0.75rem">
@@ -6952,7 +6953,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-09-23.7';
+const APP_BUILD_VERSION = '2026-09-29.2';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -9074,7 +9075,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v35';
+    const CACHE_NAME = 'kcalos-v37';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -15612,9 +15613,12 @@ function updateQtyPanel() {
       const protEl = document.getElementById('qty-ai-prot');
       const glucEl = document.getElementById('qty-ai-gluc');
       const lipEl  = document.getElementById('qty-ai-lip');
-      if (protEl && document.activeElement !== protEl) protEl.value = prot;
-      if (glucEl && document.activeElement !== glucEl) glucEl.value = gluc;
-      if (lipEl  && document.activeElement !== lipEl)  lipEl.value  = lip;
+      // Valeurs pour 100g (indépendantes de la quantité) — le prorata s'applique aux barres et au total
+      if (protEl && document.activeElement !== protEl) protEl.value = f.prot || 0;
+      if (glucEl && document.activeElement !== glucEl) glucEl.value = f.gluc || 0;
+      if (lipEl  && document.activeElement !== lipEl)  lipEl.value  = f.lip  || 0;
+      const kcal100El = document.getElementById('qty-ai-kcal100');
+      if (kcal100El) kcal100El.textContent = `= ${Math.round(f.kcal || 0)} kcal / 100g → ${kcal} kcal pour ${Math.round(g)}g`;
     } else {
       aiSection.style.display = 'none';
     }
@@ -15622,15 +15626,21 @@ function updateQtyPanel() {
 }
 
 /* Corrige une macro (protéines/glucides/lipides) pour un aliment issu de l'Analyse IA photo.
-   La valeur saisie correspond à la quantité actuelle (qty-grams) ; elle est reconvertie
-   en valeur pour 100g et stockée sur AP.selectedFood, pour rester cohérente si la quantité change ensuite. */
+   La valeur saisie est exprimée pour 100g : elle est stockée telle quelle sur AP.selectedFood,
+   et les kcal/100g sont ajustées de l'écart (4/4/9 kcal par g) pour rester cohérentes.
+   Le prorata selon la quantité (qty-grams) est ensuite appliqué par updateQtyPanel / confirmAddFood. */
 function onQtyAiMacroInput(field, inputEl) {
   const f = AP.selectedFood;
   if (!f) return;
-  const g = parseFloat(document.getElementById('qty-grams')?.value) || 100;
-  const ratio = g / 100 || 1;
-  const val = parseFloat(inputEl.value);
-  f[field] = Math.round(((isNaN(val) ? 0 : val) / ratio) * 10) / 10;
+  const kcalPerG = { prot: 4, gluc: 4, lip: 9 }[field];
+  if (!kcalPerG) return;
+  const raw = parseFloat(inputEl.value);
+  const val = Math.max(0, isNaN(raw) ? 0 : raw);
+  const delta = val - (f[field] || 0);
+  f[field] = Math.round(val * 10) / 10;
+  f.kcal = Math.max(0, Math.round(((f.kcal || 0) + delta * kcalPerG) * 10) / 10);
+  // Un aliment IA sans kcal initiale devient exploitable dès qu'une macro est saisie
+  f.hasNutrition = f.kcal > 0 || (f.prot || 0) + (f.gluc || 0) + (f.lip || 0) > 0;
   updateQtyPanel();
 }
 
@@ -18985,8 +18995,32 @@ function renderFavorites(){
     el.innerHTML = `<div class="search-tip"><div style="margin-bottom:8px;opacity:0.35"><span class="ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M8 2l1.8 3.7 4 .6-2.9 2.8.7 4L8 11.2 4.4 13.1l.7-4L2.2 6.3l4-.6z"/></svg></span></div>Aucun favori.<br><span style="font-size:0.72rem;color:var(--muted2)">Ajoute des aliments à tes favoris depuis la sélection.</span></div>`;
     return;
   }
+  const mode = getFavSort();
+  const sorted = _sortFavs(favs, mode);
+  const pills = [['recent','Récents'],['oldest','Anciens'],['az','A → Z']].map(([k,l]) =>
+    `<button type="button" onclick="setFavSort('${k}')" style="padding:4px 11px;border-radius:var(--r-pill);font-size:0.68rem;font-weight:600;font-family:inherit;cursor:pointer;border:1.5px solid ${mode===k?'var(--orange)':'var(--border2)'};background:${mode===k?'rgba(240,160,48,0.18)':'var(--s2)'};color:${mode===k?'var(--orange)':'var(--muted)'}">${l}</button>`
+  ).join('');
   el.innerHTML = `<div class="search-list-heading">Mes favoris (${favs.length})</div>` +
-    favs.map(f => _foodItemHtml(f, true)).join('');
+    `<div style="display:flex;gap:6px;padding:0 1rem 8px">${pills}</div>` +
+    sorted.map(f => _foodItemHtml(f, true)).join('');
+}
+
+/* Tri des favoris : l'ordre du tableau = ordre d'ajout (les nouveaux favoris sont mis en tête via unshift),
+   donc "récents" = ordre natif, "anciens" = inverse, "az" = ordre alphabétique (français, sans casse/accents). */
+const FOOD_FAV_SORT_KEY = 'kcalos_food_fav_sort';
+function getFavSort(){
+  const m = localStorage.getItem(FOOD_FAV_SORT_KEY);
+  return (m === 'oldest' || m === 'az') ? m : 'recent';
+}
+function setFavSort(mode){
+  localStorage.setItem(FOOD_FAV_SORT_KEY, mode);
+  renderFavorites();
+}
+function _sortFavs(favs, mode){
+  const list = favs.slice();
+  if (mode === 'oldest') return list.reverse();
+  if (mode === 'az') return list.sort((a,b) => (a.name||'').localeCompare(b.name||'', 'fr', { sensitivity:'base' }));
+  return list;
 }
 
 function renderRecents(){
