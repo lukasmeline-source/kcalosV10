@@ -1668,6 +1668,8 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
   transition:all var(--trans);-webkit-tap-highlight-color:transparent;
 }
 .ap-date-btn:active{background:var(--s3);transform:scale(0.92)}
+/* Bouton « jour suivant » inactif quand on est sur aujourd'hui (pas de futur) */
+.ap-date-btn:disabled{opacity:0.3;cursor:default;pointer-events:none}
 .ap-date-label{
   font-size:0.9rem;font-weight:500;color:var(--text);
   cursor:pointer;text-align:center;min-width:130px;
@@ -1680,10 +1682,29 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 /* ── Day summary banner (style SH) ── */
 .ap-day-banner{
   background:var(--s1);border-radius:20px;
-  padding:1.15rem 1.3rem 1.05rem;margin-bottom:1.1rem;
+  padding:0;overflow:hidden;margin-bottom:1.1rem;
   border:1px solid var(--border);
   box-shadow:0 2px 20px rgba(0,0,0,0.35),0 0 0 0.5px rgba(255,255,255,0.04);
 }
+/* Bannière en 2 pages glissables (scroll-snap natif) : 1 = mangé/restant + macros,
+   2 = balance calorique du jour affiché (même rendu que l'écran d'accueil). */
+.ap-day-slides{
+  display:flex;overflow-x:auto;overflow-y:hidden;
+  scroll-snap-type:x mandatory;overscroll-behavior-x:contain;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;
+}
+.ap-day-slides::-webkit-scrollbar{display:none}
+.ap-day-slide{flex:0 0 100%;min-width:0;box-sizing:border-box;scroll-snap-align:start;scroll-snap-stop:always;padding:1.15rem 1.3rem 0.8rem}
+.ap-bal-slide{display:flex;flex-direction:column;justify-content:center}
+.ap-bal-slide .db-lbl{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.6rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted2)}
+.ap-bal-slide .db-val{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-weight:700;color:var(--text);line-height:1;letter-spacing:-0.02em}
+.ap-bal-slide .db-unit{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
+.ap-bal-sub{margin-top:0.7rem;padding-top:0.6rem;border-top:1px solid var(--border);font-size:0.65rem;color:var(--muted2);line-height:1.5;text-align:center}
+.ap-bal-sub span{font-weight:600}
+.ap-day-dots{display:flex;justify-content:center;gap:7px;padding:0 0 0.7rem}
+.ap-day-dot{position:relative;width:6px;height:6px;border-radius:50%;border:none;padding:0;background:var(--border2);cursor:pointer;transition:background var(--trans),transform var(--trans);-webkit-tap-highlight-color:transparent}
+.ap-day-dot::after{content:'';position:absolute;inset:-9px}
+.ap-day-dot.active{background:var(--teal);transform:scale(1.3)}
 .ap-day-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:0.5rem;gap:8px;flex-wrap:nowrap}
 .ap-day-kcal{font-size:2.6rem;font-weight:600;color:var(--text);line-height:1;letter-spacing:-1px}
 .ap-day-goal{font-size:0.78rem;color:var(--muted);margin-left:6px;white-space:nowrap}
@@ -3925,7 +3946,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     <div class="ap-date-nav">
       <button class="ap-date-btn" onclick="apChangeDay(-1)">‹</button>
       <div class="ap-date-label" id="ap-date-label" onclick="apPickDate()" style="position:relative"><span id="ap-date-label-txt">Aujourd'hui</span><input type="date" id="ap-date-picker" style="position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:none;background:none;opacity:0;cursor:pointer" onchange="apSetDate(this.value)"></div>
-      <button class="ap-date-btn" onclick="apChangeDay(1)">›</button>
+      <button class="ap-date-btn" id="ap-date-next" onclick="apChangeDay(1)" aria-label="Jour suivant">›</button>
     </div>
     <!-- Le date picker natif est désormais imbriqué dans .ap-date-label ci-dessus
          (overlay transparent en position absolute) plutôt qu'un input caché
@@ -3935,6 +3956,8 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 
     <!-- DAY SUMMARY BANNER — fusionne "mangé" et "restant" via un switch -->
     <div class="ap-day-banner" id="ap-kcal-rest-card">
+     <div class="ap-day-slides" id="ap-day-slides">
+      <div class="ap-day-slide">
       <div class="ap-day-top">
         <div class="ap-day-value-wrap" onclick="openKcalGoalModal()" title="Définir mon objectif calorique">
           <div class="ap-day-view" data-view="eaten">
@@ -3978,6 +4001,40 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
         <span>Sodium <b id="ap-dm-sodium">0mg</b></span>
         <span>Potassium <b id="ap-dm-potassium">0mg</b></span>
       </div>
+      </div><!-- /slide 1 -->
+
+      <!-- Page 2 : balance calorique du jour affiché (rendu identique à la carte de l'accueil) -->
+      <div class="ap-day-slide ap-bal-slide" id="ap-bal-slide">
+        <div class="db-hero-top">
+          <div class="db-hero-ring-wrap">
+            <svg width="92" height="92" viewBox="0 0 92 92">
+              <circle cx="46" cy="46" r="38" fill="none" stroke="var(--s3)" stroke-width="8"/>
+              <circle id="ap-bal-ring-fg" cx="46" cy="46" r="38" fill="none" stroke="var(--blue)" stroke-width="8" stroke-linecap="round" stroke-dasharray="238.76" stroke-dashoffset="238.76" style="transition:stroke-dashoffset 0.7s cubic-bezier(0.4,0,0.2,1),stroke 0.3s ease"/>
+            </svg>
+            <div class="db-hero-ring-center">
+              <span class="db-val" id="ap-bal-val">—</span>
+              <span class="db-hero-ring-unit">kcal</span>
+            </div>
+          </div>
+          <div class="db-hero-right">
+            <div class="db-lbl">Balance calorique</div>
+            <div class="db-hero-row">
+              <div class="db-chip-sm" style="background:var(--blue-bg);color:var(--blue)"><span class="ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.5"/><line x1="17" y1="5" x2="17" y2="3"/><path d="M16 7l2-3"/></svg></span></div>
+              <div><span class="db-val-sm" id="ap-bal-apport">—</span><span class="db-unit">kcal</span><div class="db-hero-row-lbl">Apport</div></div>
+            </div>
+            <div class="db-hero-row">
+              <div class="db-chip-sm" style="background:var(--lime-bg);color:var(--lime)"><span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 14c-3.3 0-5.2-2-5.2-4.3 0-2 1.4-3 1.4-5.2C5.3 6 5.5 7 6.3 7.7c-.1-2.2 1-4.5 3-6 0 2 1 3.8 1.5 5 .5-.8.4-2 .4-3.2 1.8 1.7 2.5 3.8 2.5 5.2C13.7 11 12 14 8 14z"/></svg></span></div>
+              <div><span class="db-val-sm" id="ap-bal-depense">—</span><span class="db-unit">kcal</span><div class="db-hero-row-lbl">Dépense</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="ap-bal-sub" id="ap-bal-sub"></div>
+      </div>
+     </div><!-- /ap-day-slides -->
+     <div class="ap-day-dots" id="ap-day-dots">
+       <button type="button" class="ap-day-dot active" onclick="apBannerGo(0)" aria-label="Résumé du jour"></button>
+       <button type="button" class="ap-day-dot" onclick="apBannerGo(1)" aria-label="Balance calorique du jour"></button>
+     </div>
     </div>
 
     <!-- SCORE NUTRI + STREAK -->
@@ -6953,7 +7010,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-09-29.2';
+const APP_BUILD_VERSION = '2026-10-03.2';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -9075,7 +9132,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v37';
+    const CACHE_NAME = 'kcalos-v39';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -9437,6 +9494,8 @@ function getMealTotals(date, mealKey) {
 
 /* ── Date navigation ── */
 function apRefreshDateUI() {
+  // Verrou : on ne navigue jamais dans le futur (ex: date restée > aujourd'hui)
+  if (AP.date > today()) AP.date = today();
   const d = AP.date;
   const lbl = document.getElementById('ap-date-label-txt');
   const wrap = document.getElementById('ap-date-label');
@@ -9450,13 +9509,17 @@ function apRefreshDateUI() {
     if(wrap) wrap.className = 'ap-date-label';
   }
   const picker = document.getElementById('ap-date-picker');
-  if(picker) picker.value = d;
+  if(picker){ picker.value = d; picker.max = t; } // le sélecteur natif grise les jours futurs
+  const nextBtn = document.getElementById('ap-date-next');
+  if(nextBtn) nextBtn.disabled = d >= t;
 }
 
 function apChangeDay(delta) {
   const dt = new Date(AP.date + 'T12:00:00');
   dt.setDate(dt.getDate() + delta);
-  AP.date = toLocalDateStr(dt);
+  const next = toLocalDateStr(dt);
+  if (next > today()) return; // pas de jour futur
+  AP.date = next;
   apRefreshDateUI();
   renderMealCards();
   renderApDayBanner();
@@ -9471,6 +9534,7 @@ function apPickDate() {
 
 function apSetDate(val) {
   if (!val) return;
+  if (val > today()) { val = today(); toast('Les jours futurs ne sont pas disponibles', 'var(--muted)'); }
   AP.date = val;
   apRefreshDateUI();
   renderMealCards();
@@ -9549,7 +9613,92 @@ function renderApDayBanner() {
   _renderKcalRest(totals, goal, macroGoals);
   _renderNutriScore(AP.date, totals, goal);
   _renderStreak();
+  renderApBalance(goal);
+  apBannerSyncDots();
 }
+
+/* ── Page 2 de la bannière : balance calorique du JOUR AFFICHÉ ──
+   Même modèle que la carte de l'accueil (renderDashboard) et que la balance 7j
+   (computeBalanceDayDetail) : apport du jour (getDayApport) − dépense (computeTDEE).
+   On passe {date:ds} quand le jour n'a pas d'entrée fitness, sinon computeTDEE
+   irait chercher les macros d'AUJOURD'HUI pour le TEF d'un jour passé. */
+function renderApBalance(goal) {
+  const valEl = document.getElementById('ap-bal-val');
+  if (!valEl) return;
+  const ds       = AP.date;
+  const fitness  = DB.getFitness();
+  const profile  = JSON.parse(localStorage.getItem('kcalos_profile') || '{}');
+  const fitD     = fitness.find(f => f.date === ds);
+  const dayA     = getDayApport(ds, DB.getFood());
+  const liveSteps = (typeof SC !== 'undefined' && SC) ? ((SC.savedToday || 0) + (SC.count || 0)) : 0;
+  const steps    = ds === today() ? (liveSteps || fitD?.steps || 0) : (fitD?.steps || 0);
+  const dep      = computeTDEE(fitD || { date: ds }, dayA.kcal, profile, steps);
+  const balance  = dep?.tdee ? (dayA.kcal || 0) - dep.tdee : null;
+
+  // Couleurs : mêmes seuils que l'accueil
+  const col = balance === null ? 'var(--muted2)'
+    : balance > 100 ? 'var(--lime)' : balance < -500 ? 'var(--red,#ef4444)'
+    : balance < -100 ? 'var(--orange)' : 'var(--text)';
+  valEl.textContent = balance !== null ? (balance >= 0 ? '+' : '') + fmt(balance) : '—';
+  valEl.style.color = col;
+
+  const apEl = document.getElementById('ap-bal-apport');
+  if (apEl) {
+    apEl.textContent = dayA.kcal ? fmt(dayA.kcal) : '—';
+    const ratio = (dayA.kcal && goal) ? dayA.kcal / goal : null;
+    apEl.style.color = ratio === null ? '' : ratio > 1.1 ? 'var(--orange)' : ratio > 0.85 ? 'var(--lime)' : 'var(--text)';
+  }
+  const depEl = document.getElementById('ap-bal-depense');
+  if (depEl) depEl.textContent = dep?.tdee ? fmt(dep.tdee) : '—';
+
+  // Anneau : part de la dépense couverte par l'apport (plafonnée à 100 %)
+  const ring = document.getElementById('ap-bal-ring-fg');
+  if (ring) {
+    const C = 238.76;
+    const ratio = (dep?.tdee && dayA.kcal) ? Math.max(0, Math.min(1, dayA.kcal / dep.tdee)) : 0;
+    ring.style.strokeDashoffset = (C * (1 - ratio)).toFixed(1);
+    ring.style.stroke = (balance === null || col === 'var(--text)') ? 'var(--blue)' : col;
+  }
+
+  // Détail : statut + décomposition de la dépense du jour
+  const subEl = document.getElementById('ap-bal-sub');
+  if (subEl) {
+    if (!dep) { subEl.textContent = 'Profil requis pour calculer la dépense'; return; }
+    const parts = [];
+    if (dep.eat  > 0) parts.push(fmt(dep.eat)  + ' séance');
+    if (dep.neat > 0) parts.push('NEAT ' + fmt(dep.neat));
+    if (dep.tef  > 0) parts.push('TEF '  + fmt(dep.tef));
+    const status = !dayA.kcal ? 'Aucun repas enregistré'
+      : balance > 100 ? 'Surplus' : balance < -100 ? 'Déficit' : 'Équilibre';
+    subEl.innerHTML = `<span style="color:${col}">${status}</span><br>Dépense : BMR ${fmt(dep.bmr)}${parts.length ? ' + ' + parts.join(' + ') : ''}`;
+  }
+}
+
+/* ── Pastilles de la bannière (page 1 / page 2) ── */
+function apBannerGo(i) {
+  const s = document.getElementById('ap-day-slides');
+  if (!s) return;
+  const left = i * s.clientWidth;
+  if (s.scrollTo) s.scrollTo({ left, behavior: 'smooth' }); else s.scrollLeft = left;
+}
+function apBannerSyncDots() {
+  const s = document.getElementById('ap-day-slides');
+  if (!s) return;
+  const i = s.clientWidth ? Math.round(s.scrollLeft / s.clientWidth) : 0;
+  document.querySelectorAll('#ap-day-dots .ap-day-dot').forEach((d, k) => {
+    d.classList.toggle('active', k === i);
+    d.setAttribute('aria-current', k === i ? 'true' : 'false');
+  });
+}
+(function initApBannerSlides() {
+  const s = document.getElementById('ap-day-slides');
+  if (!s) return;
+  let raf = null;
+  s.addEventListener('scroll', () => {
+    if (raf) return;
+    raf = requestAnimationFrame(() => { raf = null; apBannerSyncDots(); });
+  }, { passive: true });
+})();
 
 /* ── Meal cards ── */
 function renderMealCards() {
@@ -18865,6 +19014,17 @@ function setLastQty(name, brand, grams, mode, portionIdx, portionCount){
   localStorage.setItem(FOOD_LAST_QTY_KEY, JSON.stringify(m));
 }
 
+/* Copie COMPLÈTE d'un aliment (valeurs pour 100g, micros inclus : sucres, fibres,
+   sodium, potassium, satfat, IG). Utilisée pour les favoris, les récents et le
+   rebuild du produit au clic (_foodItemHtml) — sinon ces champs sont perdus dès
+   qu'un aliment passe par les favoris. */
+function _foodSnapshot(f){
+  return { name:f.name, brand:f.brand||'', kcal:f.kcal, prot:f.prot||0, gluc:f.gluc||0, lip:f.lip||0,
+    sucres:f.sucres||0, satfat:f.satfat||0, fibres:f.fibres||0, sodium:f.sodium||0, potassium:f.potassium||0,
+    ig:(f.ig ?? null), portions:f.portions||[], image:f.image||'',
+    hasNutrition:(f.hasNutrition ?? (f.kcal>0)), _src:f._src||'' };
+}
+
 function getFavs()    { return JSON.parse(localStorage.getItem(FOOD_FAV_KEY)||'[]'); }
 function setFavs(d)   { localStorage.setItem(FOOD_FAV_KEY, JSON.stringify(d)); }
 function getRecents() { return JSON.parse(localStorage.getItem(FOOD_RECENT_KEY)||'[]'); }
@@ -18876,12 +19036,16 @@ function addToRecents(item){
   // Stocker les valeurs par 100g (depuis AP.selectedFood) pour pouvoir re-sélectionner correctement
   const f = AP.selectedFood;
   const entry = f
-    ? { name:f.name, brand:f.brand||'', kcal:f.kcal, prot:f.prot||0, gluc:f.gluc||0, lip:f.lip||0,
-        portions:f.portions||[], image:f.image||'', hasNutrition:f.hasNutrition, lastGrams:item.grams, ts:Date.now() }
+    ? { ..._foodSnapshot(f), lastGrams:item.grams, ts:Date.now() }
     : { name:item.name, brand:item.brand||'', kcal:Math.round(item.kcal/(item.grams/100)),
         prot:Math.round((item.prot||0)/(item.grams/100)*10)/10,
         gluc:Math.round((item.gluc||0)/(item.grams/100)*10)/10,
         lip:Math.round((item.lip||0)/(item.grams/100)*10)/10,
+        sucres:Math.round((item.sucres||0)/(item.grams/100)*10)/10,
+        satfat:Math.round((item.satfat||0)/(item.grams/100)*10)/10,
+        fibres:Math.round((item.fibres||0)/(item.grams/100)*10)/10,
+        sodium:Math.round((item.sodium||0)/(item.grams/100)*10)/10,
+        potassium:Math.round((item.potassium||0)/(item.grams/100)*10)/10,
         portions:[], image:'', hasNutrition:item.kcal>0, lastGrams:item.grams, ts:Date.now() };
   rec.unshift(entry);
   if(rec.length > 30) rec = rec.slice(0,30);
@@ -18919,8 +19083,7 @@ function toggleFavFromSearch(productData, btn) {
     if(btn){ btn.textContent='☆'; btn.style.color='var(--muted2)'; btn.title='Ajouter aux favoris'; btn.setAttribute('aria-label','Ajouter aux favoris'); }
     toast('Retiré des favoris', 'var(--muted)');
   } else {
-    favs.unshift({ name:f.name, brand:f.brand||'', kcal:f.kcal, prot:f.prot||0, gluc:f.gluc||0, lip:f.lip||0,
-      portions:f.portions||[], image:f.image||'', hasNutrition:f.hasNutrition });
+    favs.unshift(_foodSnapshot(f));
     if(btn){ btn.textContent='★'; btn.style.color='var(--orange)'; btn.title='Retirer des favoris'; btn.setAttribute('aria-label','Retirer des favoris'); }
     toast('★ Ajouté aux favoris', 'var(--orange)');
   }
@@ -18936,8 +19099,7 @@ function toggleFavorite(){
     _updateFavBtn(false);
     toast('Retiré des favoris', 'var(--muted)');
   } else {
-    favs.unshift({ name:f.name, brand:f.brand||'', kcal:f.kcal, prot:f.prot||0, gluc:f.gluc||0, lip:f.lip||0,
-      portions:f.portions||[], image:f.image||'' });
+    favs.unshift(_foodSnapshot(f));
     _updateFavBtn(true);
     toast('★ Ajouté aux favoris', 'var(--orange)');
   }
@@ -18964,7 +19126,7 @@ function switchSearchTab(tab){
 }
 
 function _foodItemHtml(item, isFavItem){
-  const esc = JSON.stringify({ name:item.name, brand:item.brand||'', kcal:item.kcal, prot:item.prot||0, gluc:item.gluc||0, lip:item.lip||0, portions:item.portions||[], image:item.image||'', hasNutrition:item.kcal>0 })
+  const esc = JSON.stringify({ ..._foodSnapshot(item), hasNutrition:item.kcal>0 })
     .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   const favHtml = isFavItem
     ? `<button class="fav-star" onclick="event.stopPropagation();removeFav('${item.name.replace(/'/g,'\\\'')}')" aria-label="Retirer des favoris" title="Retirer"><span class="ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M8 2l1.8 3.7 4 .6-2.9 2.8.7 4L8 11.2 4.4 13.1l.7-4L2.2 6.3l4-.6z"/></svg></span></button>`
@@ -23364,7 +23526,11 @@ function woShowExoSuggestions(){
   const results=q?hist.filter(e=>e.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').includes(q)):hist;
   if(!results.length){drop.style.display='none';return;}
   drop.style.display='block';
-  drop.innerHTML=results.slice(0,8).map(e=>`
+  // Les exos cardio prédéfinis sont ajoutés en fin de liste (cf woGetExoHistory) :
+  // un simple slice(0,8) les masquait dès que l'historique musculation dépassait
+  // 8 exos. On limite donc la muscu à 8 et on garde TOUJOURS le cardio visible.
+  const shown=[...results.filter(e=>!e.cardio).slice(0,8), ...results.filter(e=>e.cardio)];
+  drop.innerHTML=shown.map(e=>`
     <div onclick="woPickSuggestion('${e.name.replace(/'/g,"\'")}','${(e.muscle||'').replace(/'/g,"\'")}','${(e.id||'').replace(/'/g,"\'")}',${e.cardio?'true':'false'});"
       style="padding:7px 10px;cursor:pointer;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);-webkit-tap-highlight-color:transparent"
       onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background=''">
