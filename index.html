@@ -2067,7 +2067,9 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
   display:none;position:fixed;inset:0;z-index:300;
   background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;
   animation:slideUp 0.22s cubic-bezier(.25,.8,.35,1);
-  padding-top:env(safe-area-inset-top,0);
+  /* Pas de padding-top ici : sur iOS il laissait une bande transparente au-dessus
+     de l'en-tête sticky (zone caméra) où la liste défilait. La zone sûre est
+     gérée dans .search-sticky. */
 }
 .search-panel.open{display:block}
 /* Réutilisée par-dessus mr-edit-panel / mr-use-detail-panel (z-index 350) pour ajouter un ingrédient */
@@ -2076,7 +2078,7 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 .search-sticky{
   position:sticky;top:0;z-index:10;
   background:var(--bg);border-bottom:1px solid var(--border);
-  padding:0.85rem 1rem 0;
+  padding:calc(0.85rem + env(safe-area-inset-top,0px)) 1rem 0;
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
 }
 .light-mode .search-sticky{background:rgba(232,234,239,0.92)}
@@ -2695,6 +2697,25 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 .search-tab-btn.active .ico{transform:scale(1.08)}
 .fav-item{display:flex;align-items:center;padding:0.75rem 0.4rem;border-bottom:1px solid var(--border);cursor:pointer;gap:12px;-webkit-tap-highlight-color:transparent;transition:opacity 0.15s,background 0.15s;border-radius:12px;margin:0 -0.4rem;animation:fadeIn 0.25s ease backwards}
 .fav-item:last-child{border-bottom:none}
+.no-anim .fav-item{animation:none}
+/* Tri A→Z : sections par lettre + index latéral */
+.fav-az-wrap{padding-left:1.5rem}
+.fav-az-letter{position:sticky;top:var(--kc-sticky-h,0px);z-index:5;background:var(--bg);
+  font-size:0.72rem;font-weight:700;color:var(--orange);letter-spacing:0.08em;
+  padding:6px 0.4rem 4px;margin:0 -0.4rem;border-bottom:1px solid var(--border)}
+.fav-az-rail{position:fixed;left:3px;top:50%;transform:translateY(-50%);z-index:20;
+  display:flex;flex-direction:column;padding:4px 2px;border-radius:var(--r-pill);
+  background:var(--s2);border:1px solid var(--border);touch-action:none;user-select:none;-webkit-user-select:none}
+.fav-az-rail span{display:block;width:16px;text-align:center;font-size:0.56rem;line-height:13px;
+  font-weight:700;color:var(--muted2);opacity:0.35}
+.fav-az-rail span.on{opacity:1;color:var(--muted)}
+.fav-az-rail span.act{color:var(--orange);transform:scale(1.35)}
+.fav-az-bubble{position:fixed;left:44px;top:50%;transform:translateY(-50%) scale(0.9);z-index:21;
+  width:56px;height:56px;border-radius:16px;background:var(--s3);border:1px solid var(--border2);
+  box-shadow:var(--shadow-float);display:flex;align-items:center;justify-content:center;
+  font-size:1.6rem;font-weight:700;color:var(--orange);opacity:0;pointer-events:none;
+  transition:opacity 0.15s,transform 0.15s}
+.fav-az-bubble.show{opacity:1;transform:translateY(-50%) scale(1)}
 .fav-item:active{opacity:0.55;background:var(--s2)}
 .fav-star{width:30px;height:30px;border-radius:50%;background:var(--s2);border:none;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--orange);transition:transform 0.15s}
 .fav-star:active{transform:scale(0.85)}
@@ -7118,7 +7139,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-10-05.3';
+const APP_BUILD_VERSION = '2026-10-05.6';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -19358,9 +19379,10 @@ function removeFav(name){
   toast('Retiré des favoris', 'var(--muted)');
 }
 
-function renderFavorites(){
+function renderFavorites(noAnim){
   const el = document.getElementById('search-results');
   if(!el) return;
+  el.classList.toggle('no-anim', !!noAnim);
   const favs = getFavs();
   if(!favs.length){
     el.innerHTML = `<div class="search-tip"><div style="margin-bottom:8px;opacity:0.35"><span class="ico"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M8 2l1.8 3.7 4 .6-2.9 2.8.7 4L8 11.2 4.4 13.1l.7-4L2.2 6.3l4-.6z"/></svg></span></div>Aucun favori.<br><span style="font-size:0.72rem;color:var(--muted2)">Ajoute des aliments à tes favoris depuis la sélection.</span></div>`;
@@ -19373,7 +19395,83 @@ function renderFavorites(){
   ).join('');
   el.innerHTML = `<div class="search-list-heading">Mes favoris (${favs.length})</div>` +
     `<div style="display:flex;gap:6px;padding:0 1rem 8px">${pills}</div>` +
-    sorted.map(f => _foodItemHtml(f, true)).join('');
+    (mode === 'az' ? _favAzHtml(sorted) : sorted.map(f => _foodItemHtml(f, true)).join(''));
+  if(mode === 'az') _favAzInit(el);
+}
+
+/* ── Tri A→Z : sections par lettre + index latéral (style Contacts iOS) ── */
+function _favLetter(name){
+  const c = (name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').charAt(0).toUpperCase();
+  return /[A-Z]/.test(c) ? c : '#';
+}
+function _favAzHtml(sorted){
+  const groups = new Map();
+  sorted.forEach(f => {
+    const l = _favLetter(f.name);
+    if(!groups.has(l)) groups.set(l, []);
+    groups.get(l).push(f);
+  });
+  const keys = [...groups.keys()].sort((a,b) => a==='#' ? -1 : b==='#' ? 1 : a.localeCompare(b));
+  const secs = keys.map(l =>
+    `<div class="fav-az-sec" data-l="${l}"><div class="fav-az-letter">${l}</div>` +
+    groups.get(l).map(f => _foodItemHtml(f, true)).join('') + `</div>`).join('');
+  const all = ['#', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'];
+  const rail = all.map(l => `<span data-l="${l}"${groups.has(l)?' class="on"':''}>${l}</span>`).join('');
+  return `<div class="fav-az-wrap">${secs}</div>` +
+    `<div class="fav-az-rail" id="fav-az-rail">${rail}</div><div class="fav-az-bubble" id="fav-az-bubble"></div>`;
+}
+function _favAzInit(el){
+  const panel  = document.getElementById('food-search-panel');
+  const sticky = panel && panel.querySelector('.search-sticky');
+  const rail   = el.querySelector('#fav-az-rail');
+  const bubble = el.querySelector('#fav-az-bubble');
+  if(!panel || !sticky || !rail) return;
+  // Les lettres collantes se calent juste sous l'en-tête de recherche
+  panel.style.setProperty('--kc-sticky-h', sticky.offsetHeight + 'px');
+  const spans = [...rail.children];
+
+  function jump(clientY){
+    const r = rail.getBoundingClientRect();
+    let i = Math.floor((clientY - r.top) / r.height * spans.length);
+    i = Math.max(0, Math.min(spans.length - 1, i));
+    let j = i;
+    while(j < spans.length && !spans[j].classList.contains('on')) j++;
+    if(j >= spans.length){ j = i; while(j >= 0 && !spans[j].classList.contains('on')) j--; }
+    if(j < 0) return;
+    const l = spans[j].dataset.l;
+    const sec = el.querySelector('.fav-az-sec[data-l="' + l + '"]');
+    if(!sec) return;
+    panel.scrollTop = sec.getBoundingClientRect().top - panel.getBoundingClientRect().top
+                      + panel.scrollTop - sticky.offsetHeight;
+    if(bubble){ bubble.textContent = l; bubble.classList.add('show'); }
+  }
+  let down = false;
+  rail.addEventListener('pointerdown', e => { down = true; rail.setPointerCapture(e.pointerId); jump(e.clientY); e.preventDefault(); });
+  rail.addEventListener('pointermove', e => { if(down) jump(e.clientY); });
+  const end = () => { down = false; bubble && bubble.classList.remove('show'); };
+  rail.addEventListener('pointerup', end);
+  rail.addEventListener('pointercancel', end);
+
+  if(!panel._azScrollBound){
+    panel._azScrollBound = true;
+    let raf = null;
+    panel.addEventListener('scroll', () => {
+      if(raf) return;
+      raf = requestAnimationFrame(() => { raf = null; _favAzUpdateActive(); });
+    }, { passive:true });
+  }
+  _favAzUpdateActive();
+}
+function _favAzUpdateActive(){
+  const rail = document.getElementById('fav-az-rail');
+  const sticky = document.querySelector('#food-search-panel .search-sticky');
+  if(!rail || !sticky) return;
+  const limit = sticky.getBoundingClientRect().bottom + 2;
+  let cur = null;
+  document.querySelectorAll('.fav-az-sec').forEach(sec => {
+    if(sec.getBoundingClientRect().top <= limit) cur = sec.dataset.l;
+  });
+  [...rail.children].forEach(sp => sp.classList.toggle('act', sp.dataset.l === cur));
 }
 
 /* Tri des favoris : l'ordre du tableau = ordre d'ajout (les nouveaux favoris sont mis en tête via unshift),
@@ -19385,7 +19483,14 @@ function getFavSort(){
 }
 function setFavSort(mode){
   localStorage.setItem(FOOD_FAV_SORT_KEY, mode);
-  renderFavorites();
+  // Re-rendu sans animation + position de scroll conservée (évite le saut de liste sur iOS)
+  const panel = document.getElementById('food-search-panel');
+  const y = panel ? panel.scrollTop : 0;
+  renderFavorites(true);
+  if(panel){
+    panel.scrollTop = y;
+    requestAnimationFrame(() => { panel.scrollTop = y; });
+  }
 }
 function _sortFavs(favs, mode){
   const list = favs.slice();
@@ -19397,6 +19502,7 @@ function _sortFavs(favs, mode){
 function renderRecents(){
   const el = document.getElementById('search-results');
   if(!el) return;
+  el.classList.remove('no-anim');
   const rec = getRecents();
   if(!rec.length){
     el.innerHTML = `<div class="search-tip"><div style="font-size:1.5rem;margin-bottom:8px">🕐</div>Aucun aliment récent.<br><span style="font-size:0.72rem;color:var(--muted2)">Tes derniers aliments ajoutés apparaîtront ici.</span></div>`;
