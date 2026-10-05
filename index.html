@@ -1946,14 +1946,6 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 #mrud-title.mrud-title-clickable input[type="date"]{pointer-events:auto}
 .ap-sub-body{padding:0.85rem 1rem;padding-bottom:calc(80px + env(safe-area-inset-bottom,0))}
 
-/* Panneau détail d'un repas : le panneau ne défile plus lui-même, seule la liste (.ap-sub-body)
-   défile. Avant, la barre "+ Ajouter un aliment / Fin de saisie" (position:fixed dans un conteneur
-   scrollable) suivait l'effet d'élastique d'iOS quand on tirait vers le haut sans contenu à défiler. */
-#meal-detail-panel.open{display:flex;flex-direction:column;overflow:hidden}
-#meal-detail-panel .ap-sub-header{flex-shrink:0}
-#meal-detail-panel .ap-sub-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
-  overscroll-behavior:contain;padding-bottom:1.25rem}
-#meal-detail-panel .meal-detail-actions{position:static;flex-shrink:0}
 
 /* AI Photo panel — boîtes de capture */
 .aiph-photo-box{
@@ -7148,7 +7140,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-10-05.7';
+const APP_BUILD_VERSION = '2026-10-05.8';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -7278,7 +7270,9 @@ function kcBubblesToggleShow(){
   let raf = null;
   function reposition(){
     raf = null;
-    const offset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+    // offsetTop est NÉGATIF pendant l'effet d'élastique d'iOS (tirer vers le bas en haut de page) :
+    // il faut l'ignorer, sinon ce rebond est pris pour un clavier et remonte la barre.
+    const offset = Math.max(0, window.innerHeight - vv.height - Math.max(0, vv.offsetTop));
     document.querySelectorAll('.meal-detail-actions').forEach(el=>{
       el.style.transform = offset > 0.5 ? `translateY(-${offset}px)` : '';
     });
