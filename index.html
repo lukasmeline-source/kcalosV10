@@ -362,6 +362,82 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 #page-dashboard .comp-card.cc-neat{background:var(--orange-bg)}
 #page-dashboard .comp-card.cc-tef{background:var(--pink-bg)}
 
+/* ── #widget-tdee : breakdown dépense (style widgets Dashboard) ──
+   Total héros + barre segmentée + 4 tuiles teintées à pastille ronde.
+   Couleurs alignées sur celles des univers du site :
+   BMR/repos = bleu · EAT/séances = lime (accent Séance)
+   NEAT/pas = teal (accent Pas) · TEF/digestion = orange. IDs/JS inchangés. */
+#widget-tdee .db-card{--tdee-bg:var(--s1)}
+.light-mode #widget-tdee .db-card,.pastel-green #widget-tdee .db-card,.pastel-blue #widget-tdee .db-card,.pastel-orange #widget-tdee .db-card,.pastel-pink #widget-tdee .db-card,.pastel-purple #widget-tdee .db-card{--tdee-bg:var(--s0)}
+#widget-tdee .tdee-total-lbl{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.68rem;color:var(--muted2);margin-bottom:4px}
+#widget-tdee .tdee-total-row{display:flex;align-items:baseline;gap:5px;margin-bottom:0.95rem}
+#widget-tdee .tdee-total-num{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:2rem;font-weight:700;letter-spacing:-0.03em;line-height:1;color:var(--text)}
+#widget-tdee .tdee-total-unit{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.78rem;font-weight:500;color:var(--muted)}
+#widget-tdee .bar-track{height:8px;border-radius:var(--r-pill);background:var(--s2);margin-bottom:1rem}
+#widget-tdee .bar-seg{box-shadow:inset -2px 0 0 var(--tdee-bg)}
+#widget-tdee .bar-seg:last-child{box-shadow:none}
+#widget-tdee{--c-bmr:var(--lime);--c-eat:var(--blue);--c-neat:var(--orange);--c-tef:var(--pink)}
+#widget-tdee .k-bmr,#widget-tdee .cc-bmr{--k:var(--c-bmr)}
+#widget-tdee .k-eat,#widget-tdee .cc-eat{--k:var(--c-eat)}
+#widget-tdee .k-neat,#widget-tdee .cc-neat{--k:var(--c-neat)}
+#widget-tdee .k-tef,#widget-tdee .cc-tef{--k:var(--c-tef)}
+#widget-tdee .bs-bmr{background:var(--c-bmr)}
+#widget-tdee .bs-eat{background:var(--c-eat)}
+#widget-tdee .bs-neat{background:var(--c-neat)}
+#widget-tdee .bs-tef{background:var(--c-tef)}
+#widget-tdee .grid4{gap:0.6rem}
+#widget-tdee .comp-card{display:flex;flex-direction:column;align-items:flex-start;padding:0.85rem 0.9rem;border:none;border-radius:var(--r);overflow:hidden}
+#widget-tdee .comp-card:hover{transform:none}
+#widget-tdee .comp-card::after{display:none}
+#widget-tdee .comp-card.cc-bmr{--tc:var(--c-bmr);background:var(--lime-bg)}
+#widget-tdee .comp-card.cc-eat{--tc:var(--c-eat);background:var(--blue-bg)}
+#widget-tdee .comp-card.cc-neat{--tc:var(--c-neat);background:var(--orange-bg)}
+#widget-tdee .comp-card.cc-tef{--tc:var(--c-tef);background:var(--pink-bg)}
+#widget-tdee .cc-chip{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:0.6rem;flex-shrink:0;background:var(--tc);color:var(--tdee-bg)}
+#widget-tdee .cc-chip svg{width:13px;height:13px}
+#widget-tdee .comp-card .cc-lbl{margin:0 0 5px;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.66rem;font-weight:600;letter-spacing:0.02em;text-transform:none;color:var(--tc)}
+#widget-tdee .comp-card .cc-val{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:1.45rem;font-weight:700;letter-spacing:-0.02em;line-height:1;color:var(--text)}
+#widget-tdee .comp-card .cc-val::after{content:' kcal';font-size:0.66rem;font-weight:500;letter-spacing:0;color:var(--muted)}
+#widget-tdee .comp-card .cc-unit{display:none}
+#widget-tdee .comp-card .cc-pct{margin:6px 0 0;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.66rem;font-weight:600;color:var(--tc)}
+#widget-tdee .comp-card .cc-desc{margin:5px 0 0;padding:0;border:none;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.68rem;line-height:1.4;color:var(--muted)}
+#widget-tdee[data-size="half"] .comp-card .cc-desc{display:none}
+
+/* ── #widget-tdee : 4 vues glissables (même mécanique que la bannière Apports) ──
+   Vue 1 = détail (tuiles) · 2 = anneau · 3 = lignes · 4 = colonnes.
+   Mêmes 4 couleurs sur toutes les vues (variables --c-bmr/eat/neat/tef ci-dessus :
+   lime / bleu / orange / rose). Vue choisie mémorisée (kcalos_tdee_view). */
+#widget-tdee .tdee-slides{display:flex;align-items:flex-start;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;transition:height 0.25s ease}
+#widget-tdee .tdee-slides::-webkit-scrollbar{display:none}
+#widget-tdee .tdee-slide{flex:0 0 100%;min-width:0;box-sizing:border-box;padding:0 2px;scroll-snap-align:start;scroll-snap-stop:always}
+#widget-tdee .tdee-dots{display:flex;justify-content:center;gap:7px;padding-top:0.95rem}
+#widget-tdee .tdee-dot{position:relative;width:6px;height:6px;border-radius:50%;border:none;padding:0;background:var(--border2);cursor:pointer;transition:background var(--trans),transform var(--trans);-webkit-tap-highlight-color:transparent}
+#widget-tdee .tdee-dot::after{content:'';position:absolute;inset:-9px}
+#widget-tdee .tdee-dot.active{background:var(--lime);transform:scale(1.3)}
+#widget-tdee .tv-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+#widget-tdee .tv-name{display:flex;align-items:center;gap:8px;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.8rem;color:var(--text)}
+#widget-tdee .tv-pct{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.68rem;color:var(--muted2);margin-left:2px}
+#widget-tdee .tv-v{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.95rem;font-weight:600;letter-spacing:-0.01em;color:var(--text)}
+#widget-tdee .tv-dot{width:8px;height:8px;border-radius:50%;background:var(--k);flex-shrink:0}
+#widget-tdee .tv-ring{display:flex;align-items:center;gap:1.2rem}
+#widget-tdee .tv-ring-wrap{position:relative;width:128px;height:128px;flex-shrink:0}
+#widget-tdee .tv-ring-wrap svg{width:100%;height:100%;display:block;transform:rotate(-90deg)}
+#widget-tdee .tv-track{fill:none;stroke:var(--s2);stroke-width:8}
+#widget-tdee .tv-seg{fill:none;stroke:var(--k);stroke-width:8;stroke-dasharray:0 300;transition:stroke-dasharray 0.4s ease,stroke-dashoffset 0.4s ease}
+#widget-tdee .tv-ring-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#widget-tdee .tv-ring-c .tdee-total-num{font-size:1.45rem}
+#widget-tdee .tv-ring-c .tdee-total-unit{margin-top:2px;font-size:0.7rem}
+#widget-tdee .tv-rows{flex:1;min-width:0;display:flex;flex-direction:column;gap:0.8rem}
+#widget-tdee .tv-lines{display:flex;flex-direction:column;gap:0.85rem}
+#widget-tdee .tv-bar{height:4px;background:var(--s2);border-radius:4px;margin-top:6px;overflow:hidden}
+#widget-tdee .tv-bar-fill{height:100%;width:0%;background:var(--k);border-radius:4px;transition:width 0.4s ease}
+#widget-tdee .tv-cols{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;align-items:end;height:96px;border-bottom:1px solid var(--border2)}
+#widget-tdee .tv-col{height:6px;background:var(--k);border-radius:6px 6px 0 0;transition:height 0.4s ease}
+#widget-tdee .tv-cvals{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:0.6rem;text-align:center}
+#widget-tdee .tv-cname{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.66rem;color:var(--muted);margin-top:2px}
+#widget-tdee[data-size="half"] .tv-ring{flex-direction:column;gap:0.9rem}
+#widget-tdee[data-size="half"] .tv-rows{width:100%;flex:none}
+
 /* ── TDEE TOTAL ── */
 .tdee-total{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;padding:1.4rem 1.6rem;background:var(--s1);border:1px solid var(--border2);border-radius:var(--r);margin-top:1.1rem}
 .tdee-total .tt-left .tt-lbl{font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted2);margin-bottom:4px}
@@ -3528,52 +3604,84 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   <!-- TDEE Breakdown -->
   <div class="db-card db-card-full" style="margin-bottom:0.85rem">
     <div class="db-lbl" style="margin-bottom:1rem"><span class="ico" style="margin-right:5px"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 14c-3.3 0-5.2-2-5.2-4.3 0-2 1.4-3 1.4-5.2C5.3 6 5.5 7 6.3 7.7c-.1-2.2 1-4.5 3-6 0 2 1 3.8 1.5 5 .5-.8.4-2 .4-3.2 1.8 1.7 2.5 3.8 2.5 5.2C13.7 11 12 14 8 14z"/></svg></span> Dépense du jour — données réelles</div>
+    <div class="tdee-slides" id="tdee-slides">
+    <div class="tdee-slide">
     <!-- Total estimé -->
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.5rem">
-      <span style="font-size:0.65rem;color:var(--muted);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;text-transform:uppercase;letter-spacing:.05em">Total estimé</span>
-      <span id="db-tdee-total" style="font-size:1.05rem;font-weight:700;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text)">— kcal</span>
+    <div class="tdee-total-lbl">Total estimé</div>
+    <div class="tdee-total-row">
+      <span class="tdee-total-num" id="db-tdee-total">—</span><span class="tdee-total-unit">kcal</span>
     </div>
     <!-- Bar visuelle -->
-    <div class="bar-track" id="db-dep-bar" style="margin-bottom:1rem">
+    <div class="bar-track" id="db-dep-bar">
       <div class="bar-seg bs-bmr" id="db-bar-bmr" style="width:0%"></div>
       <div class="bar-seg bs-eat" id="db-bar-eat" style="width:0%"></div>
       <div class="bar-seg bs-neat" id="db-bar-neat" style="width:0%"></div>
       <div class="bar-seg bs-tef" id="db-bar-tef" style="width:0%"></div>
     </div>
-    <!-- Légende -->
-    <div class="legend" style="margin-bottom:0.85rem">
-      <div class="legend-item"><div class="ld" style="background:var(--lime)"></div>BMR</div>
-      <div class="legend-item"><div class="ld" style="background:var(--blue)"></div>EAT (sport)</div>
-      <div class="legend-item"><div class="ld" style="background:var(--orange)"></div>NEAT (pas)</div>
-      <div class="legend-item"><div class="ld" style="background:var(--pink)"></div>TEF</div>
-    </div>
     <!-- Comp cards -->
     <div class="grid4">
       <div class="comp-card cc-bmr">
+        <div class="cc-chip"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M13.2 9.6A5.6 5.6 0 1 1 6.4 2.8a4.4 4.4 0 0 0 6.8 6.8z"/></svg></div>
         <div class="cc-lbl">BMR — Repos</div>
         <div class="cc-val" id="db-r-bmr">—</div><div class="cc-unit">kcal/j</div>
         <div class="cc-pct" id="db-p-bmr">—</div>
         <div class="cc-desc">Mifflin-St Jeor · métabolisme basal</div>
       </div>
       <div class="comp-card cc-eat">
+        <div class="cc-chip"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6v4M4.6 4.5v7M11.4 4.5v7M13.5 6v4M4.6 8h6.8"/></svg></div>
         <div class="cc-lbl">EAT — Séances</div>
         <div class="cc-val" id="db-r-eat">—</div><div class="cc-unit">kcal/j</div>
         <div class="cc-pct" id="db-p-eat">—</div>
         <div class="cc-desc" id="db-d-eat">Séances enregistrées</div>
       </div>
       <div class="comp-card cc-neat">
+        <div class="cc-chip"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="5.5" cy="5.5" rx="2.2" ry="3.2" transform="rotate(-8 5.5 5.5)"/><ellipse cx="10.5" cy="10.5" rx="2.2" ry="3.2" transform="rotate(8 10.5 10.5)"/></svg></div>
         <div class="cc-lbl">NEAT — Pas</div>
         <div class="cc-val" id="db-r-neat">—</div><div class="cc-unit">kcal/j</div>
         <div class="cc-pct" id="db-p-neat">—</div>
         <div class="cc-desc" id="db-d-neat">Pas enregistrés</div>
       </div>
       <div class="comp-card cc-tef">
+        <div class="cc-chip"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 2v3.4a1.5 1.5 0 0 0 3 0V2M6 2v12M11.5 14V2C10 3 9.5 5.2 9.5 7.5h2"/></svg></div>
         <div class="cc-lbl">TEF — Digestion</div>
         <div class="cc-val" id="db-r-tef">—</div><div class="cc-unit">kcal/j</div>
         <div class="cc-pct" id="db-p-tef">—</div>
         <div class="cc-desc" id="db-d-tef">Apports enregistrés</div>
       </div>
     </div>
+    </div>
+    <div class="tdee-slide">
+      <div class="tv-ring">
+        <div class="tv-ring-wrap">
+          <svg viewBox="0 0 92 92" aria-hidden="true"><circle class="tv-track" cx="46" cy="46" r="38"/><circle class="tv-seg k-bmr" id="db-rg-seg-bmr" cx="46" cy="46" r="38"/><circle class="tv-seg k-eat" id="db-rg-seg-eat" cx="46" cy="46" r="38"/><circle class="tv-seg k-neat" id="db-rg-seg-neat" cx="46" cy="46" r="38"/><circle class="tv-seg k-tef" id="db-rg-seg-tef" cx="46" cy="46" r="38"/></svg>
+          <div class="tv-ring-c"><span class="tdee-total-num" id="db-rg-total">—</span><span class="tdee-total-unit">kcal</span></div>
+        </div>
+        <div class="tv-rows">
+          <div class="tv-row"><span class="tv-name"><i class="tv-dot k-bmr"></i>Repos</span><span class="tv-v" id="db-rg-v-bmr">—</span></div>
+          <div class="tv-row"><span class="tv-name"><i class="tv-dot k-eat"></i>Séances</span><span class="tv-v" id="db-rg-v-eat">—</span></div>
+          <div class="tv-row"><span class="tv-name"><i class="tv-dot k-neat"></i>Pas</span><span class="tv-v" id="db-rg-v-neat">—</span></div>
+          <div class="tv-row"><span class="tv-name"><i class="tv-dot k-tef"></i>Digestion</span><span class="tv-v" id="db-rg-v-tef">—</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="tdee-slide">
+      <div class="tdee-total-lbl">Total estimé</div>
+      <div class="tdee-total-row"><span class="tdee-total-num" id="db-ln-total">—</span><span class="tdee-total-unit">kcal</span></div>
+      <div class="tv-lines">
+        <div class="tv-line"><div class="tv-row"><span class="tv-name">Repos<span class="tv-pct" id="db-ln-p-bmr">—</span></span><span class="tv-v" id="db-ln-v-bmr">—</span></div><div class="tv-bar"><div class="tv-bar-fill k-bmr" id="db-ln-b-bmr"></div></div></div>
+        <div class="tv-line"><div class="tv-row"><span class="tv-name">Séances<span class="tv-pct" id="db-ln-p-eat">—</span></span><span class="tv-v" id="db-ln-v-eat">—</span></div><div class="tv-bar"><div class="tv-bar-fill k-eat" id="db-ln-b-eat"></div></div></div>
+        <div class="tv-line"><div class="tv-row"><span class="tv-name">Pas<span class="tv-pct" id="db-ln-p-neat">—</span></span><span class="tv-v" id="db-ln-v-neat">—</span></div><div class="tv-bar"><div class="tv-bar-fill k-neat" id="db-ln-b-neat"></div></div></div>
+        <div class="tv-line"><div class="tv-row"><span class="tv-name">Digestion<span class="tv-pct" id="db-ln-p-tef">—</span></span><span class="tv-v" id="db-ln-v-tef">—</span></div><div class="tv-bar"><div class="tv-bar-fill k-tef" id="db-ln-b-tef"></div></div></div>
+      </div>
+    </div>
+    <div class="tdee-slide">
+      <div class="tdee-total-lbl">Total estimé</div>
+      <div class="tdee-total-row"><span class="tdee-total-num" id="db-cl-total">—</span><span class="tdee-total-unit">kcal</span></div>
+      <div class="tv-cols"><div class="tv-col k-bmr" id="db-cl-b-bmr"></div><div class="tv-col k-eat" id="db-cl-b-eat"></div><div class="tv-col k-neat" id="db-cl-b-neat"></div><div class="tv-col k-tef" id="db-cl-b-tef"></div></div>
+      <div class="tv-cvals"><div><div class="tv-v" id="db-cl-v-bmr">—</div><div class="tv-cname">Repos</div></div><div><div class="tv-v" id="db-cl-v-eat">—</div><div class="tv-cname">Séances</div></div><div><div class="tv-v" id="db-cl-v-neat">—</div><div class="tv-cname">Pas</div></div><div><div class="tv-v" id="db-cl-v-tef">—</div><div class="tv-cname">Digestion</div></div></div>
+    </div>
+    </div><!-- /tdee-slides -->
+    <div class="tdee-dots" id="tdee-dots"><button type="button" class="tdee-dot active" onclick="tdeeViewGo(0)" aria-label="Vue détaillée"></button><button type="button" class="tdee-dot" onclick="tdeeViewGo(1)" aria-label="Vue anneau"></button><button type="button" class="tdee-dot" onclick="tdeeViewGo(2)" aria-label="Vue lignes"></button><button type="button" class="tdee-dot" onclick="tdeeViewGo(3)" aria-label="Vue colonnes"></button></div>
   </div>
   </div><!-- /widget-tdee -->
 
@@ -6269,7 +6377,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
       <div class="wo-stat-pill"><div class="wsp-lbl">Exercices</div><div class="wsp-val" id="wo-sess-exo-count">0</div></div>
       <div class="wo-stat-pill"><div class="wsp-lbl">Séries</div><div class="wsp-val" id="wo-sess-set-count">0</div></div>
       <div class="wo-stat-pill"><div class="wsp-lbl">Volume</div><div class="wsp-val" id="wo-sess-volume">0</div></div>
-      <div class="wo-stat-pill" style="border-color:rgba(184,224,48,0.2)"><div class="wsp-lbl">Durée</div><div class="wsp-val" style="color:var(--lime)" id="wo-sess-duration">—</div></div>
+      <div class="wo-stat-pill" style="border-color:rgba(184,224,48,0.2);cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="openWoDurPanel(false)" title="Modifier la durée"><div class="wsp-lbl">Durée <svg width="8" height="8" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.5px;margin-left:1px;opacity:0.7"><path d="M11 2.5l2.5 2.5L5.5 13H3v-2.5z"/></svg></div><div class="wsp-val" style="color:var(--lime)" id="wo-sess-duration">—</div></div>
       <div class="wo-stat-pill" style="border-color:rgba(240,96,48,0.2)"><div class="wsp-lbl">Kcal</div><div class="wsp-val" style="color:#f06030" id="wo-sess-kcal">—</div></div>
     </div>
 
@@ -7010,7 +7118,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-10-03.2';
+const APP_BUILD_VERSION = '2026-10-05.3';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -9132,7 +9240,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v39';
+    const CACHE_NAME = 'kcalos-v42';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -9699,6 +9807,106 @@ function apBannerSyncDots() {
     raf = requestAnimationFrame(() => { raf = null; apBannerSyncDots(); });
   }, { passive: true });
 })();
+
+/* ── Widget Dépense : 4 vues glissables ──────────────────────────────────
+   Même mécanisme que la bannière Apports (scroll-snap natif + pastilles).
+   La vue choisie est mémorisée (localStorage) et ré-appliquée à chaque
+   affichage : un ResizeObserver recale la position quand le widget devient
+   visible, est redimensionné (⇔) ou déplacé dans le DOM (scrollLeft perdu). */
+const TDEE_VIEW_KEY = 'kcalos_tdee_view';
+const TDEE_VIEW_COUNT = 4;
+let _tdeeViewIdx = 0, _tdeeViewTouching = false, _tdeeViewProgUntil = 0;
+try { _tdeeViewIdx = Math.max(0, Math.min(TDEE_VIEW_COUNT-1, parseInt(localStorage.getItem(TDEE_VIEW_KEY), 10) || 0)); } catch(e) {}
+function tdeeViewSetIdx(i) {
+  _tdeeViewIdx = i;
+  try { localStorage.setItem(TDEE_VIEW_KEY, String(i)); } catch(e) {}
+  tdeeViewSyncDots();
+  tdeeViewFit();
+}
+function tdeeViewSyncDots() {
+  document.querySelectorAll('#tdee-dots .tdee-dot').forEach((d, k) => {
+    d.classList.toggle('active', k === _tdeeViewIdx);
+    d.setAttribute('aria-current', k === _tdeeViewIdx ? 'true' : 'false');
+  });
+}
+// Hauteur du conteneur = hauteur de la vue active (pas de vide sous les vues courtes)
+function tdeeViewFit() {
+  const s = document.getElementById('tdee-slides');
+  if (!s || !s.clientWidth) return;
+  const sl = s.children[_tdeeViewIdx];
+  if (sl) s.style.height = sl.offsetHeight + 'px';
+}
+function tdeeViewAlign() {
+  const s = document.getElementById('tdee-slides');
+  if (!s || !s.clientWidth || _tdeeViewTouching) return;
+  const left = _tdeeViewIdx * s.clientWidth;
+  if (Math.abs(s.scrollLeft - left) > 2) s.scrollLeft = left;
+  tdeeViewFit();
+}
+function tdeeViewGo(i) {
+  const s = document.getElementById('tdee-slides');
+  if (!s) return;
+  _tdeeViewProgUntil = Date.now() + 500;
+  tdeeViewSetIdx(i);
+  const left = i * s.clientWidth;
+  if (s.scrollTo) s.scrollTo({ left, behavior: 'smooth' }); else s.scrollLeft = left;
+}
+(function initTdeeViews() {
+  const s = document.getElementById('tdee-slides');
+  if (!s) return;
+  tdeeViewSyncDots();
+  let raf = null;
+  s.addEventListener('scroll', () => {
+    if (raf || Date.now() < _tdeeViewProgUntil) return;
+    raf = requestAnimationFrame(() => {
+      raf = null;
+      const w = s.clientWidth;
+      if (!w) return;
+      const i = Math.max(0, Math.min(TDEE_VIEW_COUNT-1, Math.round(s.scrollLeft / w)));
+      if (i !== _tdeeViewIdx) tdeeViewSetIdx(i);
+    });
+  }, { passive: true });
+  s.addEventListener('touchstart', () => { _tdeeViewTouching = true; }, { passive: true });
+  ['touchend', 'touchcancel'].forEach(ev => s.addEventListener(ev, () => { _tdeeViewTouching = false; }, { passive: true }));
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(tdeeViewAlign);
+    ro.observe(s);
+    Array.from(s.children).forEach(c => ro.observe(c));
+  }
+  // Déplacer un widget dans le DOM (applyOrder au chargement, drag de
+  // réorganisation) remet son scrollLeft à 0 sans changer sa taille : le
+  // ResizeObserver ne suffit pas, on recale aussi à chaque mutation de la zone.
+  const area = document.getElementById('db-widgets-area');
+  if (area && window.MutationObserver) new MutationObserver(tdeeViewAlign).observe(area, { childList: true });
+  tdeeViewAlign();
+})();
+
+/* Alimente les vues 2-4 (anneau / lignes / colonnes) avec les mêmes données
+   que la vue détaillée : appelé depuis renderDashboard (bloc "TDEE Breakdown"). */
+function tdeeViewsRender(dep) {
+  const t = dep && dep.tdee;
+  if (!t) return;
+  const f = n => (typeof fmt === 'function' ? fmt(n) : String(Math.round(n)));
+  const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  const parts = [['bmr', dep.bmr], ['eat', dep.eat], ['neat', dep.neat], ['tef', dep.tef]];
+  const maxV = Math.max(1, ...parts.map(p => p[1] || 0));
+  const C = 238.76; // circonférence de l'anneau (r = 38)
+  let acc = 0;
+  ['rg', 'ln', 'cl'].forEach(p => set('db-' + p + '-total', f(t)));
+  parts.forEach(([k, raw]) => {
+    const v = raw || 0, share = Math.max(0, Math.min(1, v / t)), len = C * share;
+    const seg = document.getElementById('db-rg-seg-' + k);
+    if (seg) { seg.style.strokeDasharray = Math.max(0, len - 2).toFixed(1) + ' 300'; seg.style.strokeDashoffset = (-acc).toFixed(1); }
+    acc += len;
+    set('db-rg-v-' + k, f(v)); set('db-ln-v-' + k, f(v)); set('db-cl-v-' + k, f(v));
+    set('db-ln-p-' + k, ' · ' + Math.round(share * 100) + ' %');
+    const bar = document.getElementById('db-ln-b-' + k);
+    if (bar) bar.style.width = (share * 100).toFixed(1) + '%';
+    const col = document.getElementById('db-cl-b-' + k);
+    if (col) col.style.height = Math.max(6, Math.round(v / maxV * 90)) + 'px';
+  });
+  tdeeViewAlign();
+}
 
 /* ── Meal cards ── */
 function renderMealCards() {
@@ -18407,11 +18615,12 @@ function renderDashboard(){
     set('db-r-neat',fmt(dep.neat));set('db-p-neat',Math.round(dep.neat/t*100)+'% du total');set('db-d-neat',dep.neatDesc);
     set('db-r-tef', fmt(dep.tef)); set('db-p-tef', Math.round(dep.tef/t*100)+'% du total'); set('db-d-tef', dep.tefDesc);
     // total header
-    set('db-tdee-total', fmt(t) + ' kcal');
+    set('db-tdee-total', fmt(t));
     // bar
     const pBmr=dep.bmr/t*100, pEat=dep.eat/t*100, pNeat=dep.neat/t*100, pTef=100-pBmr-pEat-pNeat;
     const bArr=[['db-bar-bmr',pBmr],['db-bar-eat',pEat],['db-bar-neat',pNeat],['db-bar-tef',Math.max(0,pTef)]];
     bArr.forEach(([id,pct])=>{ const e=document.getElementById(id); if(e) e.style.width=pct+'%'; });
+    if(typeof tdeeViewsRender==='function') tdeeViewsRender(dep);
   }
 
   // Macros : anneaux + toggle
@@ -24018,17 +24227,38 @@ function woSaveDurAndFinish(){
   // Enchaîner directement la sauvegarde
   setTimeout(()=>woFinishSession(), 80);
 }
+/* Séance déjà validée (présente dans le stockage pour ce type + cette date) :
+   la nouvelle durée est enregistrée tout de suite, kcal/TDEE recalculés, sans
+   repasser par le récap. Seule la durée change (les autres modifs en cours de
+   saisie restent dans le brouillon). Retourne les kcal, ou null si la séance
+   n'est pas encore validée. */
+function woApplyDurToValidated(draft, val){
+  if(!draft?.type) return null;
+  const sessions = woV2GetSessions(draft.type);
+  const idx = sessions.findIndex(s=>s.date===draft.date);
+  if(idx<0) return null;
+  sessions[idx] = {...sessions[idx], duration: val};
+  woV2SaveSessions(draft.type, sessions);
+  woSyncExerciseKcalForDate(draft.date);
+  recomputeAllTDEE?.();
+  if(draft.date===today()){ renderDashboard?.(); renderApDayBanner?.(); }
+  woRefreshProgIfVisible();
+  return woV2CalcKcal(sessions[idx]);
+}
 function woSaveDur(){
   const val=parseInt(document.getElementById('wo-dur-input')?.value)||0;
   if(!val||val<1||val>600){ toast('Durée invalide (1–600 min)','var(--red)'); return; }
   const draft=woDraftGet();
   if(draft){ draft.duration=val; woDraftSet(draft); }
   closeWoDurPanel();
+  woClearChronoInterval();
   const st=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
   st('wo-sess-duration',val+' min');
   const dateEl=document.getElementById('wo-sess-date-label');
   if(dateEl&&draft) dateEl.textContent=fmtDL(draft.date)+' · '+val+' min';
-  toast(`Durée : ${val} min`,'var(--teal)');
+  if(draft) woUpdateLiveKcalPill(draft);
+  const kcal = woApplyDurToValidated(draft, val);
+  toast(kcal!=null ? `Durée mise à jour : ${val} min · ~${kcal} kcal` : `Durée : ${val} min`, 'var(--teal)');
 }
 
 /* ── Add exercise panel ── */
