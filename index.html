@@ -1208,11 +1208,12 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
   position:fixed;top:0;right:0;bottom:0;width:320px;max-width:100vw;
   background:var(--s0);border-left:1px solid var(--border);
   z-index:500;overflow-y:auto;
-  transform:translateX(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
-  box-shadow:var(--shadow-float);
+  transform:translateX(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1),box-shadow 0.3s;
+  /* Fermé : pas d'ombre, sinon elle déborde dans l'écran sur le bord droit */
+  box-shadow:none;
   padding-bottom:env(safe-area-inset-bottom,0);
 }
-.widget-panel.open { transform:translateX(0); }
+.widget-panel.open { transform:translateX(0);box-shadow:var(--shadow-float); }
 .widget-panel-backdrop {
   position:fixed;inset:0;z-index:499;background:rgba(0,0,0,0.4);
   opacity:0;pointer-events:none;transition:opacity 0.3s ease;
@@ -2025,7 +2026,7 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
   font-size:0.64rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted2);
 }
 .meal-sugg-chips{
-  display:flex;gap:7px;overflow-x:auto;padding-bottom:2px;
+  display:flex;gap:7px;overflow-x:auto;padding:0 1rem 2px;margin:0 -1rem;
   -webkit-overflow-scrolling:touch;scrollbar-width:none;
 }
 .meal-sugg-chips::-webkit-scrollbar{display:none}
@@ -2060,15 +2061,15 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
   position:fixed;bottom:0;left:0;right:0;
   display:flex;gap:8px;
   padding:0.6rem 1rem;
-  /* Bas plus fin : on n'ajoute que ~45% de la zone sûre (les boutons peuvent empiéter un peu
-     sur la zone du bandeau iPhone) au lieu de 100% + 0.75rem. */
-  padding-bottom:calc(0.5rem + env(safe-area-inset-bottom,0px) * 0.45);
+  padding-bottom:0.6rem;
   background:var(--s1);border-top:1px solid var(--border);
   z-index:302;
 }
-/* Prolonge le fond de la barre vers le bas : plus d'espace noir sous la barre,
-   même si elle ne touche pas exactement le bord de l'écran. */
-.meal-detail-actions::after{content:'';position:absolute;left:0;right:0;top:100%;height:80px;background:var(--s1)}
+/* Sur iPhone (PWA), la zone tout en bas de l'écran est hors de la page web : aucun élément ne
+   peut y dessiner, seule la couleur de fond du document s'y affiche (d'où la bande "vide" sous la
+   barre). On lui donne donc la couleur de la barre tant qu'un de ces écrans est ouvert. */
+html:has(#meal-detail-panel.open),
+html:has(#mr-use-detail-panel.open){background:var(--s1)}
 
 /* ── Food search panel ── */
 .search-panel{
@@ -7149,7 +7150,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-10-05.12';
+const APP_BUILD_VERSION = '2026-10-05.14';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
