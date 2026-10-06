@@ -1916,9 +1916,11 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
   display:none;position:fixed;inset:0;z-index:200;
   background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;
   animation:slideUp 0.22s ease;
-  padding-top:env(safe-area-inset-top,0);
+  /* Pas de padding-top ici (voir .search-panel) : la zone sûre est dans l'en-tête sticky,
+     sinon la liste défile visiblement au-dessus de l'en-tête sur iOS. */
 }
 .ap-sub-panel.open{display:block}
+.ap-sub-panel .ap-sub-header{padding-top:calc(0.9rem + env(safe-area-inset-top,0px))}
 @keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
 
 .ap-sub-header{
@@ -7142,7 +7144,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-10-05.10';
+const APP_BUILD_VERSION = '2026-10-05.11';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -7275,8 +7277,10 @@ function kcBubblesToggleShow(){
     // offsetTop est NÉGATIF pendant l'effet d'élastique d'iOS (tirer vers le bas en haut de page) :
     // il faut l'ignorer, sinon ce rebond est pris pour un clavier et remonte la barre.
     const offset = Math.max(0, window.innerHeight - vv.height - Math.max(0, vv.offsetTop));
+    // Seuil : un vrai clavier fait > 150px. En dessous (écart innerHeight/visualViewport au repos
+    // en mode PWA), on ne décale pas la barre, sinon elle flotte au-dessus du bas de l'écran.
     document.querySelectorAll('.meal-detail-actions').forEach(el=>{
-      el.style.transform = offset > 0.5 ? `translateY(-${offset}px)` : '';
+      el.style.transform = offset > 120 ? `translateY(-${offset}px)` : '';
     });
   }
   function schedule(){ if (raf === null) raf = requestAnimationFrame(reposition); }
