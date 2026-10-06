@@ -2700,18 +2700,20 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 .fav-item:last-child{border-bottom:none}
 .no-anim .fav-item{animation:none}
 /* Tri A→Z : sections par lettre + index latéral */
-.fav-az-wrap{padding-left:1.5rem}
+.fav-az-wrap{padding-left:1.7rem}
 .fav-az-letter{position:sticky;top:var(--kc-sticky-h,0px);z-index:5;background:var(--bg);
   font-size:0.72rem;font-weight:700;color:var(--orange);letter-spacing:0.08em;
   padding:6px 0.4rem 4px;margin:0 -0.4rem;border-bottom:1px solid var(--border)}
-.fav-az-rail{position:fixed;left:3px;top:50%;transform:translateY(-50%);z-index:20;
-  display:flex;flex-direction:column;padding:4px 2px;border-radius:var(--r-pill);
+.fav-az-rail{position:fixed;left:3px;z-index:20;
+  top:calc(var(--kc-sticky-h,0px) + 8px);bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
+  display:flex;flex-direction:column;justify-content:space-between;padding:4px 2px;border-radius:var(--r-pill);
   background:var(--s2);border:1px solid var(--border);touch-action:none;user-select:none;-webkit-user-select:none}
-.fav-az-rail span{display:block;width:16px;text-align:center;font-size:0.56rem;line-height:13px;
+.fav-az-rail span{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;
+  width:18px;font-size:0.62rem;line-height:1;
   font-weight:700;color:var(--muted2);opacity:0.35}
 .fav-az-rail span.on{opacity:1;color:var(--muted)}
 .fav-az-rail span.act{color:var(--orange);transform:scale(1.35)}
-.fav-az-bubble{position:fixed;left:44px;top:50%;transform:translateY(-50%) scale(0.9);z-index:21;
+.fav-az-bubble{position:fixed;left:46px;top:50%;transform:translateY(-50%) scale(0.9);z-index:21;
   width:56px;height:56px;border-radius:16px;background:var(--s3);border:1px solid var(--border2);
   box-shadow:var(--shadow-float);display:flex;align-items:center;justify-content:center;
   font-size:1.6rem;font-weight:700;color:var(--orange);opacity:0;pointer-events:none;
@@ -7140,7 +7142,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-10-05.8';
+const APP_BUILD_VERSION = '2026-10-05.10';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -7280,6 +7282,38 @@ function kcBubblesToggleShow(){
   function schedule(){ if (raf === null) raf = requestAnimationFrame(reposition); }
   vv.addEventListener('resize', schedule);
   vv.addEventListener('scroll', schedule);
+})();
+
+/* ── Anti-élastique iOS sur le détail d'un repas ──
+   Tirer le doigt vers le bas sans rien à faire défiler étirait l'écran et entraînait la barre
+   "+ Ajouter un aliment / Fin de saisie". On bloque le geste uniquement quand le contenu ne peut
+   pas défiler dans cette direction (la liste, quand elle déborde, défile normalement). */
+(function kcNoRubberBandMealDetail(){
+  let startY = 0, startX = 0;
+  function scrollerOf(target, panel){
+    for (let el = target; el && el !== document; el = el.parentElement){
+      const oy = getComputedStyle(el).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) return el;
+      if (el === panel) break;
+    }
+    return null;
+  }
+  document.addEventListener('touchstart', e => {
+    const t = e.touches[0]; startY = t.clientY; startX = t.clientX;
+  }, { passive:true });
+  document.addEventListener('touchmove', e => {
+    const panel = document.getElementById('meal-detail-panel');
+    if (!panel || !panel.classList.contains('open') || !panel.contains(e.target)) return;
+    const t = e.touches[0];
+    const dy = t.clientY - startY, dx = t.clientX - startX;
+    if (Math.abs(dx) > Math.abs(dy)) return;               // geste horizontal : on ne touche à rien
+    const sc = scrollerOf(e.target, panel);
+    let block = false;
+    if (!sc) block = true;                                  // rien à défiler : pas d'élastique
+    else if (dy > 0 && sc.scrollTop <= 0) block = true;      // tiré vers le bas, déjà tout en haut
+    else if (dy < 0 && sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 1) block = true; // tout en bas
+    if (block && e.cancelable) e.preventDefault();
+  }, { passive:false });
 })();
 
 /* ── Fix iOS Safari : bouton "gelé" visuellement après l'ouverture d'un
