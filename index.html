@@ -7329,7 +7329,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-10-13.7';
+const APP_BUILD_VERSION = '2026-10-13.9';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -26667,6 +26667,14 @@ function bilanSgn(v, dec) {
   var s = Math.abs(v).toFixed(dec === undefined ? 1 : dec).replace('.', ',');
   return (v > 0.0001 ? '+' : v < -0.0001 ? '−' : '') + s;
 }
+// Sens de l'écart à la plage de la phase (calculé, jamais lu dans un texte affiché).
+function bilanBandDir(phase, v, min, max) {
+  if (v >= min && v <= max) return '';
+  var low = v < min;
+  if (phase === 'deficit') return low ? 'déficit trop fort' : 'déficit trop faible';
+  if (phase === 'surplus') return low ? 'surplus trop faible' : 'surplus trop fort';
+  return low ? 'tu perds' : 'tu prends';
+}
 function bilanBandStatus(v, min, max, margin) {
   if (v >= min && v <= max) return 'ok';
   if (v >= min - margin && v <= max + margin) return 'warn';
@@ -26722,7 +26730,9 @@ function bilanBuildChart(per, nb, bal, wt, weightOk, pts, spec, meanW, avgBal, a
   var c = { w0: w0, nb: nb, points: [], trend: null, slope: weightOk ? wt.slopePerDay : null, trendY0: weightOk ? wt.intercept : null, theo: null, want: null, band: null, zone: null, hasAny: false, days: [] };
   var t0 = new Date(per.start + 'T12:00').getTime();
   c.points = pts.map(function(p) { return { x: Math.round((new Date(p.date + 'T12:00').getTime() - t0) / 86400000), y: p.val, date: p.date }; });
-  if (weightOk) c.trend = [{ x: 0, y: wt.intercept }, { x: nb, y: wt.intercept + wt.slopePerDay * nb }];
+  // La régression est exprimée depuis la 1re pesée : on la ramène au jour 0 de la période.
+  var firstOff = c.points.length ? c.points[0].x : 0, y0 = weightOk ? wt.intercept - wt.slopePerDay * firstOff : null;
+  if (weightOk) { c.trend = [{ x: 0, y: y0 }, { x: nb, y: y0 + wt.slopePerDay * nb }]; c.trendY0 = y0; }
   // Jours : retenu (compte dans la balance) / exclu (écarté par l'utilisateur) / manquant (pas de saisie ou de dépense)
   c.days = bal.days.map(function(d) { return { date: d.date, state: d.state, apport: d.hasFood ? d.apportKcal : null, dep: d.hasDep ? d.depenseKcal : null, bal: (d.hasFood && d.hasDep) ? d.balance : null, goal: d.goalKcal }; });
   if (avgBal !== null) {
@@ -26791,6 +26801,16 @@ function computeBilanReport(start, end) {
   var wantedRate = (avgGoal && avgDep !== null) ? (avgGoal - avgDep) * 7 / 7700 : null;
   var toPct = function(r) { return r === null ? null : r / meanW * 100; };
   var actualPct = toPct(actualRate);
+  // Fiabilité des pesées (informatif, ne change pas le verdict) : écart autour de la tendance + plus long trou.
+  var scatterKg = null, maxGap = null;
+  if (wt.n >= 4) {
+    var t0m = new Date(pts[0].date + 'T12:00').getTime(), ss = 0;
+    pts.forEach(function(p) { var x = (new Date(p.date + 'T12:00').getTime() - t0m) / 86400000; var e = p.val - (wt.intercept + wt.slopePerDay * x); ss += e * e; });
+    scatterKg = Math.sqrt(ss / (wt.n - 2));
+  }
+  if (wt.n >= 2) {
+    maxGap = 0; for (var gi = 1; gi < pts.length; gi++) maxGap = Math.max(maxGap, Math.round((new Date(pts[gi].date + 'T12:00') - new Date(pts[gi - 1].date + 'T12:00')) / 86400000));
+  }
 
   // ── Série du graphique (jour par jour, appliquée au poids initial)
   var chart = bilanBuildChart(per, nb, bal, wt, weightOk, pts, spec, meanW, balOk ? bal.avg : null, balOk ? bal.avgDepense : null, goal, fitness);
@@ -26800,22 +26820,22 @@ function computeBilanReport(start, end) {
   var checks = [];
   var kgBand = spec ? [spec.rateMin * meanW / 100, spec.rateMax * meanW / 100] : null;
 
-  var cW = { key: 'weight', label: 'Poids vs plage de la phase', status: 'na', value: '—', detail: '' };
+  var cW = { key: 'weight', label: 'Rythme du poids vs la phase', status: 'na', value: '—', detail: '' };
   if (spec && actualRate !== null) {
     cW.status = cap(bilanBandStatus(actualPct, spec.rateMin, spec.rateMax, spec.margin));
-    cW.value = bilanSgn(actualRate, 2) + ' kg/sem';
+    cW.dir = bilanBandDir(per.phase, actualPct, spec.rateMin, spec.rateMax); cW.value = bilanSgn(actualRate, 2) + ' kg/sem' + (cW.dir ? ' · ' + cW.dir : '');
     cW.detail = 'Plage attendue en ' + spec.label.toLowerCase() + ' : ' + bilanSgn(kgBand[0], 2) + ' à ' + bilanSgn(kgBand[1], 2) + ' kg/sem (' + bilanSgn(spec.rateMin, 2) + ' à ' + bilanSgn(spec.rateMax, 2) + ' % du poids).';
   } else { cW.detail = spec ? 'Pas assez de pesées pour mesurer une tendance.' : 'Aucune phase définie.'; }
   checks.push(cW);
 
-  var cT = { key: 'theory', label: 'Poids réel vs théorique (balance)', status: 'na', value: '—', detail: '' };
+  var cT = { key: 'theory', label: 'Poids réel vs prévu par la balance', status: 'na', value: '—', detail: '' };
   var gapRate = null;
   if (actualRate !== null && predRate !== null) {
     gapRate = actualRate - predRate;
     var tol = Math.max(0.15, 0.3 * Math.abs(predRate));
     var ag = Math.abs(gapRate);
     cT.status = cap(ag <= tol ? 'ok' : ag <= 2 * tol ? 'warn' : 'bad');
-    cT.value = 'écart ' + bilanSgn(gapRate, 2) + ' kg/sem';
+    cT.dir = cT.status === 'ok' ? '' : (gapRate > 0 ? 'plus lourd que prévu' : 'plus léger que prévu'); cT.value = 'écart ' + bilanSgn(gapRate, 2) + ' kg/sem' + (cT.dir ? ' · ' + cT.dir : '');
     cT.detail = cT.status === 'ok'
       ? 'Ton poids évolue comme ta balance le prévoit : tes données sont cohérentes.'
       : (gapRate > 0 ? 'Tu pèses plus que ce que ta balance prévoyait : apports sous-estimés ou dépense surestimée.'
@@ -26835,19 +26855,19 @@ function computeBilanReport(start, end) {
   } else { cA.detail = !avgGoal ? 'Aucun objectif kcal défini.' : 'Pas assez de jours retenus dans la balance pour juger le respect de l\'objectif.'; }
   checks.push(cA);
 
-  var cB = { key: 'balance', label: 'Balance vs plage de la phase', status: 'na', value: '—', detail: '' };
+  var cB = { key: 'balance', label: 'Balance vs la phase', status: 'na', value: '—', detail: '' };
   if (spec && avgBal !== null) {
     cB.status = bilanBandStatus(avgBal, spec.balMin, spec.balMax, 100);
-    cB.value = bilanSgn(avgBal, 0) + ' kcal/j';
+    cB.dir = bilanBandDir(per.phase, avgBal, spec.balMin, spec.balMax); cB.value = bilanSgn(avgBal, 0) + ' kcal/j' + (cB.dir ? ' · ' + cB.dir : '');
     cB.detail = 'Plage attendue en ' + spec.label.toLowerCase() + ' : ' + bilanSgn(spec.balMin, 0) + ' à ' + bilanSgn(spec.balMax, 0) + ' kcal/j.';
   } else { cB.detail = spec ? 'Balance non calculable (saisies ou dépense manquantes).' : 'Aucune phase définie.'; }
   checks.push(cB);
 
-  var cP = { key: 'plan', label: 'Poids vs plan (objectif kcal)', status: 'na', value: '—', detail: '' };
+  var cP = { key: 'plan', label: 'Poids de fin vs plan (objectif kcal)', status: 'na', value: '—', detail: '' };
   if (chart && chart.zone && weightOk && chart.trendEnd !== null) {
     var zq = chart.zone[chart.zone.length - 1], te = chart.trendEnd;
     cP.status = cap(te >= zq.lo && te <= zq.hi ? 'ok' : (te >= zq.wlo && te <= zq.whi ? 'warn' : 'bad'));
-    cP.value = bilanSgn(te - zq.y, 1) + ' kg vs plan';
+    cP.dir = cP.status === 'ok' ? '' : (te > zq.y ? 'plus lourd que le plan' : 'plus léger que le plan'); cP.value = bilanSgn(te - zq.y, 1) + ' kg' + (cP.dir ? ' · ' + cP.dir : ' · dans la zone');
     cP.detail = 'En fin de période, ta tendance est à ' + bilanNum(te, 1) + ' kg ; ton plan (objectif kcal de chaque jour) prévoit ' + bilanNum(zq.y, 1) + ' kg, zone ' + bilanNum(zq.lo, 1) + ' à ' + bilanNum(zq.hi, 1) + ' kg.';
   } else cP.detail = !weightOk ? 'Il faut des pesées pour comparer au plan.' : 'Il faut un objectif kcal et une dépense calculable pour tracer le plan.';
   checks.push(cP);
@@ -26900,15 +26920,28 @@ function computeBilanReport(start, end) {
     if (cA.status === 'bad' || cA.status === 'warn') diagnosis = 'Tu t\'écartes de ton objectif calorique (' + bilanSgn(devPct, 0) + ' %) : tiens d\'abord l\'objectif actuel avant de le modifier.';
     else if (cT.status === 'ok') diagnosis = 'Ton poids bouge comme ta balance le prévoit : ce n\'est pas un problème de saisie, c\'est l\'objectif lui-même qui ne correspond pas à la phase.';
     else if (cT.status !== 'na') diagnosis = 'Ta balance et ton poids ne racontent pas la même histoire : ta dépense ou tes saisies sont probablement mal estimées.';
-    if (suggestedGoal !== null && cA.status !== 'bad' && cA.status !== 'warn') {
-      if (goal && Math.abs(suggestedGoal - goal) >= 75) actions.push('Ajuste ton objectif vers ≈ ' + fmt(suggestedGoal) + ' kcal/j (actuel : ' + fmt(goal) + '), par paliers de 300 kcal maximum, puis re-mesure sur 2 semaines.');
-      else actions.push('Ton objectif actuel est déjà proche de ce qu\'il faudrait : garde-le et vérifie la régularité des saisies et des pesées.');
-    }
   }
   if (!weightOk) actions.push('Pèse-toi plus régulièrement (idéalement 3 à 4 fois par semaine, le matin).');
   if (foodPct < BILAN_MIN.foodPct) actions.push('Saisis tes repas plus régulièrement : sans cela, la balance n\'est pas fiable.');
-  if (verdict.key === 'ontrack') actions.push('Conserve cette stratégie sur la prochaine période.');
-  if (verdict.key === 'watch' && !actions.length) actions.push('Laisse encore une semaine à la tendance avant de modifier ton objectif.');
+
+  // ── Décision unique : que faire de tes réglages ? (action = clé stable pour l'IA)
+  var decision;
+  var gTxt = suggestedGoal !== null && goal ? fmt(suggestedGoal) + ' kcal/j (actuel : ' + fmt(goal) + ', par paliers de 300 maximum, puis re-mesure sur 2 semaines)' : null;
+  if (verdict.key === 'insufficient' || verdict.key === 'partial' || verdict.key === 'nophase')
+    decision = { action: 'more_data', title: 'Complète tes données', text: 'Pas encore de quoi décider : ' + (actions.length ? actions[0] : 'complète les pesées, les saisies et la phase.') };
+  else if (verdict.key === 'ontrack')
+    decision = { action: 'keep', title: 'Garde tes réglages', text: 'Poids et phase concordent : ne change ni ton objectif ni ta dépense, et reconduis cette stratégie.' };
+  else if (cA.status === 'warn' || cA.status === 'bad')
+    decision = { action: 'follow_goal', title: 'Tiens d\'abord ton objectif', text: 'Tes apports s\'écartent de l\'objectif (' + bilanSgn(devPct, 0) + ' %) : applique-le avant de le modifier, puis re-mesure.' };
+  else if (short || (cW.status === 'warn' && cT.status === 'ok'))
+    decision = { action: 'wait', title: 'Attends avant de changer', text: 'Écart léger ou période courte : laisse encore 1 à 2 semaines à la tendance avant de toucher tes réglages.' };
+  else if (cT.status === 'ok') {
+    decision = gTxt && Math.abs(suggestedGoal - goal) >= 75
+      ? { action: 'adjust_goal', title: 'Ajuste ton objectif calorique', text: 'Tes données sont cohérentes mais la phase n\'est pas atteinte : passe à ≈ ' + gTxt + '.' }
+      : { action: 'wait', title: 'Attends avant de changer', text: 'Ton objectif est déjà proche de ce qu\'il faudrait : garde-le et vérifie la régularité des saisies et des pesées.' };
+  } else
+    decision = { action: 'check_expenditure', title: 'Vérifie ta dépense ou tes saisies', text: 'Ton poids ne suit pas ta balance' + (empTdee !== null && avgDep !== null ? ' : ton poids indique ≈ ' + fmt(Math.round(empTdee)) + ' kcal/j dépensées contre ' + fmt(Math.round(avgDep)) + ' calculées' : '') + '. Contrôle tes pesées de repas et ton profil d\'activité' + (gTxt ? ', ou règle ton objectif sur ≈ ' + gTxt : '') + '.' };
+  decision.goalKcal = decision.action === 'adjust_goal' || decision.action === 'check_expenditure' ? suggestedGoal : null;
 
   // ── Indicateurs conservés (apports, macros, pas, séances)
   var agg = reportAggregateDashboardDays(per.start, per.end);
@@ -26943,14 +26976,21 @@ function computeBilanReport(start, end) {
   calc.weeks = weeks;
   var obj = {
     type: 'bilan', calc: calc, period: { start: per.start, end: per.end, days: nb }, phase: per.phase, mixedPhases: per.mixed,
-    goal: goal, verdict: verdict, checks: checks, diagnosis: diagnosis, actions: actions, issues: issues,
+    goal: goal, verdict: verdict, checks: checks, diagnosis: diagnosis, decision: decision, actions: actions, issues: issues,
     weight: { points: pts, reliable: weightOk, count: wt.n, meanW: meanW, ratePerWeek: actualRate, ratePct: actualPct },
     theory: { balancePerWeek: predRate, wantedPerWeek: wantedRate, gapPerWeek: gapRate },
     energy: { avgApport: avgFood, avgDepense: avgDep, avgBalance: avgBal, empiricalTdee: empTdee, suggestedGoal: suggestedGoal },
-    quality: { weighIns: wt.n, foodPct: foodPct, balancePct: balPct, stepsPct: nb ? Math.round(agg.stepsDays / nb * 100) : 0 },
+    quality: { scatterKg: scatterKg, scatterPct: scatterKg !== null ? scatterKg / meanW * 100 : null, maxGapDays: maxGap, weighIns: wt.n, foodPct: foodPct, balancePct: balPct, stepsPct: nb ? Math.round(agg.stepsDays / nb * 100) : 0 },
     nutrition: nutrition, expenditure: expenditure, reliability: reliability, daily: daily,
     activity: { avgSteps: agg.avgSteps, stepsDays: agg.stepsDays, sessions: se.nbSessions, freqPerWeek: se.freqPerWeek, totalVol: se.totalVol },
     chart: chart, spec: spec, short: short,
+  };
+  obj.position = {
+    phase: per.phase, verdict: verdict.key, weightRateKgWeek: actualRate, weightRatePct: actualPct,
+    balanceKcalDay: avgBal, predictedRateKgWeek: predRate, wantedRateKgWeek: wantedRate, gapKgWeek: gapRate,
+    endVsPlanKg: (chart && chart.zone && chart.trendEnd !== null) ? chart.trendEnd - chart.zone[chart.zone.length - 1].y : null,
+    decision: decision.action, intakeVsGoalPct: devPct, suggestedGoalKcal: suggestedGoal, reliability: reliability,
+    checks: checks.map(function(c) { return { key: c.key, status: c.status, direction: c.dir || null }; })
   };
   window.KCALOS_LAST_REPORT = obj; // accroche pour un futur module d'analyse IA
   return obj;
@@ -27319,6 +27359,7 @@ function bilanQualityHtml(r) {
   var relCol = { 'Élevée': 'lime', 'Bonne': 'lime', 'Moyenne': 'orange', 'Faible': 'red' }[r.reliability] || 'orange';
   return '<div class="bp-card"><div class="bp-rel"><span>Fiabilité de l\'analyse</span><span class="bp-pill" style="background:var(--' + relCol + '-bg);color:var(--' + relCol + ')">' + r.reliability + '</span></div>'
     + row('Pesées', wPct, q.weighIns + ' / ' + nb + ' j', 100, 60) + row('Saisies repas', q.foodPct, q.foodPct + ' %', BILAN_MIN.foodPct, 50)
+    + (q.scatterKg !== null ? '<div class="bp-check-det" style="margin:4px 0 2px">Pesées : écart typique de ' + bilanNum(q.scatterKg, 1) + ' kg autour de la tendance (' + bilanNum(q.scatterPct, 1) + ' % du poids)' + (q.maxGapDays !== null ? ', plus long trou ' + q.maxGapDays + ' j' : '') + '. ' + (q.scatterPct > 0.7 ? 'Pèse-toi dans les mêmes conditions (matin, à jeun) pour une tendance plus nette.' : 'Mesures régulières.') + '</div>' : '')
     + row('Balance calculable', q.balancePct, q.balancePct + ' %', BILAN_MIN.balancePct, 40) + row('Pas relevés', q.stepsPct, q.stepsPct + ' %', 70, 40) + '</div>';
 }
 
@@ -27330,14 +27371,15 @@ function bilanPaneBilan(r, vc, issuesHtml) {
     + '<div class="bp-hero-top">' + bilanRing(pass, evald.length, 'var(--' + vc + ')')
     + '<div><div class="bp-hero-k" style="color:var(--' + vc + ')">Cohérence avec la phase</div><div class="bp-hero-t" style="color:var(--' + vc + ')">' + r.verdict.title + '</div></div></div>'
     + '<div class="bp-hero-p">' + r.verdict.text + '</div>'
-    + (r.diagnosis ? '<div class="bp-hero-d">' + r.diagnosis + '</div>' : '')
     + '<div class="bp-chips"><span class="bp-chip">' + phaseTxt + '</span>' + (r.goal ? '<span class="bp-chip">Objectif ' + fmt(r.goal) + ' kcal</span>' : '') + '<span class="bp-chip">' + r.period.days + ' jours</span></div></div>';
+  var dc = r.decision, dcCol = { keep: 'lime', wait: 'blue', more_data: 'blue', follow_goal: 'orange', adjust_goal: 'orange', check_expenditure: 'red' }[dc.action] || 'blue';
+  h += '<div class="bp-card" style="border-left:3px solid var(--' + dcCol + ')"><div class="bp-hero-k" style="color:var(--' + dcCol + ')">Que faire</div><div class="bp-check-val" style="color:var(--' + dcCol + ')">' + dc.title + '</div><div class="bp-check-det">' + dc.text + (r.diagnosis ? ' ' + r.diagnosis : '') + '</div></div>';
   var dataFirst = (r.verdict.key === 'insufficient' || r.verdict.key === 'partial' || r.verdict.key === 'nophase');
   if (dataFirst) h += issuesHtml;
   h += bilanPlainHtml(r);
   h += bilanChartHtml(r);
   var gauge = bilanGaugeHtml(r);
-  h += bilanSection('Contrôles de cohérence') + bilanChecksHtml(r);
+  h += bilanSection('Où tu te situes', 'poids, balance, écart, plan') + bilanChecksHtml(r);
   h += bilanTdeeCardHtml(r);
   h += bilanSection('Qualité des données') + bilanQualityHtml(r);
   if (!dataFirst) h += issuesHtml;
