@@ -769,6 +769,60 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 }
 
 /* ── BILAN DE PÉRIODE (compte rendu unique) — style Apple Health, scopé #report-modal ── */
+/* Bilan : lecture claire, graphique, plein écran, détail des calculs */
+#report-modal .bp-wr{grid-template-columns:1.4fr 1fr 0.8fr 1fr}
+
+#report-modal .bp-slides{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:0;border-radius:var(--r);margin-bottom:0.3rem}
+#report-modal .bp-slides::-webkit-scrollbar{display:none}
+#report-modal .bp-slide{flex:0 0 100%;scroll-snap-align:start;background:var(--s2);border-radius:var(--r);padding:0.85rem 0.95rem;box-sizing:border-box;min-height:7.2rem}
+#report-modal .bp-slide-k{display:flex;align-items:center;gap:6px;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em}
+#report-modal .bp-slide-k i{width:9px;height:9px;border-radius:3px;flex-shrink:0}
+#report-modal .bp-slide-k em{margin-left:auto;font-style:normal;font-weight:500;color:var(--muted2);letter-spacing:0}
+#report-modal .bp-slide-b p{font-size:0.76rem;line-height:1.6;margin:0.5rem 0 0;color:var(--text)}
+#report-modal .bp-dots{display:flex;justify-content:center;gap:6px;margin:0.4rem 0 0.6rem}
+#report-modal .bp-dots button{width:6px;height:6px;border-radius:50%;border:none;padding:0;background:var(--border2);cursor:pointer;transition:all .2s}
+#report-modal .bp-dots button.on{width:16px;border-radius:3px;background:var(--text)}
+
+#report-modal .bp-h .bp-fsbtn{margin-left:auto;margin-right:0;display:inline-flex;align-items:center;gap:4px;border:none;background:var(--s2);color:var(--text);font-family:inherit;font-size:0.62rem;font-weight:600;padding:0.28rem 0.6rem;border-radius:var(--r-pill);cursor:pointer}
+#report-modal .bp-h{gap:0.5rem}
+#report-modal .bp-readout,#bp-fs .bp-readout{font-size:0.62rem;line-height:1.5;color:var(--muted);padding:0.55rem 0.7rem 0.1rem;min-height:2.3em}
+#report-modal .bp-readout b,#bp-fs .bp-readout b{color:var(--text)}
+#report-modal .bp-plain>div{padding:0.45rem 0;border-top:1px solid var(--border)}
+#report-modal .bp-plain>div:first-child{border-top:none;padding-top:0}
+#report-modal .bp-plain span{font-size:0.56rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted2)}
+#report-modal .bp-plain p{font-size:0.74rem;line-height:1.55;margin:2px 0 0;color:var(--text)}
+#report-modal .bp-how{font-size:0.66rem;line-height:1.5;color:var(--muted)}
+#report-modal .bp-how>b{display:block;color:var(--text);font-size:0.72rem;margin-bottom:0.4rem}
+#report-modal .bp-how>div{display:flex;gap:0.55rem;align-items:flex-start;margin-top:0.4rem}
+#report-modal .bp-how i{flex-shrink:0;width:12px;height:12px;border-radius:4px;margin-top:2px}
+#report-modal .bp-how span b{color:var(--text)}
+#report-modal .bp-steps{display:flex;flex-direction:column;gap:0.7rem}
+#report-modal .bp-step{display:flex;gap:0.6rem;font-size:0.68rem;line-height:1.6;color:var(--muted)}
+#report-modal .bp-step>i{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--s3);color:var(--text);font-style:normal;font-weight:700;font-size:0.62rem;display:flex;align-items:center;justify-content:center}
+#report-modal .bp-step b{color:var(--text)}
+#report-modal .bp-step>div>b:first-child{display:block;margin-bottom:1px}
+#report-modal .bp-days{margin-top:0.8rem;font-size:0.66rem}
+#report-modal .bp-days summary{cursor:pointer;font-weight:600;color:var(--text)}
+#report-modal .bp-dtable{margin-top:0.5rem}
+#report-modal .bp-dh,#report-modal .bp-dr{display:grid;grid-template-columns:1.1fr 0.9fr 0.9fr 0.9fr 1.3fr;gap:4px;padding:0.28rem 0;border-top:1px solid var(--border);font-size:0.62rem;color:var(--muted)}
+#report-modal .bp-dh{font-weight:700;color:var(--muted2);border-top:none}
+#report-modal .bp-dr span:last-child{display:flex;align-items:center;gap:4px}
+#report-modal .bp-dr i{width:7px;height:7px;border-radius:2px;flex-shrink:0}
+#bp-fs{display:none;position:fixed;inset:0;z-index:9000;background:var(--bg,var(--s1));flex-direction:column;padding:env(safe-area-inset-top) 8px env(safe-area-inset-bottom);overflow:auto;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text)}
+#bp-fs .bp-fs-top{display:flex;align-items:baseline;gap:0.6rem;padding:0.7rem 0.4rem 0.2rem}
+#bp-fs .bp-fs-top b{font-size:0.95rem}
+#bp-fs .bp-fs-top span{font-size:0.65rem;color:var(--muted2)}
+#bp-fs .bp-fs-top button{margin-left:auto;border:none;background:var(--s2);color:var(--text);width:30px;height:30px;border-radius:50%;font-size:0.85rem;cursor:pointer}
+#bp-fs .bp-chart{display:block;width:100%;height:auto}
+#bp-fs .bp-legend{display:flex;flex-wrap:wrap;gap:5px 12px;font-size:0.62rem;color:var(--muted);padding:0.3rem 0.45rem}
+#bp-fs .bp-legend span{display:inline-flex;align-items:center;gap:5px}
+#bp-fs .bp-legend b{color:var(--text)}
+#bp-fs .bp-key{display:inline-block;width:14px;height:0;border-top:2.5px solid;flex-shrink:0}
+#bp-fs .bp-key.dash{border-top-style:dashed}
+#bp-fs .bp-key.sw{height:9px;border:none;border-radius:3px}
+#bp-fs .bp-key.dot{width:7px;height:7px;border:none;border-radius:50%}
+#bp-fs .bp-hint{font-size:0.6rem;color:var(--muted2)}
+
 #report-modal .bp{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--text)}
 #report-modal .bp-title{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:400;margin-bottom:2px}
 #report-modal .bp-sub{font-size:0.7rem;color:var(--muted);margin-bottom:0.9rem}
@@ -7275,7 +7329,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 <script>
 
 /* ── VERSION DE BUILD (à incrémenter à chaque nouveau rendu du fichier) ── */
-const APP_BUILD_VERSION = '2026-10-13.3';
+const APP_BUILD_VERSION = '2026-10-13.7';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -9435,7 +9489,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v46';
+    const CACHE_NAME = 'kcalos-v50';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -26601,6 +26655,8 @@ const BILAN_PHASE_SPEC = {
 };
 // Seuils de complétude : en dessous, on affiche "manque de données" plutôt
 // qu'un verdict.
+// Zone du plan (autour de la courbe « voulu ») : demi-largeur = base + tol × semaines écoulées.
+const BILAN_PLAN = { baseKg: 0.3, tolKgWeek: 0.15, warnFactor: 1.7 };
 const BILAN_MIN = { days:7, solidDays:14, weighIns:3, foodPct:70, balancePct:60 };
 
 function bilanShiftDate(ds, n) {
@@ -26659,25 +26715,34 @@ function bilanWeightTrend(points) {
 //  • corridor  : plage cible de la phase (et sa marge) appliquée au poids initial
 function bilanBuildChart(per, nb, bal, wt, weightOk, pts, spec, meanW, avgBal, avgDep, goal, fitness) {
   if (!nb) return null;
-  var w0 = weightOk ? wt.intercept : (pts.length ? pts[0].val : getLastWeightOnOrBefore(fitness, per.start));
+  // Départ = dernière pesée connue au début de la période (même ancrage que le widget « Poids prédit »)
+  var w0 = getLastWeightOnOrBefore(fitness, per.start);
+  if (w0 === null || w0 === undefined) w0 = pts.length ? pts[0].val : (weightOk ? wt.intercept : null);
   if (w0 === null || w0 === undefined || isNaN(w0)) return null;
-  var c = { w0: w0, nb: nb, points: [], trend: null, theo: null, want: null, band: null, hasAny: false };
+  var c = { w0: w0, nb: nb, points: [], trend: null, slope: weightOk ? wt.slopePerDay : null, trendY0: weightOk ? wt.intercept : null, theo: null, want: null, band: null, zone: null, hasAny: false, days: [] };
   var t0 = new Date(per.start + 'T12:00').getTime();
-  c.points = pts.map(function(p) { return { x: Math.round((new Date(p.date + 'T12:00').getTime() - t0) / 86400000), y: p.val }; });
-  if (weightOk) c.trend = [{ x: 0, y: w0 }, { x: nb, y: w0 + wt.slopePerDay * nb }];
+  c.points = pts.map(function(p) { return { x: Math.round((new Date(p.date + 'T12:00').getTime() - t0) / 86400000), y: p.val, date: p.date }; });
+  if (weightOk) c.trend = [{ x: 0, y: wt.intercept }, { x: nb, y: wt.intercept + wt.slopePerDay * nb }];
+  // Jours : retenu (compte dans la balance) / exclu (écarté par l'utilisateur) / manquant (pas de saisie ou de dépense)
+  c.days = bal.days.map(function(d) { return { date: d.date, state: d.state, apport: d.hasFood ? d.apportKcal : null, dep: d.hasDep ? d.depenseKcal : null, bal: (d.hasFood && d.hasDep) ? d.balance : null, goal: d.goalKcal }; });
   if (avgBal !== null) {
     var cum = 0; c.theo = [{ x: 0, y: w0 }];
     bal.days.forEach(function(d, i) { cum += (d.included ? d.balance : avgBal); c.theo.push({ x: i + 1, y: w0 + cum / 7700 }); });
   }
   if (goal && avgDep !== null) {
     var cw = 0; c.want = [{ x: 0, y: w0 }];
-    bal.days.forEach(function(d, i) { cw += goal - (d.hasDep ? d.depenseKcal : avgDep); c.want.push({ x: i + 1, y: w0 + cw / 7700 }); });
+    bal.days.forEach(function(d, i) { cw += (d.goalKcal || goal) - (d.hasDep ? d.depenseKcal : avgDep); c.want.push({ x: i + 1, y: w0 + cw / 7700 }); });
+  }
+  if (c.want) {
+    var hw = function(x) { return BILAN_PLAN.baseKg + BILAN_PLAN.tolKgWeek * x / 7; };
+    c.zone = c.want.map(function(q) { var h = hw(q.x); return { x: q.x, y: q.y, lo: q.y - h, hi: q.y + h, wlo: q.y - h * BILAN_PLAN.warnFactor, whi: q.y + h * BILAN_PLAN.warnFactor }; });
   }
   if (spec) {
     var f = function(pct, x) { return w0 + (pct * meanW / 100) * x / 7; };
     c.band = { okLo: f(spec.rateMin, nb), okHi: f(spec.rateMax, nb), warnLo: f(spec.rateMin - spec.margin, nb), warnHi: f(spec.rateMax + spec.margin, nb) };
   }
   c.hasAny = !!(c.trend || c.theo || c.want || c.points.length);
+  c.trendEnd = c.trend ? c.trend[1].y : null;
   return c;
 }
 
@@ -26694,14 +26759,25 @@ function computeBilanReport(start, end) {
   var bal = nb ? computeBalanceDetailForPeriod(fitness, food, profile, per.start, per.end, true) : { days: [], includedBalances: [], avg: null };
   var foodDays = bal.days.filter(function(d) { return d.hasFood; });
   var depDays = bal.days.filter(function(d) { return d.hasDep; }).length;
+  // Statut de chaque jour (mêmes exclusions / forçages que la balance du Dashboard) :
+  // kept = retenu · forced = forcé par l'utilisateur · excluded = écarté · missing = pas de saisie ou de dépense
+  bal.days.forEach(function(d) {
+    d.goalKcal = getKcalGoalForDate(d.date) || null;
+    d.state = d.included ? (d.autoValid ? 'kept' : 'forced') : (d.autoValid ? 'excluded' : 'missing');
+  });
+  var keptDays = bal.days.filter(function(d) { return d.included; });
   var balDays = bal.includedBalances.length;
   var foodPct = nb ? Math.round(foodDays.length / nb * 100) : 0;
   var balPct = nb ? Math.round(balDays / nb * 100) : 0;
-  var avgFood = foodDays.length ? foodDays.reduce(function(s, d) { return s + d.apportKcal; }, 0) / foodDays.length : null;
   var balOk = balDays >= 3 && balPct >= BILAN_MIN.balancePct;
+  // Apport moyen = sur les jours RETENUS uniquement (même base que la balance et la dépense)
+  var avgFood = balOk ? bal.avgApport : null;
   var avgBal = balOk ? bal.avg : null;
   var avgDep = balOk ? bal.avgDepense : null;
   var goal = getKcalGoalForDate(per.end);
+  // Objectif moyen sur les jours retenus (l'objectif kcal peut avoir changé en cours de période)
+  var goalVals = keptDays.map(function(d) { return d.goalKcal; }).filter(function(v) { return v; });
+  var avgGoal = goalVals.length ? goalVals.reduce(function(a, b) { return a + b; }, 0) / goalVals.length : goal;
 
   // ── Poids
   var pts = [];
@@ -26712,7 +26788,7 @@ function computeBilanReport(start, end) {
   var meanW = wt.n ? wt.meanW : reportBodyweight(per.start, per.end);
   var actualRate = weightOk ? wt.slopePerDay * 7 : null;               // kg/sem
   var predRate = avgBal !== null ? avgBal * 7 / 7700 : null;           // kg/sem
-  var wantedRate = (goal && avgDep !== null) ? (goal - avgDep) * 7 / 7700 : null;
+  var wantedRate = (avgGoal && avgDep !== null) ? (avgGoal - avgDep) * 7 / 7700 : null;
   var toPct = function(r) { return r === null ? null : r / meanW * 100; };
   var actualPct = toPct(actualRate);
 
@@ -26750,13 +26826,13 @@ function computeBilanReport(start, end) {
 
   var cA = { key: 'adherence', label: 'Apports vs objectif kcal', status: 'na', value: '—', detail: '' };
   var devPct = null;
-  if (goal && avgFood !== null && foodPct >= BILAN_MIN.foodPct) {
-    devPct = (avgFood - goal) / goal * 100;
+  if (avgGoal && avgFood !== null) {
+    devPct = (avgFood - avgGoal) / avgGoal * 100;
     var ad = Math.abs(devPct);
     cA.status = ad <= 7 ? 'ok' : ad <= 15 ? 'warn' : 'bad';
     cA.value = bilanSgn(devPct, 0) + ' %';
-    cA.detail = 'Apport moyen ' + fmt(Math.round(avgFood)) + ' kcal/j pour un objectif de ' + fmt(goal) + ' kcal/j.';
-  } else { cA.detail = !goal ? 'Aucun objectif kcal défini.' : 'Pas assez de jours saisis pour juger le respect de l\'objectif.'; }
+    cA.detail = 'Apport moyen ' + fmt(Math.round(avgFood)) + ' kcal/j sur les ' + keptDays.length + ' jours retenus, pour un objectif moyen de ' + fmt(Math.round(avgGoal)) + ' kcal/j.';
+  } else { cA.detail = !avgGoal ? 'Aucun objectif kcal défini.' : 'Pas assez de jours retenus dans la balance pour juger le respect de l\'objectif.'; }
   checks.push(cA);
 
   var cB = { key: 'balance', label: 'Balance vs plage de la phase', status: 'na', value: '—', detail: '' };
@@ -26767,9 +26843,18 @@ function computeBilanReport(start, end) {
   } else { cB.detail = spec ? 'Balance non calculable (saisies ou dépense manquantes).' : 'Aucune phase définie.'; }
   checks.push(cB);
 
+  var cP = { key: 'plan', label: 'Poids vs plan (objectif kcal)', status: 'na', value: '—', detail: '' };
+  if (chart && chart.zone && weightOk && chart.trendEnd !== null) {
+    var zq = chart.zone[chart.zone.length - 1], te = chart.trendEnd;
+    cP.status = cap(te >= zq.lo && te <= zq.hi ? 'ok' : (te >= zq.wlo && te <= zq.whi ? 'warn' : 'bad'));
+    cP.value = bilanSgn(te - zq.y, 1) + ' kg vs plan';
+    cP.detail = 'En fin de période, ta tendance est à ' + bilanNum(te, 1) + ' kg ; ton plan (objectif kcal de chaque jour) prévoit ' + bilanNum(zq.y, 1) + ' kg, zone ' + bilanNum(zq.lo, 1) + ' à ' + bilanNum(zq.hi, 1) + ' kg.';
+  } else cP.detail = !weightOk ? 'Il faut des pesées pour comparer au plan.' : 'Il faut un objectif kcal et une dépense calculable pour tracer le plan.';
+  checks.push(cP);
+
   // ── Dépense réelle estimée (apports − variation de poids) et objectif conseillé
   var empTdee = null, suggestedGoal = null, targetRate = null;
-  if (actualRate !== null && avgFood !== null && foodPct >= BILAN_MIN.foodPct && nb >= 10) {
+  if (actualRate !== null && avgFood !== null && nb >= 10) {
     empTdee = avgFood - actualRate * 7700 / 7;
     if (spec) {
       var inBand = wantedRate !== null && wantedRate >= kgBand[0] && wantedRate <= kgBand[1];
@@ -26800,9 +26885,12 @@ function computeBilanReport(start, end) {
     verdict = { key: 'partial', title: 'Lecture partielle', text: 'Faute de pesées, seule la balance est évaluée : elle est ' + (sB === 'ok' ? 'dans la plage attendue' : sB === 'warn' ? 'un peu en dehors de la plage attendue' : 'hors de la plage attendue') + ' pour un ' + spec.label.toLowerCase() + '. Ajoute des pesées pour confirmer avec le poids réel.' };
   } else {
     var sw = cW.status;
+    if (sw === 'ok' && avgBal === null) {
+      verdict = { key: 'partial', title: 'Lecture partielle', text: 'Ton poids (' + bilanSgn(actualRate, 2) + ' kg/sem) est dans la plage de ta phase ' + spec.label.toLowerCase() + ', mais la balance n\'est pas calculable (trop peu de jours retenus) : impossible de confirmer que tes saisies et ta dépense sont cohérentes.' };
+    } else
     if (sw === 'bad') verdict = { key: 'recalibrate', title: 'À recalibrer', text: 'La période ne colle pas avec ta phase ' + spec.label.toLowerCase() + ' : poids ' + bilanSgn(actualRate, 2) + ' kg/sem, hors de la plage attendue.' };
     else if (sw === 'warn') verdict = { key: 'watch', title: 'À surveiller', text: 'Ton poids (' + bilanSgn(actualRate, 2) + ' kg/sem) est en bordure de la plage attendue pour un ' + spec.label.toLowerCase() + '.' };
-    else if (statuses.indexOf('bad') !== -1 || cT.status === 'warn') verdict = { key: 'watch', title: 'À surveiller', text: 'Le poids est dans la plage de ta phase ' + spec.label.toLowerCase() + ', mais ' + (cT.status !== 'ok' && cT.status !== 'na' ? 'il s\'écarte de ce que ta balance prévoyait (dépense ou saisies à vérifier)' : cA.status === 'bad' ? 'tes apports s\'écartent de ton objectif' : 'ta balance sort de la plage attendue') + '.' };
+    else if (statuses.indexOf('bad') !== -1 || cT.status === 'warn') verdict = { key: 'watch', title: 'À surveiller', text: 'Le poids est dans la plage de ta phase ' + spec.label.toLowerCase() + ', mais ' + (cT.status !== 'ok' && cT.status !== 'na' ? 'il s\'écarte de ce que ta balance prévoyait (dépense ou saisies à vérifier)' : cA.status === 'bad' ? 'tes apports s\'écartent de ton objectif' : cP.status === 'bad' ? 'ta tendance s\'écarte de ton plan (objectif kcal)' : 'ta balance sort de la plage attendue') + '.' };
     else verdict = { key: 'ontrack', title: 'Dans l\'objectif', text: 'La période colle à ta phase ' + spec.label.toLowerCase() + ' : poids ' + bilanSgn(actualRate, 2) + ' kg/sem, dans la plage attendue.' };
   }
 
@@ -26825,18 +26913,36 @@ function computeBilanReport(start, end) {
   // ── Indicateurs conservés (apports, macros, pas, séances)
   var agg = reportAggregateDashboardDays(per.start, per.end);
   var se = computeSeanceReport(per.start, per.end);
-  var nutrition = computeBilanNutrition(per, goal, meanW);
+  var nutrition = computeBilanNutrition(per, goal, meanW, bal);
   var expenditure = computeBilanExpenditure(per, bal, fitness, profile, meanW, goal, se);
   var relScore = (weightOk ? 1 : 0) + (foodPct >= BILAN_MIN.foodPct ? 1 : 0) + (balOk ? 1 : 0) + (nb >= BILAN_MIN.solidDays ? 1 : 0);
   var reliability = ['Faible', 'Faible', 'Moyenne', 'Bonne', 'Élevée'][relScore];
   // Série quotidienne brute, pour un futur module d'analyse IA.
   var daily = bal.days.map(function(d) {
     var f = fitness.find(function(x) { return x.date === d.date; });
-    return { date: d.date, apport: d.apportKcal || null, depense: d.depenseKcal || null, balance: d.included ? d.balance : null, poids: f && f.poids ? parseFloat(f.poids) : null, steps: f && f.steps ? f.steps : null, exerciseKcal: f && f.exercise_kcal ? f.exercise_kcal : null };
+    return { date: d.date, state: d.state, objectif: d.goalKcal, apport: d.apportKcal || null, depense: d.depenseKcal || null, balance: d.included ? d.balance : null, poids: f && f.poids ? parseFloat(f.poids) : null, steps: f && f.steps ? f.steps : null, exerciseKcal: f && f.exercise_kcal ? f.exercise_kcal : null };
   });
 
+  var cnt = function(st) { return bal.days.filter(function(d) { return d.state === st; }).length; };
+  var calc = {
+    nb: nb, logged: foodDays.length, kept: cnt('kept'), forced: cnt('forced'), excluded: cnt('excluded'), missing: cnt('missing'),
+    noFood: bal.days.filter(function(d) { return !d.hasFood; }).length, noDep: bal.days.filter(function(d) { return d.hasFood && !d.hasDep; }).length,
+    avgApport: balOk ? bal.avgApport : null, avgDep: avgDep, avgBal: avgBal, avgGoal: avgGoal,
+    cumBal: balOk ? bal.includedBalances.reduce(function(a, b) { return a + b; }, 0) : null,
+    nWeigh: wt.n || 0, slopeDay: weightOk ? wt.slopePerDay : null, w0: chart ? chart.w0 : null, meanW: meanW,
+    days: bal.days.map(function(d) { return { date: d.date, state: d.state, apport: d.hasFood ? d.apportKcal : null, dep: d.hasDep ? d.depenseKcal : null, bal: (d.hasFood && d.hasDep) ? d.balance : null, goal: d.goalKcal }; }),
+  };
+  // Semaine par semaine : poids moyen et balance moyenne de chaque bloc de 7 jours
+  var weeks = [];
+  for (var wi = 0; wi * 7 < nb; wi++) {
+    var wd = bal.days.slice(wi * 7, wi * 7 + 7), ws = wd[0].date, we = wd[wd.length - 1].date;
+    var wp = pts.filter(function(q) { return q.date >= ws && q.date <= we; });
+    var wk = wd.filter(function(d) { return d.included; });
+    weeks.push({ start: ws, end: we, days: wd.length, w: wp.length ? wp.reduce(function(a, q) { return a + q.val; }, 0) / wp.length : null, nW: wp.length, bal: wk.length ? wk.reduce(function(a, d) { return a + d.balance; }, 0) / wk.length : null, kept: wk.length });
+  }
+  calc.weeks = weeks;
   var obj = {
-    type: 'bilan', period: { start: per.start, end: per.end, days: nb }, phase: per.phase, mixedPhases: per.mixed,
+    type: 'bilan', calc: calc, period: { start: per.start, end: per.end, days: nb }, phase: per.phase, mixedPhases: per.mixed,
     goal: goal, verdict: verdict, checks: checks, diagnosis: diagnosis, actions: actions, issues: issues,
     weight: { points: pts, reliable: weightOk, count: wt.n, meanW: meanW, ratePerWeek: actualRate, ratePct: actualPct },
     theory: { balancePerWeek: predRate, wantedPerWeek: wantedRate, gapPerWeek: gapRate },
@@ -26912,12 +27018,22 @@ function bilanSegments(arr, X, Y) {
 }
 
 /* ── Graphique d'évolution du poids ── */
-function bilanChartHtml(r) {
-  var c = r.chart; if (!c || !c.hasAny) return '';
-  var W = 340, H = 210, L = 36, R = 12, T = 14, B = 26, nb = c.nb;
+var BILAN_DAY_STATE = {
+  kept:     { color: 'var(--lime)',    label: 'retenu' },
+  forced:   { color: 'var(--lime)',    label: 'forcé par toi' },
+  excluded: { color: 'var(--orange)',  label: 'exclu par toi' },
+  missing:  { color: 'var(--border2)', label: 'sans données' },
+};
+
+function bilanShortDate(ds) { return ds.slice(8, 10) + '/' + ds.slice(5, 7); }
+// Graphique d'évolution du poids. W/H en px de viewBox, fs = échelle des textes.
+function bilanChartSvg(r, W, H, fs) {
+  var c = r.chart, nb = c.nb;
+  var L = Math.round(34 * fs), R = 12, T = 12, B = Math.round(40 * fs), stripH = 7;
   var ys = [c.w0].concat(c.points.map(function(p) { return p.y; }));
   [c.trend, c.theo, c.want].forEach(function(a) { if (a) a.forEach(function(p) { ys.push(p.y); }); });
-  if (c.band) ys.push(c.band.warnLo, c.band.warnHi);
+  if (c.zone) c.zone.forEach(function(q) { ys.push(q.wlo, q.whi); });
+  else if (c.band) ys.push(c.band.warnLo, c.band.warnHi);
   var lo = Math.min.apply(null, ys), hi = Math.max.apply(null, ys), pad = Math.max(0.3, (hi - lo) * 0.08);
   lo -= pad; hi += pad;
   var X = function(x) { return (L + (W - L - R) * x / Math.max(1, nb)).toFixed(1); };
@@ -26926,36 +27042,237 @@ function bilanChartHtml(r) {
   var edge = function(y) { return [{ x: 0, y: c.w0 }, { x: nb, y: y }]; };
   var poly = function(a, b) { return line(a) + ' ' + line(b.slice().reverse()); };
   var st = BILAN_STATUS[(r.checks[0] || {}).status] || BILAN_STATUS.na;
-  var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="bp-chart" role="img" aria-label="Évolution du poids réel, théorique et voulu">';
-  var step = (hi - lo) / 4;
-  for (var i = 0; i <= 4; i++) {
+  var f1 = (8.5 * fs).toFixed(1);
+  var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="bp-chart bp-chart-live" data-w="' + W + '" data-l="' + L + '" data-r="' + R + '" data-t="' + T + '" data-h="' + (H - B) + '" style="touch-action:pan-y" '
+    + 'onpointermove="bilanChartMove(event,this)" onpointerdown="bilanChartMove(event,this)" role="img" aria-label="Évolution du poids : pesées, tendance, théorique, voulu et corridor de la phase">';
+  var nY = fs > 1.15 ? 6 : 4, step = (hi - lo) / nY;
+  for (var i = 0; i <= nY; i++) {
     var v = lo + step * i, yy = parseFloat(Y(v));
     svg += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + yy + '" y2="' + yy + '" style="stroke:var(--border)" stroke-width="1"/>'
-      + '<text x="' + (L - 6) + '" y="' + (yy + 3) + '" text-anchor="end" style="fill:var(--muted2)" font-size="8.5">' + bilanNum(v, 1) + '</text>';
+      + '<text x="' + (L - 6) + '" y="' + (yy + 3) + '" text-anchor="end" style="fill:var(--muted2)" font-size="' + f1 + '">' + bilanNum(v, 1) + '</text>';
   }
-  if (c.band) {
+  // repères de dates sur l'axe
+  var nT = W >= 600 ? 7 : 3, plotBottom = H - B;
+  for (var k = 0; k <= nT; k++) {
+    var xd = Math.round(nb * k / nT), dx = parseFloat(X(xd));
+    var dlab = bilanShortDate(bilanShiftDate(r.period.start, Math.min(xd, nb - 1)));
+    svg += '<line x1="' + dx + '" x2="' + dx + '" y1="' + T + '" y2="' + plotBottom + '" style="stroke:var(--border)" stroke-width="0.6" stroke-dasharray="2 4" opacity="0.7"/>'
+      + '<text x="' + dx + '" y="' + (plotBottom + 12 * fs) + '" text-anchor="' + (k === 0 ? 'start' : k === nT ? 'end' : 'middle') + '" style="fill:var(--muted2)" font-size="' + f1 + '">' + dlab + '</text>';
+  }
+  var clipId = 'bpc' + Math.round(W) + 'x' + Math.round(H);
+  svg += '<defs><clipPath id="' + clipId + '"><rect x="' + L + '" y="' + T + '" width="' + (W - L - R) + '" height="' + (H - T - B) + '"/></clipPath></defs><g clip-path="url(#' + clipId + ')">';
+  if (c.zone) {
+    // Zone du plan : courbe « voulu » ± tolérance (vert), marge « à surveiller » (orange)
+    var zp = function(a, kHi, kLo) { return a.map(function(q) { return X(q.x) + ',' + Y(q[kHi]); }).join(' ') + ' ' + a.slice().reverse().map(function(q) { return X(q.x) + ',' + Y(q[kLo]); }).join(' '); };
+    svg += '<polygon points="' + zp(c.zone, 'whi', 'wlo') + '" style="fill:var(--orange-bg)"/>'
+      + '<polygon points="' + zp(c.zone, 'hi', 'lo') + '" style="fill:var(--lime-bg)"/>'
+      + '<polyline points="' + line(c.want) + '" fill="none" style="stroke:var(--lime-d)" stroke-width="1" stroke-dasharray="2 3" opacity="0.9"/>';
+  } else if (c.band) {
     svg += '<polygon points="' + poly(edge(c.band.warnHi), edge(c.band.warnLo)) + '" style="fill:var(--orange-bg)"/>'
-      + '<polygon points="' + poly(edge(c.band.okHi), edge(c.band.okLo)) + '" style="fill:var(--lime-bg)"/>'
-      + '<polyline points="' + line(edge(c.band.okHi)) + '" fill="none" style="stroke:var(--lime-d)" stroke-width="1" stroke-dasharray="3 3"/>'
-      + '<polyline points="' + line(edge(c.band.okLo)) + '" fill="none" style="stroke:var(--lime-d)" stroke-width="1" stroke-dasharray="3 3"/>';
+      + '<polygon points="' + poly(edge(c.band.okHi), edge(c.band.okLo)) + '" style="fill:var(--lime-bg)"/>';
   }
-  if (c.want) svg += '<polyline points="' + line(c.want) + '" fill="none" style="stroke:var(--teal)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+  // Limites de la phase (garde-fou général), en lignes fines
+  if (c.band) svg += '<polyline points="' + line(edge(c.band.okHi)) + '" fill="none" style="stroke:var(--muted)" stroke-width="1" stroke-dasharray="1 4" stroke-linecap="round"/>'
+    + '<polyline points="' + line(edge(c.band.okLo)) + '" fill="none" style="stroke:var(--muted)" stroke-width="1" stroke-dasharray="1 4" stroke-linecap="round"/>';
+  svg += '</g>';
   if (c.theo) svg += '<polyline points="' + line(c.theo) + '" fill="none" style="stroke:var(--blue)" stroke-width="2" stroke-dasharray="5 3" stroke-linejoin="round"/>';
-  if (c.trend) svg += '<polyline points="' + line(c.trend) + '" fill="none" style="stroke:' + st.color + '" stroke-width="3" stroke-linecap="round"/>';
-  c.points.forEach(function(p) { svg += '<circle cx="' + X(p.x) + '" cy="' + Y(p.y) + '" r="2.8" style="fill:var(--text);stroke:var(--s2)" stroke-width="1.2"/>'; });
-  svg += '<circle cx="' + X(0) + '" cy="' + Y(c.w0) + '" r="4" style="fill:var(--s2);stroke:var(--muted)" stroke-width="1.6"/>'
-    + '<text x="' + L + '" y="' + (H - 8) + '" style="fill:var(--muted2)" font-size="8.5">' + fmtDL(r.period.start) + '</text>'
-    + '<text x="' + (W - R) + '" y="' + (H - 8) + '" text-anchor="end" style="fill:var(--muted2)" font-size="8.5">' + fmtDL(r.period.end) + '</text></svg>';
+  if (c.trend) svg += '<g clip-path="url(#' + clipId + ')"><polyline points="' + line(c.trend) + '" fill="none" style="stroke:' + st.color + '" stroke-width="3" stroke-linecap="round" opacity="0.9"/></g>';
+  // pesées reliées entre elles (courbe mesurée)
+  if (c.points.length > 1) svg += '<polyline points="' + line(c.points) + '" fill="none" style="stroke:var(--text)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.8"/>';
+  c.points.forEach(function(p) { svg += '<circle cx="' + X(p.x) + '" cy="' + Y(p.y) + '" r="' + (2.8 * Math.min(fs, 1.3)).toFixed(1) + '" style="fill:var(--text);stroke:var(--s2)" stroke-width="1.2"/>'; });
+  svg += '<circle cx="' + X(0) + '" cy="' + Y(c.w0) + '" r="4" style="fill:var(--s2);stroke:var(--muted)" stroke-width="1.6"/>';
+  // bande des jours : retenu / exclu / sans données
+  var bw = (W - L - R) / Math.max(1, nb), sy = plotBottom + 18 * fs;
+  c.days.forEach(function(d, i) {
+    var ds = BILAN_DAY_STATE[d.state] || BILAN_DAY_STATE.missing;
+    svg += '<rect x="' + (L + i * bw + 0.4).toFixed(1) + '" y="' + sy.toFixed(1) + '" width="' + Math.max(1, bw - 0.8).toFixed(1) + '" height="' + stripH + '" rx="1.5" style="fill:' + ds.color + '"/>';
+  });
+  svg += '<line class="bp-cur" x1="0" x2="0" y1="' + T + '" y2="' + plotBottom + '" style="stroke:var(--text);display:none" stroke-width="1" opacity="0.6"/></svg>';
+  return svg;
+}
+
+function bilanChartLegend(r) {
+  var c = r.chart, st = BILAN_STATUS[(r.checks[0] || {}).status] || BILAN_STATUS.na;
   var endTxt = function(a, label, cls, color) {
     if (!a) return '';
     return '<span><i class="bp-key ' + cls + '" style="border-color:' + color + '"></i>' + label + ' <b>' + bilanSgn(a[a.length - 1].y - c.w0, 1) + ' kg</b></span>';
   };
-  var legend = '<div class="bp-legend">' + endTxt(c.trend, 'Réel', '', st.color) + endTxt(c.theo, 'Théorique', 'dash', 'var(--blue)') + endTxt(c.want, 'Voulu', '', 'var(--teal)')
-    + (c.band ? '<span><i class="bp-key sw" style="background:var(--lime-bg);box-shadow:inset 0 0 0 1px var(--lime-d)"></i>Corridor ' + r.spec.label.toLowerCase() + '</span>' : '')
-    + (c.points.length ? '<span><i class="bp-key dot" style="background:var(--text)"></i>Pesées</span>' : '') + '</div>';
-  return bilanSection('Évolution du poids', 'départ ' + bilanNum(c.w0, 1) + ' kg')
-    + '<div class="bp-card flush">' + svg + legend + '</div>'
-    + '<div class="bp-hint">Corridor vert : variation de poids attendue pour ta phase. Courbe réelle dedans = la période colle ; zone orange = à surveiller ; en dehors = ne colle pas.</div>';
+  var dayKeys = ['kept', 'excluded', 'missing'].filter(function(k) { return c.days.some(function(d) { return d.state === k || (k === 'kept' && d.state === 'forced'); }); });
+  return '<div class="bp-legend">'
+    + (c.points.length ? '<span><i class="bp-key dot" style="background:var(--text)"></i>Pesées (reliées)</span>' : '')
+    + (c.trend ? '<span><i class="bp-key" style="border-color:' + st.color + '"></i>Tendance réelle <b>' + bilanSgn(c.trendEnd - c.trend[0].y, 1) + ' kg</b></span>' : '')
+    + endTxt(c.theo, 'Prédit (balance)', 'dash', 'var(--blue)')
+    + (c.zone ? '<span><i class="bp-key sw" style="background:var(--lime-bg);box-shadow:inset 0 0 0 1px var(--lime-d)"></i>Zone du plan <b>' + bilanSgn(c.want[c.want.length - 1].y - c.w0, 1) + ' kg</b></span>' : '')
+    + (c.band ? '<span><i class="bp-key dash" style="border-color:var(--muted)"></i>Limites ' + r.spec.label.toLowerCase() + '</span>' : '')
+    + '</div><div class="bp-legend" style="padding-top:0"><span style="color:var(--muted2)">Bande du bas :</span>'
+    + dayKeys.map(function(k) { return '<span><i class="bp-key sw" style="background:' + BILAN_DAY_STATE[k].color + '"></i>jour ' + BILAN_DAY_STATE[k].label + (k === 'missing' ? '' : '') + '</span>'; }).join('') + '</div>';
+}
+
+// Valeur interpolée d'une série {x,y} à l'abscisse x (null hors plage).
+function bilanSeriesAt(a, x) {
+  if (!a || !a.length || x < a[0].x || x > a[a.length - 1].x) return null;
+  for (var i = 0; i < a.length - 1; i++) if (x >= a[i].x && x <= a[i + 1].x) { var t = a[i + 1].x === a[i].x ? 0 : (x - a[i].x) / (a[i + 1].x - a[i].x); return a[i].y + t * (a[i + 1].y - a[i].y); }
+  return a[a.length - 1].y;
+}
+function bilanReadoutHtml(r, k) {
+  var c = r.chart, kg = function(v) { return v === null ? '—' : bilanNum(v, 1) + ' kg'; };
+  var dayLbl = k === 0 ? 'Départ · ' + fmtDL(r.period.start) : fmtDL(c.days[k - 1].date);
+  var trend = c.slope !== null ? c.trendY0 + c.slope * k : null, meas = c.points.filter(function(p) { return p.x === k; })[0];
+  var th = c.theo ? c.theo[k].y : null, wa = c.want ? c.want[k].y : null;
+  var h = '<b>' + dayLbl + '</b> · ' + (meas ? 'Pesée <b>' + kg(meas.y) + '</b> · ' : '') + 'Tendance ' + kg(trend) + ' · <span style="color:var(--blue)">Prédit ' + kg(th) + '</span> · <span style="color:var(--lime-d)">Plan ' + kg(wa) + (c.zone ? ' (' + bilanNum(c.zone[k].lo, 1) + '–' + bilanNum(c.zone[k].hi, 1) + ')' : '') + '</span>';
+  if (k > 0) {
+    var d = c.days[k - 1], ds = BILAN_DAY_STATE[d.state] || BILAN_DAY_STATE.missing;
+    h += '<br><span style="color:var(--muted2)">Jour ' + fmtDL(d.date) + ' : ' + ds.label + (d.apport !== null ? ' · apport ' + fmt(Math.round(d.apport)) : ' · pas de saisie') + (d.dep !== null ? ' · dépense ' + fmt(Math.round(d.dep)) : '') + (d.bal !== null ? ' · balance ' + bilanSgn(d.bal, 0) : '') + (d.goal ? ' · objectif ' + fmt(d.goal) : '') + '</span>';
+  }
+  return h;
+}
+function bilanChartMove(ev, svg) {
+  var r = window.KCALOS_LAST_REPORT; if (!r || !r.chart) return;
+  var g = svg.getBoundingClientRect(); if (!g.width) return;
+  var W = +svg.getAttribute('data-w'), L = +svg.getAttribute('data-l'), R = +svg.getAttribute('data-r');
+  var px = (ev.clientX - g.left) / g.width * W, nb = r.chart.nb;
+  var k = Math.max(0, Math.min(nb, Math.round((px - L) / (W - L - R) * nb)));
+  var cur = svg.querySelector('.bp-cur');
+  if (cur) { var x = L + (W - L - R) * k / Math.max(1, nb); cur.setAttribute('x1', x); cur.setAttribute('x2', x); cur.style.display = ''; }
+  var ro = document.getElementById(svg.parentNode.getAttribute('data-ro') || 'bp-readout');
+  if (ro) ro.innerHTML = bilanReadoutHtml(r, k);
+}
+
+// Plein écran : le graphique prend toute la fenêtre (re-dessiné à la taille réelle, y compris en paysage).
+function bilanOpenChartFs() {
+  var r = window.KCALOS_LAST_REPORT; if (!r || !r.chart) return;
+  var ov = document.getElementById('bp-fs');
+  if (!ov) { ov = document.createElement('div'); ov.id = 'bp-fs'; document.body.appendChild(ov); }
+  ov.style.display = 'flex';
+  bilanRenderChartFs();
+  window.addEventListener('resize', bilanRenderChartFs);
+  document.addEventListener('keydown', bilanFsKey);
+}
+function bilanCloseChartFs() {
+  var ov = document.getElementById('bp-fs'); if (ov) { ov.style.display = 'none'; ov.innerHTML = ''; }
+  window.removeEventListener('resize', bilanRenderChartFs);
+  document.removeEventListener('keydown', bilanFsKey);
+}
+function bilanFsKey(e) { if (e.key === 'Escape') bilanCloseChartFs(); }
+function bilanRenderChartFs() {
+  var r = window.KCALOS_LAST_REPORT, ov = document.getElementById('bp-fs');
+  if (!r || !r.chart || !ov || ov.style.display === 'none') return;
+  var W = Math.max(300, window.innerWidth - 16), portrait = window.innerHeight > window.innerWidth;
+  var H = Math.max(240, window.innerHeight - (portrait ? 260 : 190));
+  ov.innerHTML = '<div class="bp-fs-top"><b>Évolution du poids</b><span>départ ' + bilanNum(r.chart.w0, 1) + ' kg</span><button onclick="bilanCloseChartFs()" aria-label="Fermer">✕</button></div>'
+    + '<div class="bp-readout" id="bp-fs-readout">Touche ou survole le graphique pour lire jour par jour.</div>'
+    + '<div class="bp-fs-chart" data-ro="bp-fs-readout">' + bilanChartSvg(r, W, H, 1.25) + '</div>'
+    + bilanChartLegend(r) + (portrait ? '<div class="bp-hint" style="padding:0 0.5rem">Astuce : tourne ton téléphone en paysage pour un graphique plus large.</div>' : '');
+}
+
+function bilanChartHtml(r) {
+  var c = r.chart; if (!c || !c.hasAny) return '';
+  var fsBtn = '<button class="bp-fsbtn" onclick="bilanOpenChartFs()"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 4.5v-3h3M10.5 4.5v-3h-3M1.5 7.5v3h3M10.5 7.5v3h-3"/></svg>Plein écran</button>';
+  return '<div class="bp-h"><b>Évolution du poids</b><span>départ ' + bilanNum(c.w0, 1) + ' kg</span>' + fsBtn + '</div>'
+    + '<div class="bp-card flush"><div class="bp-readout" id="bp-readout">Touche le graphique pour lire jour par jour.</div>'
+    + '<div data-ro="bp-readout">' + bilanChartSvg(r, 340, 250, 1) + '</div>' + bilanChartLegend(r) + '</div>'
+    + '<div class="bp-h" style="margin-top:0.9rem"><b>Comment lire ce graphique</b><span>glisse</span></div>'
+    + bilanSlides([
+      { title: 'Pesées reliées', color: 'var(--text)', html: '<p>Les points reliés sont tes pesées réelles, dans l\'ordre. Elles bougent avec l\'eau, le sel et la digestion : une pesée isolée ne veut rien dire, c\'est la direction d\'ensemble qui compte.</p>' },
+      { title: 'Tendance réelle', color: 'var(--lime)', html: '<p>Le trait épais est la droite qui passe au mieux dans toutes tes pesées. C\'est elle qui est jugée. Sa couleur dit où tu en es : vert = dans la cible, orange = à surveiller, rouge = hors cible.</p>' },
+      { title: 'Prédit (balance)', color: 'var(--blue)', html: '<p>Pointillés bleus : ton poids de départ, mis à jour jour par jour avec ta balance (apports − dépense, ÷ 7 700 kcal par kg), comme le widget « Poids prédit ». Si ta tendance suit cette courbe, tes saisies et ta dépense sont fiables.</p>' },
+      { title: 'Zone du plan', color: 'var(--lime-d)', html: '<p>Zone verte : où ton poids devrait être si tu suis ton objectif kcal de chaque jour (objectif − dépense), avec une tolérance qui s\'élargit avec le temps. Bordure orange = à surveiller. Tendance dans le vert = tu suis ton plan.</p>' },
+      { title: 'Limites de la phase', color: 'var(--muted)', html: '<p>Les deux pointillés fins gris sont les limites générales de ta phase (en % du poids par semaine). Garde-fou : sortir de cette fourchette, c\'est perdre ou prendre trop vite ou trop lentement, quel que soit ton plan.</p>' },
+      { title: 'Bande du bas', color: 'var(--orange)', html: '<p>Un carré par jour : vert = retenu dans la balance, orange = exclu par toi, gris = sans données. Seuls les verts comptent ; les autres jours reprennent la balance moyenne sur la courbe théorique.</p>' }
+    ]);
+}
+
+/* ── Carrousel à glisser (scroll-snap) + pastilles ── */
+var bilanSlideSeq = 0;
+function bilanSlides(slides) {
+  var id = 'bps' + (++bilanSlideSeq);
+  return '<div class="bp-slides" id="' + id + '" onscroll="bilanSlideScroll(this)">' + slides.map(function(sl, i) {
+    return '<div class="bp-slide"><div class="bp-slide-k" style="color:' + (sl.color || 'var(--muted2)') + '"><i style="background:' + (sl.color || 'var(--muted2)') + '"></i>' + sl.title + '<em>' + (i + 1) + '/' + slides.length + '</em></div><div class="bp-slide-b">' + sl.html + '</div></div>';
+  }).join('') + '</div><div class="bp-dots">' + slides.map(function(_, i) { return '<button class="' + (i ? '' : 'on') + '" aria-label="Diapositive ' + (i + 1) + '" onclick="bilanSlideGo(\'' + id + '\',' + i + ')"></button>'; }).join('') + '</div>';
+}
+function bilanSlideScroll(el) {
+  var i = Math.round(el.scrollLeft / Math.max(1, el.clientWidth)), d = el.nextElementSibling;
+  if (d) Array.prototype.forEach.call(d.children, function(b, j) { b.classList.toggle('on', j === i); });
+}
+function bilanSlideGo(id, i) { var el = document.getElementById(id); if (el) el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' }); }
+
+/* ── « En clair » : résumé en phrases, avec les vrais chiffres ── */
+function bilanPlainHtml(r) {
+  var k = r.calc, spec = r.spec, nb = r.period.days, lines = [];
+  var kgp = function(rate) { return bilanSgn(rate * nb / 7, 1) + ' kg'; };
+  if (r.weight.ratePerWeek !== null) {
+    lines.push(['Ton poids', 'Sur ' + nb + ' jours, ta tendance de poids est de <b>' + kgp(r.weight.ratePerWeek) + '</b> (' + bilanSgn(r.weight.ratePerWeek, 2) + ' kg/sem), calculée sur tes ' + k.nWeigh + ' pesées.'
+      + (spec ? ' Pour un ' + spec.label.toLowerCase() + ', on attend ' + bilanSgn(spec.rateMin * k.meanW / 100, 2) + ' à ' + bilanSgn(spec.rateMax * k.meanW / 100, 2) + ' kg/sem.' : '')]);
+  } else lines.push(['Ton poids', 'Pas assez de pesées pour dégager une tendance (' + k.nWeigh + ' sur ' + nb + ' jours).']);
+  if (r.theory.balancePerWeek !== null) {
+    lines.push(['Ta balance', 'Sur les <b>' + (k.kept + k.forced) + ' jours retenus</b>, tu as mangé en moyenne ' + fmt(Math.round(k.avgApport)) + ' kcal pour ' + fmt(Math.round(k.avgDep)) + ' dépensées, soit <b>' + bilanSgn(k.avgBal, 0) + ' kcal/j</b>. Cela correspond à <b>' + kgp(r.theory.balancePerWeek) + '</b> théoriques sur la période.']);
+  } else lines.push(['Ta balance', 'Pas assez de jours retenus pour calculer une balance fiable (' + (k.kept + k.forced) + ' sur ' + nb + ').']);
+  if (r.theory.gapPerWeek !== null) {
+    var gk = r.theory.gapPerWeek * nb / 7, st = r.checks[1].status;
+    lines.push(['Écart', st === 'ok' ? 'Ton poids réel et la balance racontent la même histoire (écart ' + bilanSgn(gk, 1) + ' kg) : tes données sont cohérentes.' : 'Ton poids réel diffère de la balance de <b>' + bilanSgn(gk, 1) + ' kg</b> : ' + (gk > 0 ? 'tu pèses plus que prévu (apports sous-estimés ou dépense surestimée).' : 'tu pèses moins que prévu (dépense sous-estimée ou apports surestimés).')]);
+  }
+  var out = [];
+  if (k.excluded) out.push(k.excluded + ' jour' + (k.excluded > 1 ? 's' : '') + ' exclu' + (k.excluded > 1 ? 's' : '') + ' par toi de la balance');
+  if (k.noFood) out.push(k.noFood + ' sans saisie');
+  if (k.noDep) out.push(k.noDep + ' sans dépense calculable');
+  if (out.length) lines.push(['Jours écartés', out.join(' · ') + ' : ils ne comptent pas dans la balance, l\'apport moyen ni la dépense.']);
+  var cols = ['var(--lime)', 'var(--blue)', 'var(--orange)', 'var(--muted2)'];
+  return bilanSection('En clair', 'glisse pour lire la suite') + bilanSlides(lines.map(function(l, i) { return { title: l[0], color: i === 0 ? (BILAN_STATUS[(r.checks[0] || {}).status] || BILAN_STATUS.na).color : cols[Math.min(i, 3)], html: '<p>' + l[1] + '</p>' }; }));
+}
+
+/* ── Détail des calculs : étapes chiffrées + liste jour par jour ── */
+function bilanCalcHtml(r) {
+  var k = r.calc, spec = r.spec, nb = r.period.days, g = function(v, d) { return bilanNum(v, d); };
+  var step = function(n, title, body) { return '<div class="bp-step"><i>' + n + '</i><div><b>' + title + '</b><div>' + body + '</div></div></div>'; };
+  var h = '';
+  var kept = k.kept + k.forced;
+  h += step(1, 'Jours pris en compte', 'Sur ' + nb + ' jours : <b>' + kept + ' retenus</b>' + (k.forced ? ' (dont ' + k.forced + ' forcé' + (k.forced > 1 ? 's' : '') + ' par toi)' : '') + ', ' + k.excluded + ' exclu' + (k.excluded > 1 ? 's' : '') + ' par toi, ' + k.missing + ' sans données (' + k.noFood + ' sans saisie' + (k.noDep ? ', ' + k.noDep + ' sans dépense' : '') + '). C\'est exactement la sélection de la balance du Dashboard : un jour que tu y exclus ou forces est exclu ou forcé ici aussi. Un jour compte seulement s\'il a des apports <i>et</i> une dépense.');
+  if (k.w0 !== null) {
+    h += step(2, 'Poids réel', k.slopeDay !== null
+      ? k.nWeigh + ' pesées → droite de régression : <b>' + bilanSgn(k.slopeDay, 3) + ' kg/jour</b> × 7 = <b>' + bilanSgn(k.slopeDay * 7, 2) + ' kg/sem</b>, soit <b>' + bilanSgn(k.slopeDay * nb, 2) + ' kg</b> sur ' + nb + ' jours. Les courbes prédit et plan partent de ta dernière pesée connue au début de la période : <b>' + g(k.w0, 1) + ' kg</b>.'
+      : 'Moins de ' + BILAN_MIN.weighIns + ' pesées bien réparties : pas de tendance. Poids de départ pris à ' + g(k.w0, 1) + ' kg.');
+  }
+  if (k.avgBal !== null) {
+    h += step(3, 'Poids théorique (balance)', 'Apport moyen ' + fmt(Math.round(k.avgApport)) + ' − dépense moyenne ' + fmt(Math.round(k.avgDep)) + ' = balance <b>' + bilanSgn(k.avgBal, 0) + ' kcal/j</b>. × 7 jours ÷ 7 700 kcal par kg = <b>' + bilanSgn(r.theory.balancePerWeek, 2) + ' kg/sem</b>, soit <b>' + bilanSgn(r.theory.balancePerWeek * nb / 7, 2) + ' kg</b> sur la période. Sur la courbe, chaque jour retenu ajoute sa propre balance ; un jour écarté ajoute la balance moyenne.');
+  }
+  if (r.theory.wantedPerWeek !== null) {
+    h += step(4, 'Poids voulu', 'Objectif moyen ' + fmt(Math.round(k.avgGoal)) + ' − dépense moyenne ' + fmt(Math.round(k.avgDep)) + ' = <b>' + bilanSgn(k.avgGoal - k.avgDep, 0) + ' kcal/j</b>, soit <b>' + bilanSgn(r.theory.wantedPerWeek, 2) + ' kg/sem</b> (' + bilanSgn(r.theory.wantedPerWeek * nb / 7, 2) + ' kg sur la période). L\'objectif kcal de chaque jour est pris à sa date, s\'il a changé en cours de période. <b>Zone du plan</b> = cette courbe ± (' + String(BILAN_PLAN.baseKg).replace('.', ',') + ' kg + ' + String(BILAN_PLAN.tolKgWeek).replace('.', ',') + ' kg par semaine écoulée) ; l\'orange va jusqu\'à ' + String(BILAN_PLAN.warnFactor).replace('.', ',') + ' fois cette marge.');
+  }
+  if (spec) {
+    h += step(5, 'Limites de la phase', spec.label + ' : ' + bilanSgn(spec.rateMin, 2) + ' à ' + bilanSgn(spec.rateMax, 2) + ' % du poids par semaine. Avec ton poids moyen de ' + g(k.meanW, 1) + ' kg : <b>' + bilanSgn(spec.rateMin * k.meanW / 100, 2) + ' à ' + bilanSgn(spec.rateMax * k.meanW / 100, 2) + ' kg/sem</b>. Ce sont les deux pointillés gris du graphique ; au-delà d\'une marge de ' + String(spec.margin).replace('.', ',') + ' %/sem, c\'est « hors cible ».');
+  }
+  if (r.energy.empiricalTdee !== null) {
+    h += step(6, 'Dépense réelle estimée', 'Apport moyen ' + fmt(Math.round(r.energy.avgApport !== undefined ? r.energy.avgApport : k.avgApport)) + ' − (variation de poids ' + bilanSgn(r.weight.ratePerWeek, 2) + ' kg/sem × 7 700 ÷ 7) = <b>' + fmt(Math.round(r.energy.empiricalTdee)) + ' kcal/j</b>. C\'est la dépense que ton poids « révèle », à comparer à celle calculée par KCALos (' + fmt(Math.round(k.avgDep)) + ').');
+  }
+  var wk = k.weeks.filter(function(w) { return w.w !== null; });
+  if (wk.length >= 2) {
+    var prev = null;
+    h += '<div class="bp-step"><i>7</i><div><b>Semaine par semaine</b><div>Poids moyen de chaque bloc de 7 jours et balance moyenne retenue : on voit si la tendance ralentit ou accélère.</div>'
+      + '<div class="bp-dtable">' + k.weeks.map(function(w) {
+        var d = (w.w !== null && prev !== null) ? w.w - prev : null; if (w.w !== null) prev = w.w;
+        return '<div class="bp-dr bp-wr"><span>' + bilanShortDate(w.start) + '→' + bilanShortDate(w.end) + '</span><span>' + (w.w !== null ? bilanNum(w.w, 1) + ' kg' : 'pas de pesée') + '</span><span>' + (d !== null ? bilanSgn(d, 2) + ' kg' : '—') + '</span><span>' + (w.bal !== null ? bilanSgn(w.bal, 0) + ' kcal' : '—') + '</span></div>';
+      }).join('') + '</div></div></div>';
+  }
+  h += '<details class="bp-days"><summary>Voir jour par jour (' + k.days.length + ' jours)</summary><div class="bp-dtable"><div class="bp-dh"><span>Jour</span><span>Apport</span><span>Dépense</span><span>Balance</span><span>État</span></div>'
+    + k.days.map(function(d) {
+      var ds = BILAN_DAY_STATE[d.state] || BILAN_DAY_STATE.missing;
+      return '<div class="bp-dr"><span>' + fmtDL(d.date) + '</span><span>' + (d.apport !== null ? fmt(Math.round(d.apport)) : '—') + '</span><span>' + (d.dep !== null ? fmt(Math.round(d.dep)) : '—') + '</span><span>' + (d.bal !== null ? bilanSgn(d.bal, 0) : '—') + '</span><span><i style="background:' + ds.color + '"></i>' + ds.label + '</span></div>';
+    }).join('') + '</div></details>';
+  return '<details class="chart-details bp-details" open><summary>Détail des calculs</summary><div class="chart-details-body"><div class="bp-steps">' + h + '</div></div></details>';
+}
+
+/* Carte « Dépense réelle vs calculée » : ce que ton poids révèle de ta vraie dépense. */
+function bilanTdeeCardHtml(r) {
+  var e = r.energy; if (e.empiricalTdee === null) return '';
+  var gap = e.avgDepense !== null ? e.empiricalTdee - e.avgDepense : null, big = gap !== null && Math.abs(gap) >= 150;
+  var col = gap === null || !big ? 'var(--lime)' : 'var(--orange)';
+  var msg = gap === null ? '' : !big ? 'Les deux sont proches : la dépense calculée par KCALos est fiable pour toi.'
+    : gap > 0 ? 'Ton poids indique que tu dépenses <b>plus</b> que ce que KCALos calcule (ou que tu sous-déclares un peu tes apports). Ta balance est donc probablement trop pessimiste.'
+    : 'Ton poids indique que tu dépenses <b>moins</b> que ce que KCALos calcule (ou que tu surestimes tes apports). Ta balance est donc probablement trop optimiste.';
+  return bilanSection('Dépense réelle vs calculée', 'ce que ton poids révèle') + '<div class="bp-card"><div class="bp-grid2" style="margin:0 0 0.5rem">'
+    + bilanTile('Estimée par ton poids', fmt(Math.round(e.empiricalTdee)), 'kcal/j', 'apports − variation de poids', col)
+    + bilanTile('Calculée par KCALos', e.avgDepense !== null ? fmt(Math.round(e.avgDepense)) : '—', 'kcal/j', gap !== null ? 'écart ' + bilanSgn(gap, 0) + ' kcal/j' : '', 'var(--orange)') + '</div>'
+    + '<div class="bp-check-det">' + msg + '</div></div>';
 }
 
 function bilanGaugeHtml(r) {
@@ -27017,23 +27334,23 @@ function bilanPaneBilan(r, vc, issuesHtml) {
     + '<div class="bp-chips"><span class="bp-chip">' + phaseTxt + '</span>' + (r.goal ? '<span class="bp-chip">Objectif ' + fmt(r.goal) + ' kcal</span>' : '') + '<span class="bp-chip">' + r.period.days + ' jours</span></div></div>';
   var dataFirst = (r.verdict.key === 'insufficient' || r.verdict.key === 'partial' || r.verdict.key === 'nophase');
   if (dataFirst) h += issuesHtml;
+  h += bilanPlainHtml(r);
   h += bilanChartHtml(r);
   var gauge = bilanGaugeHtml(r);
-  if (gauge || r.theory.balancePerWeek !== null || r.theory.wantedPerWeek !== null) h += bilanSection('Réel, théorique, voulu', 'variation sur la période') + bilanTrioHtml(r) + gauge;
   h += bilanSection('Contrôles de cohérence') + bilanChecksHtml(r);
-  if (r.energy.empiricalTdee !== null) {
-    var gap = r.energy.avgDepense !== null ? r.energy.empiricalTdee - r.energy.avgDepense : null;
-    h += '<div class="bp-note"><b>Dépense réelle estimée : ' + fmt(Math.round(r.energy.empiricalTdee)) + ' kcal/j</b> (apports moyens − variation de poids)'
-      + (gap !== null ? ' · calculée par KCALos : ' + fmt(Math.round(r.energy.avgDepense)) + ' kcal/j (' + bilanSgn(gap, 0) + ')' : '') + '.</div>';
-  }
+  h += bilanTdeeCardHtml(r);
   h += bilanSection('Qualité des données') + bilanQualityHtml(r);
   if (!dataFirst) h += issuesHtml;
   if (r.actions.length) h += bilanSection('À faire') + r.actions.slice(0, 3).map(function(x, i) { return '<div class="bp-act"><i>' + (i + 1) + '</i><div>' + x + '</div></div>'; }).join('');
+  if (gauge || r.theory.balancePerWeek !== null || r.theory.wantedPerWeek !== null) h += '<details class="chart-details bp-details"><summary>Réel, théorique, voulu en chiffres</summary><div class="chart-details-body">' + bilanTrioHtml(r) + gauge + '</div></details>';
+  h += bilanCalcHtml(r);
   if (r.spec) {
     h += '<details class="chart-details bp-details"><summary>Comment c\'est jugé</summary><div class="chart-details-body"><div style="font-size:0.7rem;color:var(--muted);line-height:1.65">'
       + 'Plage cible en ' + r.spec.label.toLowerCase() + ' : <b>' + bilanSgn(r.spec.rateMin, 2) + ' à ' + bilanSgn(r.spec.rateMax, 2) + ' % du poids par semaine</b>, balance <b>' + bilanSgn(r.spec.balMin, 0) + ' à ' + bilanSgn(r.spec.balMax, 0) + ' kcal/j</b>. '
       + 'Au-delà, une marge de ' + String(r.spec.margin).replace('.', ',') + ' %/sem est « à surveiller » ; plus loin, « hors cible ». Le poids réel est la tendance de toutes les pesées. Le théorique convertit la balance à ≈ 7 700 kcal par kg. Le voulu vient de ton objectif kcal moins ta dépense. '
-      + 'Sous ' + BILAN_MIN.solidDays + ' jours, aucun « à recalibrer » n\'est posé. Repères généraux, pas un avis médical.</div></div></details>';
+      + 'Sous ' + BILAN_MIN.solidDays + ' jours, aucun « à recalibrer » n\'est posé. Repères généraux, pas un avis médical.'
+      + '<br><br><b>À garder en tête :</b> l\'eau, le sel, les glucides en excès, le cycle menstruel ou une séance dure peuvent faire varier le poids de 1 à 2 kg en quelques jours sans lien avec le gras : c\'est pourquoi on juge la tendance de plusieurs pesées, et pas une seule.'
+      + (r.phase === 'surplus' ? ' En surplus, une partie du poids pris peut être du muscle : la conversion à 7 700 kcal/kg (gras) surestime alors le gras pris.' : '') + '</div></div></details>';
   }
   return h;
 }
@@ -27042,16 +27359,26 @@ function bilanPaneBilan(r, vc, issuesHtml) {
 const BILAN_WD = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 function bilanMealLabel(k) { return MEAL_LABELS[k].replace(/<[^>]+>/g, '').trim(); }
 
-function computeBilanNutrition(per, goal, meanW) {
+function computeBilanNutrition(per, goal, meanW, bal) {
   var dates = reportDateRange(per.start, per.end), mealKeys = Object.keys(MEAL_LABELS);
+  // Jours utilisés = jours RETENUS dans la balance (mêmes exclusions que le Dashboard).
+  // Si aucun n'est retenu, repli sur tous les jours saisis (indiqué par basis = 'logged').
+  var stateOf = {}, goalOf = {}, loggedN = 0, excludedFood = 0;
+  bal.days.forEach(function(d) { stateOf[d.date] = d.state; goalOf[d.date] = d.goalKcal; if (d.hasFood) loggedN++; if (d.state === 'excluded') excludedFood++; });
+  var keptN = bal.days.filter(function(d) { return d.included; }).length;
+  var basis = keptN ? 'kept' : 'logged';
+  var inUse = function(ds) { return basis === 'logged' ? true : (stateOf[ds] === 'kept' || stateOf[ds] === 'forced'); };
   var meals = {}; mealKeys.forEach(function(k) { meals[k] = { kcal: 0, prot: 0, gluc: 0, lip: 0, days: 0 }; });
-  var sum = { kcal: 0, prot: 0, gluc: 0, lip: 0, fibres: 0, sucres: 0 }, foodDays = 0, kcals = [], daily = [];
+  var fibDays = 0, sum = { kcal: 0, prot: 0, gluc: 0, lip: 0, fibres: 0, sucres: 0 }, foodDays = 0, kcals = [], daily = [];
   var wdS = [0, 0, 0, 0, 0, 0, 0], wdN = [0, 0, 0, 0, 0, 0, 0], freq = {}, peak = null, low = null, mealCountSum = 0;
   dates.forEach(function(ds) {
     var t = getDayTotals(ds);
-    if (t.kcal <= 0) { daily.push({ date: ds, kcal: null }); return; }
-    foodDays++; kcals.push(t.kcal); daily.push({ date: ds, kcal: t.kcal });
-    sum.kcal += t.kcal; sum.prot += t.prot; sum.gluc += t.gluc; sum.lip += t.lip; sum.fibres += t.fibres || 0; sum.sucres += t.sucres || 0;
+    var dg = goalOf[ds] || goal;
+    if (t.kcal <= 0) { daily.push({ date: ds, kcal: null, goal: dg }); return; }
+    daily.push({ date: ds, kcal: t.kcal, out: !inUse(ds), goal: dg });
+    if (!inUse(ds)) return;
+    foodDays++; kcals.push(t.kcal);
+    sum.kcal += t.kcal; sum.prot += t.prot; sum.gluc += t.gluc; sum.lip += t.lip; sum.fibres += t.fibres || 0; sum.sucres += t.sucres || 0; if (t.fibres > 0) fibDays++;
     var wd = (new Date(ds + 'T12:00').getDay() + 6) % 7; wdS[wd] += t.kcal; wdN[wd]++;
     if (!peak || t.kcal > peak.kcal) peak = { date: ds, kcal: t.kcal };
     if (!low || t.kcal < low.kcal) low = { date: ds, kcal: t.kcal };
@@ -27061,27 +27388,30 @@ function computeBilanNutrition(per, goal, meanW) {
       getMealItems(ds, k).forEach(function(it) { if (!it.name) return; var f = freq[it.name] || (freq[it.name] = { name: it.name, count: 0, kcal: 0 }); f.count++; f.kcal += it.kcal || 0; });
     });
   });
-  if (!foodDays) return { foodDays: 0, nbJours: dates.length };
+  if (!foodDays) return { foodDays: 0, nbJours: dates.length, loggedDays: loggedN };
   var avg = function(v) { return v / foodDays; };
   var avgKcal = avg(sum.kcal), mean = avgKcal;
   var sd = Math.sqrt(kcals.reduce(function(s, v) { return s + (v - mean) * (v - mean); }, 0) / kcals.length);
   var mealKcalTot = mealKeys.reduce(function(s, k) { return s + meals[k].kcal; }, 0);
   var macroKcal = sum.prot * 4 + sum.gluc * 4 + sum.lip * 9;
   var within = 0, over = 0, under = 0;
-  if (goal) kcals.forEach(function(v) { var d = (v - goal) / goal; if (Math.abs(d) <= 0.10) within++; else if (d > 0) over++; else under++; });
+  daily.forEach(function(x) { if (x.kcal === null || x.out || !x.goal) return; var d = (x.kcal - x.goal) / x.goal; if (Math.abs(d) <= 0.10) within++; else if (d > 0) over++; else under++; });
+  var gv = daily.filter(function(x) { return x.kcal !== null && !x.out && x.goal; }).map(function(x) { return x.goal; });
+  var avgGoalN = gv.length ? gv.reduce(function(a, b) { return a + b; }, 0) / gv.length : goal;
   var wdAvg = wdS.map(function(s, i) { return wdN[i] ? Math.round(s / wdN[i]) : null; });
   var wk = [0, 1, 2, 3, 4].reduce(function(a, i) { return [a[0] + wdS[i], a[1] + wdN[i]]; }, [0, 0]), we = [5, 6].reduce(function(a, i) { return [a[0] + wdS[i], a[1] + wdN[i]]; }, [0, 0]);
   return {
-    nbJours: dates.length, foodDays: foodDays, regularite: Math.round(foodDays / dates.length * 100),
-    avgKcal: avgKcal, sdKcal: sd, goal: goal, devPct: goal ? (avgKcal - goal) / goal * 100 : null,
+    nbJours: dates.length, foodDays: foodDays, loggedDays: loggedN, excludedFood: excludedFood, basis: basis, phase: per.phase,
+    regularite: Math.round(loggedN / dates.length * 100),
+    avgKcal: avgKcal, sdKcal: sd, goal: avgGoalN, devPct: avgGoalN ? (avgKcal - avgGoalN) / avgGoalN * 100 : null,
     within: within, over: over, under: under,
     macros: {
       prot: { g: avg(sum.prot), perKg: avg(sum.prot) / meanW, pct: macroKcal ? sum.prot * 4 / macroKcal * 100 : null },
       gluc: { g: avg(sum.gluc), perKg: avg(sum.gluc) / meanW, pct: macroKcal ? sum.gluc * 4 / macroKcal * 100 : null },
       lip:  { g: avg(sum.lip),  perKg: avg(sum.lip) / meanW,  pct: macroKcal ? sum.lip * 9 / macroKcal * 100 : null },
     },
-    fibres: avg(sum.fibres), sucres: avg(sum.sucres), mealsPerDay: mealCountSum / foodDays, bodyweight: meanW,
-    refs: { protPerKg: [1.4, 2.2], lipPerKg: [0.6, 1.2], fibres: 25 },
+    fibres: avg(sum.fibres), sucres: avg(sum.sucres), fibDays: fibDays, mealsPerDay: mealCountSum / foodDays, bodyweight: meanW,
+    refs: { protPerKg: [1.4, 2.2], glucPerKg: ({ deficit: [2, 4.5], maintien: [3, 6], surplus: [4, 7] })[per.phase] || [3, 6], lipPerKg: [0.6, 1.2], fibres: 25 },
     meals: mealKeys.map(function(k) {
       var m = meals[k];
       return { key: k, label: bilanMealLabel(k), days: m.days, freqPct: Math.round(m.days / foodDays * 100), kcal: avg(m.kcal), prot: avg(m.prot), gluc: avg(m.gluc), lip: avg(m.lip), pctOfDay: mealKcalTot ? m.kcal / mealKcalTot * 100 : 0, protPerMeal: m.days ? m.prot / m.days : null };
@@ -27101,12 +27431,12 @@ function computeBilanExpenditure(per, bal, fitness, profile, meanW, goal, se) {
   var sum = { bmr: 0, eat: 0, neat: 0, tef: 0, tdee: 0 };
   bal.days.forEach(function(d) {
     var f = fitness.find(function(x) { return x.date === d.date; });
-    var comp = computeTDEE(f || null, d.apportKcal, profile, f ? (f.steps || 0) : 0);
+    var comp = d.included ? computeTDEE(f || null, d.apportKcal, profile, f ? (f.steps || 0) : 0) : null;
     if (f && f.steps > 0) {
       stepsArr.push(f.steps);
       var wd = (new Date(d.date + 'T12:00').getDay() + 6) % 7; wdS[wd] += f.steps; wdN[wd]++;
     }
-    if (!comp) return;
+    if (!d.included || !comp) return; // dépense : uniquement les jours retenus dans la balance
     rows.push({ date: d.date, bmr: comp.bmr, eat: comp.eat, neat: comp.neat, tef: comp.tef, tdee: comp.tdee, apport: d.apportKcal || null });
     sum.bmr += comp.bmr; sum.eat += comp.eat; sum.neat += comp.neat; sum.tef += comp.tef; sum.tdee += comp.tdee;
   });
@@ -27141,10 +27471,14 @@ function bilanBarsChart(daily, goal) {
   [0, 0.5, 1].forEach(function(f) { var v = max / 1.12 * f, y = Y(v); svg += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y + '" y2="' + y + '" style="stroke:var(--border)"/><text x="' + (L - 5) + '" y="' + (parseFloat(y) + 3) + '" text-anchor="end" style="fill:var(--muted2)" font-size="8">' + fmt(Math.round(v)) + '</text>'; });
   daily.forEach(function(d, i) {
     if (d.kcal === null) return;
-    var col = !goal ? 'var(--blue)' : Math.abs(d.kcal - goal) / goal <= 0.10 ? 'var(--lime)' : d.kcal > goal ? 'var(--orange)' : 'var(--blue)';
+    var g = d.goal || goal;
+    var col = d.out ? 'var(--border2)' : !g ? 'var(--blue)' : Math.abs(d.kcal - g) / g <= 0.10 ? 'var(--lime)' : d.kcal > g ? 'var(--orange)' : 'var(--blue)';
     svg += '<rect x="' + (L + i * bw + bw * 0.15).toFixed(1) + '" y="' + Y(d.kcal) + '" width="' + Math.max(1, bw * 0.7).toFixed(1) + '" height="' + (H - B - parseFloat(Y(d.kcal))).toFixed(1) + '" rx="' + Math.min(2, bw * 0.3).toFixed(1) + '" style="fill:' + col + '"/>';
   });
-  if (goal) svg += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(goal) + '" y2="' + Y(goal) + '" style="stroke:var(--text)" stroke-width="1" stroke-dasharray="4 3" opacity="0.55"/>';
+  if (goal) {
+    var gp = daily.map(function(d, i) { var y = Y(d.goal || goal); return (L + i * bw).toFixed(1) + ',' + y + ' ' + (L + (i + 1) * bw).toFixed(1) + ',' + y; }).join(' ');
+    svg += '<polyline points="' + gp + '" fill="none" style="stroke:var(--text)" stroke-width="1" stroke-dasharray="4 3" opacity="0.55"/>';
+  }
   svg += '<text x="' + L + '" y="' + (H - 7) + '" style="fill:var(--muted2)" font-size="8.5">' + fmtDL(daily[0].date) + '</text><text x="' + (W - R) + '" y="' + (H - 7) + '" text-anchor="end" style="fill:var(--muted2)" font-size="8.5">' + fmtDL(daily[n - 1].date) + '</text></svg>';
   return svg;
 }
@@ -27176,15 +27510,26 @@ function bilanPaneNutrition(r) {
   var n = r.nutrition;
   if (!n || !n.foodDays) return '<div class="bp-note">Aucune saisie alimentaire sur cette période : le détail nutrition n\'est pas disponible.</div>';
   var M = n.macros, ref = n.refs, h = '';
+  var pOk = M.prot.perKg >= ref.protPerKg[0], gOk = M.gluc.perKg >= ref.glucPerKg[0] && M.gluc.perKg <= ref.glucPerKg[1], lOk = M.lip.perKg >= ref.lipPerKg[0] && M.lip.perKg <= ref.lipPerKg[1];
+  var todo = [];
+  if (n.devPct !== null && Math.abs(n.devPct) > 7) todo.push('tes apports sont ' + (n.devPct > 0 ? 'au-dessus' : 'en dessous') + ' de ton objectif (' + bilanSgn(n.devPct, 0) + ' %)');
+  if (!pOk) todo.push('protéines basses (' + bilanNum(M.prot.perKg, 2) + ' g/kg)');
+  if (!gOk) todo.push('glucides ' + (M.gluc.perKg < ref.glucPerKg[0] ? 'bas' : 'hauts') + ' (' + bilanNum(M.gluc.perKg, 1) + ' g/kg)');
+  if (!lOk) todo.push('lipides ' + (M.lip.perKg < ref.lipPerKg[0] ? 'bas' : 'hauts') + ' (' + bilanNum(M.lip.perKg, 1) + ' g/kg)');
+  h += '<div class="bp-note"><b>À retenir</b> · ' + (todo.length ? 'Points à regarder : ' + todo.join(', ') + '.' : 'Apports et macros dans les repères sur les jours retenus.') + '</div>';
   var devSt = n.devPct === null ? 'na' : Math.abs(n.devPct) <= 7 ? 'ok' : Math.abs(n.devPct) <= 15 ? 'warn' : 'bad';
   h += '<div class="bp-trio">'
     + bilanTile('Apport moyen', fmt(Math.round(n.avgKcal)), 'kcal', n.goal ? bilanSgn(n.devPct, 0) + ' % vs objectif ' + fmt(n.goal) : 'par jour saisi', BILAN_STATUS[devSt].color === 'var(--muted2)' ? 'var(--lime)' : BILAN_STATUS[devSt].color)
-    + bilanTile('Régularité', n.regularite + '', '%', n.foodDays + ' / ' + n.nbJours + ' jours saisis', 'var(--teal)')
+    + bilanTile('Régularité', n.regularite + '', '%', n.loggedDays + ' / ' + n.nbJours + ' jours saisis', 'var(--teal)')
     + bilanTile('Repas / jour', bilanNum(n.mealsPerDay, 1), '', 'en moyenne', 'var(--blue)') + '</div>';
 
+  // Base de calcul : jours retenus dans la balance
+  h += '<div class="bp-note">' + (n.basis === 'kept'
+    ? 'Calculs sur les <b>' + n.foodDays + ' jours retenus</b> dans la balance (sur ' + n.loggedDays + ' saisis)' + (n.excludedFood ? ' : ' + n.excludedFood + ' jour' + (n.excludedFood > 1 ? 's' : '') + ' que tu as exclu' + (n.excludedFood > 1 ? 's' : '') + ' apparai' + (n.excludedFood > 1 ? 'ssent' : 't') + ' en gris et ne compte' + (n.excludedFood > 1 ? 'nt' : '') + ' pas.' : '.')
+    : 'Aucun jour retenu dans la balance : calculs sur les ' + n.loggedDays + ' jours saisis.') + '</div>';
   // Apports jour par jour
   h += bilanSection('Apports jour par jour', n.goal ? 'objectif ' + fmt(n.goal) + ' kcal' : '') + '<div class="bp-card flush">' + bilanBarsChart(n.daily, n.goal)
-    + '<div class="bp-legend"><span><i class="bp-key sw" style="background:var(--lime)"></i>±10 % de l\'objectif</span><span><i class="bp-key sw" style="background:var(--orange)"></i>Au-dessus</span><span><i class="bp-key sw" style="background:var(--blue)"></i>En dessous</span></div></div>';
+    + '<div class="bp-legend"><span><i class="bp-key sw" style="background:var(--lime)"></i>±10 % de l\'objectif</span><span><i class="bp-key sw" style="background:var(--orange)"></i>Au-dessus</span><span><i class="bp-key sw" style="background:var(--blue)"></i>En dessous</span>' + (n.excludedFood ? '<span><i class="bp-key sw" style="background:var(--border2)"></i>Jour non retenu</span>' : '') + '</div></div>';
   if (n.goal) h += '<div class="bp-grid3">' + bilanTile('Dans la cible', n.within + '', 'j', '±10 % de l\'objectif', 'var(--lime)') + bilanTile('Au-dessus', n.over + '', 'j', '> +10 %', 'var(--orange)') + bilanTile('En dessous', n.under + '', 'j', '< −10 %', 'var(--blue)') + '</div>';
 
   // Macros
@@ -27200,17 +27545,22 @@ function bilanPaneNutrition(r) {
 
   // Repères g/kg
   var pSt = M.prot.perKg >= ref.protPerKg[0] && M.prot.perKg <= ref.protPerKg[1] ? 'ok' : M.prot.perKg >= ref.protPerKg[0] - 0.3 ? 'warn' : 'bad';
+  var gR = ref.glucPerKg, gSt = M.gluc.perKg >= gR[0] && M.gluc.perKg <= gR[1] ? 'ok' : (M.gluc.perKg >= gR[0] - 0.7 && M.gluc.perKg <= gR[1] + 0.7) ? 'warn' : 'bad';
   var lSt = M.lip.perKg >= ref.lipPerKg[0] && M.lip.perKg <= ref.lipPerKg[1] ? 'ok' : M.lip.perKg >= ref.lipPerKg[0] - 0.2 && M.lip.perKg <= ref.lipPerKg[1] + 0.3 ? 'warn' : 'bad';
-  var fSt = n.fibres >= ref.fibres ? 'ok' : n.fibres >= ref.fibres * 0.7 ? 'warn' : 'bad';
+  var fSt = n.fibDays === 0 ? 'na' : n.fibres >= ref.fibres ? 'ok' : n.fibres >= ref.fibres * 0.7 ? 'warn' : 'bad';
   var refCard = function(label, valTxt, st, bar, note) {
     var s = BILAN_STATUS[st];
-    return '<div class="bp-card"><div class="bp-check-top"><span class="bp-check-lbl">' + label + '</span><span class="bp-pill" style="background:' + s.bg + ';color:' + s.color + '">' + (st === 'ok' ? 'Dans le repère' : st === 'warn' ? 'Proche' : 'Hors repère') + '</span></div>'
+    return '<div class="bp-card"><div class="bp-check-top"><span class="bp-check-lbl">' + label + '</span><span class="bp-pill" style="background:' + s.bg + ';color:' + s.color + '">' + (st === 'ok' ? 'Dans le repère' : st === 'warn' ? 'Proche' : st === 'na' ? 'Non renseigné' : 'Hors repère') + '</span></div>'
       + '<div class="bp-check-val" style="color:' + s.color + '">' + valTxt + '</div>' + bar + '<div class="bp-check-det">' + note + '</div></div>';
   };
   h += bilanSection('Repères', 'adulte actif · indicatifs');
   h += refCard('Protéines', bilanNum(M.prot.perKg, 2) + ' g/kg', pSt, bilanRefBar(M.prot.perKg, ref.protPerKg[0], ref.protPerKg[1], 3, BILAN_STATUS[pSt].color) + '<div class="bp-ref-lbl"><span>0</span><span>1,4–2,2 g/kg</span><span>3</span></div>', 'Repère sportif général pour préserver la masse musculaire, surtout en déficit.');
+  var gTxt = bilanNum(gR[0], 1) + '–' + bilanNum(gR[1], 1);
+  h += refCard('Glucides', bilanNum(M.gluc.perKg, 2) + ' g/kg', gSt, bilanRefBar(M.gluc.perKg, gR[0], gR[1], 8, BILAN_STATUS[gSt].color) + '<div class="bp-ref-lbl"><span>0</span><span>' + gTxt + ' g/kg</span><span>8</span></div>', 'Fourchette indicative en ' + (n.phase ? BILAN_PHASE_SPEC[n.phase].label.toLowerCase() : 'maintien') + ' : plus tu t\'entraînes, plus tu peux viser le haut. Ils fournissent l\'énergie des séances ; ce qui reste des kcal après protéines et lipides.');
   h += refCard('Lipides', bilanNum(M.lip.perKg, 2) + ' g/kg', lSt, bilanRefBar(M.lip.perKg, ref.lipPerKg[0], ref.lipPerKg[1], 2, BILAN_STATUS[lSt].color) + '<div class="bp-ref-lbl"><span>0</span><span>0,6–1,2 g/kg</span><span>2</span></div>', 'Un minimum d\'environ 0,6 g/kg soutient les fonctions hormonales.');
-  h += refCard('Fibres', bilanNum(n.fibres) + ' g/j', fSt, bilanRefBar(n.fibres, ref.fibres, 50, 50, BILAN_STATUS[fSt].color) + '<div class="bp-ref-lbl"><span>0</span><span>≥ 25 g/j</span><span>50</span></div>', 'Repère OMS général. Sucres : ' + bilanNum(n.sucres) + ' g/j en moyenne.');
+  h += n.fibDays === 0
+    ? refCard('Fibres', '—', 'na', '', 'Aucun aliment saisi ne contient de fibres renseignées : impossible de juger (repère OMS : ≥ 25 g/j). Les sucres ne sont pas non plus évaluables.')
+    : refCard('Fibres', bilanNum(n.fibres) + ' g/j', fSt, bilanRefBar(n.fibres, ref.fibres, 50, 50, BILAN_STATUS[fSt].color) + '<div class="bp-ref-lbl"><span>0</span><span>≥ 25 g/j</span><span>50</span></div>', 'Repère OMS général, sur ' + n.fibDays + ' jours où les fibres sont renseignées. Sucres : ' + bilanNum(n.sucres) + ' g/j en moyenne.');
 
   // Répartition par repas
   var mealsShown = n.meals.filter(function(m) { return m.days > 0; });
@@ -27242,7 +27592,8 @@ function bilanPaneDepense(r) {
   var e = r.expenditure;
   if (!e || !e.depDays) return '<div class="bp-note">Dépense non estimable sur cette période : renseigne ton profil (taille, âge, sexe) et ton poids.</div>';
   var h = '', P = e.parts, C = e.pcts;
-  h += '<div class="bp-trio">' + bilanTile('Dépense moyenne', fmt(Math.round(e.avgTdee)), 'kcal', e.depDays + ' / ' + e.nbJours + ' jours estimés', 'var(--orange)')
+  h += '<div class="bp-note"><b>À retenir</b> · Ta dépense moyenne est de <b>' + fmt(Math.round(e.avgTdee)) + ' kcal/j</b> (' + bilanNum(e.pal, 2) + ' × ton métabolisme de base, profil « ' + String(e.palLabel || '').toLowerCase() + ' »). Elle est calculée sur les jours retenus dans la balance ; les pas et séances ci-dessous couvrent tous les jours relevés.</div>';
+  h += '<div class="bp-trio">' + bilanTile('Dépense moyenne', fmt(Math.round(e.avgTdee)), 'kcal', e.depDays + ' / ' + e.nbJours + ' jours retenus (balance)', 'var(--orange)')
     + bilanTile('Niveau d\'activité', bilanNum(e.pal, 2), '', e.palLabel + ' (dépense ÷ métabolisme)', 'var(--teal)')
     + bilanTile('Par kg', bilanNum(e.perKg, 1), 'kcal', 'dépense / kg de poids', 'var(--blue)') + '</div>';
 
