@@ -7421,7 +7421,7 @@ document.addEventListener('keydown', function (e) {
   if (el && el.getAttribute && el.getAttribute('role') === 'button' && el.tagName !== 'BUTTON') { e.preventDefault(); el.click(); }
 });
 
-const APP_BUILD_VERSION = '2026-10-14.9';
+const APP_BUILD_VERSION = '2026-10-14.11';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -27922,6 +27922,20 @@ function bilanAiRound(k, v) {
 }
 function bilanAiLast(arr, n) { return Array.isArray(arr) ? arr.slice(-n) : arr; }
 
+// Résumé de la période juste avant (même durée) pour comparer les tendances.
+// computeBilanReport écrase window.KCALOS_LAST_REPORT : on le restaure.
+function bilanAiPrevious(r) {
+  var keep = window.KCALOS_LAST_REPORT;
+  try {
+    var n = r.period.days, pe = bilanShiftDate(r.period.start, -1), ps = bilanShiftDate(r.period.start, -n);
+    var q = computeBilanReport(ps, pe);
+    if (!q || !q.weight || (!q.weight.count && !(q.energy && q.energy.avgApport))) return null;
+    return { debut: ps, fin: pe, phase: q.phase, verdict: q.verdict ? q.verdict.key : null, pesees: q.weight.count, kgParSemaine: q.weight.ratePerWeek,
+      pctParSemaine: q.weight.ratePct, poidsMoyenKg: q.weight.meanW, apportMoyenKcal: q.energy ? q.energy.avgApport : null, depenseMoyenneKcal: q.energy ? q.energy.avgDepense : null,
+      balanceMoyenneKcal: q.energy ? q.energy.avgBalance : null, regulariteSaisiesPct: q.quality ? q.quality.foodPct : null, pasMoyens: q.activity ? q.activity.avgSteps : null, seancesParSemaine: q.activity ? q.activity.freqPerWeek : null };
+  } catch (e) { return null; } finally { window.KCALOS_LAST_REPORT = keep; }
+}
+
 // Dossier complet et sans identité : aucune photo, aucun nom, aucune clé.
 function bilanAiPayload(r) {
   var w = r.weight || {}, start = r.period.start, end = r.period.end;
@@ -27937,6 +27951,7 @@ function bilanAiPayload(r) {
   var calc = {}; if (r.calc) Object.keys(r.calc).forEach(function(k) { if (k !== 'days' && k !== 'weeks') calc[k] = r.calc[k]; });
   return {
     profil: { sexe: prof.sexe, age: prof.age, tailleCm: prof.taille, bfPct: lastBf !== null ? lastBf : prof.bf, bfProfilPct: prof.bf, dernierPoidsKg: lastW },
+    periodePrecedente: bilanAiPrevious(r),
     frequenceSalle: { seancesSurLaPeriode: act.sessions, seancesParSemaine: act.freqPerWeek, joursEntrainementDepense: x ? x.trainDays : null, volumeTotalKg: act.totalVol, pasMoyensParJour: act.avgSteps, joursAvecPas: act.stepsDays, semainesPeriode: Math.round(wks * 10) / 10 },
     periode: r.period, phase: r.phase, phasesMelangees: !!r.mixedPhases, objectifKcal: r.goal,
     historiqueObjectifs: objectifs,
@@ -27961,10 +27976,10 @@ function bilanAiPayload(r) {
 function bilanAiPrompt(r) {
   return 'Tu es un coach nutrition et composition corporelle, factuel, rigoureux et prudent. Voici le dossier chiffré complet d\'une période de suivi (JSON, valeurs null = donnée manquante). '
     + 'Le verdict de l\'app est calculé de façon déterministe (poids réel vs théorique vs voulu, plage cible de la phase) : tu ne le contredis pas, tu l\'expliques, tu le nuances avec tout ce que tu vois dans les détails, et tu l\'enrichis.\n\n'
-    + 'Réponds en français, tutoiement, 400 mots maximum, exactement en 3 parties. Chaque titre est seul sur sa ligne, en gras : **Analyse**, puis **Conclusion**, puis **Conseils**. Pas d\'autre titre, pas d\'introduction, pas de formule de politesse.\n'
-    + '**Analyse** : 4 à 6 puces courtes (chacune commence par "- " et un mot-clé en gras, ex. "- **Poids** : …"). Couvre : poids réel vs théorique vs voulu et vitesse par rapport à la plage de la phase « ' + (r.phase || 'non définie') + ' » ; balance et écart à l\'objectif ; nutrition (régularité, protéines/glucides/lipides vs repères, semaine vs week-end) ; dépense et activité (TDEE, pas, fréquence de salle, cohérence avec le poids) ; fiabilité des données. Saute un point seulement si aucune donnée ne l\'alimente.\n'
-    + '**Conclusion** : 2 à 3 phrases : la période colle-t-elle à la phase, oui, en partie ou non, et la raison principale. Cohérent avec le verdict de l\'app.\n'
-    + '**Conseils** : 3 actions concrètes et priorisées pour les 1 à 2 prochaines semaines, en liste numérotée ("1. …").\n'
+    + 'Réponds en français, tutoiement, ton de coach direct et encourageant quand c\'est mérité, 350 mots maximum au total, exactement en 3 parties, toutes obligatoires, dans cet ordre (ne t\'arrête jamais avant les Conseils). Chaque titre est seul sur sa ligne, en gras : **Conclusion**, puis **Analyse**, puis **Conseils**. Pas d\'autre titre, pas d\'introduction, pas de formule de politesse. Explique tout jargon (TDEE, balance) en quelques mots.\n'
+    + '**Conclusion** (en premier) : 2 phrases maximum, verdict clair : la période colle-t-elle à la phase « ' + (r.phase || 'non définie') + ' », oui, en partie ou non, et la raison principale. Cohérent avec le verdict de l\'app. Si les données sont trop pauvres pour conclure, dis-le franchement ici.\n'
+    + '**Analyse** : 4 à 6 puces de 30 mots maximum (chacune commence par "- " et un mot-clé en gras, ex. "- **Poids** : …"). Ne recopie pas les chiffres : relie-les entre eux et propose une cause probable (ex. écart entre poids réel et théorique expliqué par des apports sous-estimés le week-end, des saisies incomplètes, une dépense surestimée). Repère les tendances dans le temps (début vs fin, semaine par semaine) et compare avec la période précédente (periodePrecedente) si elle existe : mieux, pareil ou moins bien. Couvre : poids vs plage de la phase, balance et écart à l\'objectif, nutrition (régularité, protéines/glucides/lipides, semaine vs week-end), dépense/activité/fréquence de salle, fiabilité des données. Saute un point seulement si aucune donnée ne l\'alimente.\n'
+    + '**Conseils** : 3 actions concrètes, applicables dès demain et priorisées pour les 1 à 2 prochaines semaines, en liste numérotée ("1. …"), chacune avec le chiffre ou le geste précis (ex. « ajoute 25 g de protéines au dîner », « pèse-toi 3 matins par semaine »).\n'
     + 'Règles : cite uniquement des valeurs présentes dans le JSON, n\'invente aucun chiffre ; repère les tendances dans le temps (début vs fin de période, semaines) ; si les données sont insuffisantes ou peu fiables, dis-le et demande de compléter pesées/saisies avant de changer l\'objectif ; ne propose pas de changement d\'objectif supérieur à 300 kcal par palier ; pas de conseil médical ; rappelle que le poids fluctue avec l\'eau et le sel quand la période est courte.\n\n'
     + 'DONNÉES :\n' + JSON.stringify(bilanAiPayload(r), bilanAiRound);
 }
@@ -28011,12 +28026,14 @@ async function bilanAiAnalyze() {
     var res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 1800, messages: [{ role: 'user', content: bilanAiPrompt(r) }] })
+      body: JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 8000, messages: [{ role: 'user', content: bilanAiPrompt(r) }] })
     });
     if (!res.ok) { var err = await res.json().catch(function() { return {}; }); throw new Error((err && err.error && err.error.message) || ('Erreur API ' + res.status)); }
     var data = await res.json();
     var text = (data.content || []).map(function(b) { return b.text || ''; }).join('\n').trim();
     if (!text) throw new Error('Réponse vide, réessaie.');
+    // Réponse coupée par la limite de longueur : on ne l'enregistre pas (partie Conclusion/Conseils manquante)
+    if (data.stop_reason === 'max_tokens' || !/conseil/i.test(text)) throw new Error('La réponse de l\'IA est incomplète (limite de longueur atteinte). Relance l\'analyse.');
     var e = bilanAiSave(r, text);
     out.innerHTML = bilanAiFormat(text, e.ts); out.style.display = 'block';
     btn.textContent = '↻ Refaire l\'analyse';
