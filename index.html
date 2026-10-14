@@ -7421,7 +7421,7 @@ document.addEventListener('keydown', function (e) {
   if (el && el.getAttribute && el.getAttribute('role') === 'button' && el.tagName !== 'BUTTON') { e.preventDefault(); el.click(); }
 });
 
-const APP_BUILD_VERSION = '2026-10-14.8';
+const APP_BUILD_VERSION = '2026-10-14.9';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -27961,21 +27961,34 @@ function bilanAiPayload(r) {
 function bilanAiPrompt(r) {
   return 'Tu es un coach nutrition et composition corporelle, factuel, rigoureux et prudent. Voici le dossier chiffré complet d\'une période de suivi (JSON, valeurs null = donnée manquante). '
     + 'Le verdict de l\'app est calculé de façon déterministe (poids réel vs théorique vs voulu, plage cible de la phase) : tu ne le contredis pas, tu l\'expliques, tu le nuances avec tout ce que tu vois dans les détails, et tu l\'enrichis.\n\n'
-    + 'Réponds en français, tutoiement, 450 mots maximum, avec ces rubriques en gras : **Lecture** (la période colle-t-elle à la phase « ' + (r.phase || 'non définie') + ' » ? 2-3 phrases), '
-    + '**Pourquoi** (les chiffres clés : poids réel/théorique/voulu, balance, écart à l\'objectif), **Nutrition** (régularité, protéines/glucides/lipides vs repères, semaine vs week-end, jours en écart), '
-    + '**Dépense & activité** (TDEE, pas, séances, repos vs entraînement, cohérence de la dépense estimée avec le poids), **Fiabilité** (qualité des pesées/saisies, ce qui limite la conclusion), '
-    + '**À faire** (3 actions concrètes et priorisées pour les 1 à 2 prochaines semaines).\n'
-    + 'Règles : cite uniquement des valeurs présentes dans le JSON, n\'invente aucun chiffre ; repère les tendances dans le temps (début vs fin de période, semaines) ; si les données sont insuffisantes ou peu fiables, dis-le et demande de compléter pesées/saisies avant de changer l\'objectif ; '
-    + 'ne propose pas de changement d\'objectif supérieur à 300 kcal par palier ; pas de conseil médical ; rappelle que le poids fluctue avec l\'eau et le sel quand la période est courte ; saute une rubrique seulement si aucune donnée ne l\'alimente.\n\n'
+    + 'Réponds en français, tutoiement, 400 mots maximum, exactement en 3 parties. Chaque titre est seul sur sa ligne, en gras : **Analyse**, puis **Conclusion**, puis **Conseils**. Pas d\'autre titre, pas d\'introduction, pas de formule de politesse.\n'
+    + '**Analyse** : 4 à 6 puces courtes (chacune commence par "- " et un mot-clé en gras, ex. "- **Poids** : …"). Couvre : poids réel vs théorique vs voulu et vitesse par rapport à la plage de la phase « ' + (r.phase || 'non définie') + ' » ; balance et écart à l\'objectif ; nutrition (régularité, protéines/glucides/lipides vs repères, semaine vs week-end) ; dépense et activité (TDEE, pas, fréquence de salle, cohérence avec le poids) ; fiabilité des données. Saute un point seulement si aucune donnée ne l\'alimente.\n'
+    + '**Conclusion** : 2 à 3 phrases : la période colle-t-elle à la phase, oui, en partie ou non, et la raison principale. Cohérent avec le verdict de l\'app.\n'
+    + '**Conseils** : 3 actions concrètes et priorisées pour les 1 à 2 prochaines semaines, en liste numérotée ("1. …").\n'
+    + 'Règles : cite uniquement des valeurs présentes dans le JSON, n\'invente aucun chiffre ; repère les tendances dans le temps (début vs fin de période, semaines) ; si les données sont insuffisantes ou peu fiables, dis-le et demande de compléter pesées/saisies avant de changer l\'objectif ; ne propose pas de changement d\'objectif supérieur à 300 kcal par palier ; pas de conseil médical ; rappelle que le poids fluctue avec l\'eau et le sel quand la période est courte.\n\n'
     + 'DONNÉES :\n' + JSON.stringify(bilanAiPayload(r), bilanAiRound);
 }
 
-// Texte IA → HTML sûr : échappe tout, puis gère **gras** et sauts de ligne.
+// Texte IA → HTML sûr : tout est échappé, puis mis en forme : titres (ligne en gras seule),
+// puces ("- "), listes numérotées ("1. "), **gras** en ligne.
 function bilanAiFormat(txt, ts) {
-  var p = 'font-size:0.78rem;color:var(--text);line-height:1.65';
-  return '<div style="' + p + '">'
-    + bilanEsc(txt).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n{2,}/g, '</div><div style="' + p + ';margin-top:0.6rem">').replace(/\n/g, '<br>')
-    + '</div><div style="font-size:0.62rem;color:var(--muted2);margin-top:0.6rem;line-height:1.5">'
+  var inl = function(t) { return bilanEsc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>'); };
+  var txtStyle = 'font-size:0.78rem;color:var(--text);line-height:1.6';
+  var html = '', lines = String(txt).replace(/\r/g, '').split('\n');
+  lines.forEach(function(raw) {
+    var l = raw.trim(); if (!l) return;
+    var h = l.match(/^\*\*([^*]+?)\*\*\s*:?\s*$/) || l.match(/^#{1,4}\s*(.+?)\s*:?\s*$/);
+    var li = l.match(/^(?:[-•*]|(\d+)[.)])\s+(.+)$/);
+    if (h) {
+      html += '<div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--teal);margin:' + (html ? '1rem' : '0') + ' 0 0.4rem;padding-bottom:4px;border-bottom:1px solid var(--border)">' + bilanEsc(h[1].replace(/\*\*/g, '')) + '</div>';
+    } else if (li) {
+      var mark = li[1] ? li[1] + '.' : '•';
+      html += '<div style="display:flex;gap:8px;margin-bottom:0.4rem;' + txtStyle + '"><span style="flex-shrink:0;min-width:1.1em;color:var(--teal);font-weight:700">' + mark + '</span><span>' + inl(li[2]) + '</span></div>';
+    } else {
+      html += '<div style="margin-bottom:0.4rem;' + txtStyle + '">' + inl(l) + '</div>';
+    }
+  });
+  return html + '<div style="font-size:0.62rem;color:var(--muted2);margin-top:0.8rem;line-height:1.5">'
     + (ts ? 'Analyse enregistrée le ' + bilanAiDateLabel(ts) + ' : tes données ont pu évoluer depuis. ' : '')
     + 'Générée par IA à partir de tes chiffres : repère indicatif, pas un avis médical.</div>';
 }
