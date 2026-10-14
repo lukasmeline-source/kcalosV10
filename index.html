@@ -36,6 +36,8 @@ if (typeof window.Chart === 'undefined') {
 }
 /* Lecture sécurisée du localStorage : renvoie fallback si clé absente, JSON corrompu
    ou type inattendu (tableau vs objet). */
+/* Modèle IA unique pour Coach / photo repas / bilan : à changer ici seulement. */
+window.KCALOS_AI_MODEL = 'claude-sonnet-5';
 window.lsJSON = function (key, fallback) {
   try {
     var raw = localStorage.getItem(key);
@@ -3624,6 +3626,12 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 
       <button class="btn" onclick="saveAccountProfile()" style="margin-top:0.5rem">Enregistrer le profil →</button>
 
+      <div style="margin-top:1rem;padding:0.8rem 1rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm)">
+        <div style="font-size:0.78rem;font-weight:600;color:var(--text);margin-bottom:3px">🔑 Clé API Anthropic</div>
+        <div id="apikey-status" style="font-size:0.68rem;color:var(--muted);line-height:1.5">—</div>
+        <button type="button" id="apikey-clear-btn" class="btn" onclick="kcalosClearApiKey()" style="display:none;margin-top:0.6rem;font-size:0.75rem">Supprimer ma clé</button>
+      </div>
+
       <div id="app-build-version" style="text-align:center;font-size:0.65rem;color:var(--muted2);margin-top:0.6rem;opacity:0.6"></div>
     </div>
 
@@ -3806,6 +3814,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
 
 <!-- ═══ DASHBOARD ═══ -->
 <div class="page active" id="page-dashboard">
+  <div id="bilan-reminder" style="display:none;margin:0.6rem 0"></div>
   <!-- Bannière sommeil actif -->
   <div id="sl-dashboard-banner" style="display:none;background:linear-gradient(90deg,rgba(124,58,237,0.18),rgba(124,58,237,0.08));border:1px solid rgba(167,139,250,0.3);border-radius:var(--r-sm);padding:0.7rem 1rem;margin-bottom:0.85rem;align-items:center;justify-content:space-between;gap:10px">
     <div style="display:flex;align-items:center;gap:8px;font-size:0.75rem;color:#c4b5fd">
@@ -7421,7 +7430,7 @@ document.addEventListener('keydown', function (e) {
   if (el && el.getAttribute && el.getAttribute('role') === 'button' && el.tagName !== 'BUTTON') { e.preventDefault(); el.click(); }
 });
 
-const APP_BUILD_VERSION = '2026-10-14.11';
+const APP_BUILD_VERSION = '2026-10-14.12';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -8178,7 +8187,6 @@ function liveCalc(){
   }
 
   renderGoals(tdee,poids,lbm,real);
-  renderNutritionInsights(tdee,poids,lbm,bf);
 
   // Le simulateur BMR/TDEE n'écrit plus jamais dans les données réelles
   // (fitness/calories) — décision produit : cette page reste un pur outil
@@ -8366,116 +8374,6 @@ function loadTrendGoalsFromProfile(){
 /* ════════════════════════════════════════
    INSIGHTS
 ════════════════════════════════════════ */
-function renderNutritionInsights(tdee,poids,lbm,bf){
-  const fitness=DB.getFitness().sort((a,b)=>a.date.localeCompare(b.date)).slice(-14);
-  const food=DB.getFood();
-  const real=estimateRealTDEE();
-  const ins=[];
-
-  // ── 1. TDEE réel vs théorique ──
-  if(real){
-    const diff=real-tdee;
-    if(Math.abs(diff)>150){
-      ins.push({t:diff>0?'warn':'info',i:'<span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M8 3c-2.8 0-4.5 1.8-4.5 4 0 1.4.7 2.6 1.9 3.3 0 1.2.5 1.7 1.3 1.7.8 0 1.4-.6 1.3-1.7h1.1c-.1 1.1.5 1.7 1.3 1.7.8 0 1.3-.5 1.3-1.7 1.2-.7 1.8-1.9 1.8-3.3C13.5 4.8 10.8 3 8 3z"/><line x1="5.5" y1="8.5" x2="6.8" y2="8.5"/><line x1="9.2" y1="8.5" x2="10.5" y2="8.5"/><line x1="8" y1="5.5" x2="8" y2="8.5"/></svg></span>',
-        title:`Ton TDEE réel est ${diff>0?'plus élevé':'plus bas'} que prévu`,
-        sub:`Théorique : ${fmt(tdee)} kcal · Réel estimé : ${fmt(real)} kcal (${diff>0?'+':''}${fmt(diff)} kcal). ${diff>0?'Tu brûles plus — augmente légèrement ta cible.':'Tu brûles moins — ajuste ta cible à la baisse.'}`
-      });
-    } else {
-      ins.push({t:'ok',i:'<span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><polyline points="5,8 7.2,10.2 11,6"/></svg></span>',title:'TDEE cohérent avec tes données réelles',sub:`TDEE réel estimé : ${fmt(real)} kcal — très proche du calcul théorique.`});
-    }
-  }
-
-  // ── 2. Balance calorique + analyse protéique croisée ──
-  const paired=fitness.map(f=>{const fo=food.find(x=>x.date===f.date);return fo?{p:f.poids,k:fo.kcal,t:f.calories||tdee,prot:fo.prot,hasMacros:!!(fo.prot||fo.gluc||fo.lip)}:null;}).filter(Boolean);
-
-  if(paired.length>=5){
-    const last7=paired.slice(-7);
-    const avgBal=last7.reduce((s,p)=>s+(p.k-p.t),0)/last7.length;
-    const p0=paired[paired.length-7]?.p, p1=paired[paired.length-1]?.p;
-    const dp=p1&&p0?p1-p0:null;
-
-    // Analyse protéines sur les 7 derniers jours avec macros
-    const daysWithMacros=last7.filter(d=>d.hasMacros);
-    const hasMacroData=daysWithMacros.length>=3;
-    const avgProt=hasMacroData
-      ? daysWithMacros.reduce((s,d)=>s+(d.prot||0),0)/daysWithMacros.length
-      : null;
-    const minProt=lbm*1.6; // minimum 1.6g/kg LBM
-    const protOk=avgProt!==null&&avgProt>=minProt;
-
-    // Déficit élevé
-    if(avgBal<-400){
-      const absBal=Math.abs(avgBal);
-      if(hasMacroData){
-        if(protOk){
-          // Déficit élevé MAIS protéines suffisantes → sécurisé
-          ins.push({t:'ok',i:'<span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M8 2l5.5 2.5V9.5c0 2.5-2.2 4-5.5 5-3.3-1-5.5-2.5-5.5-5V4.5z"/></svg></span>',
-            title:`Déficit calorique bien protégé`,
-            sub:`Déficit moyen de ${fmt(absBal)} kcal/j sur 7j. ✅ Ton apport protéique (${avgProt.toFixed(0)}g/j) est suffisant (≥${Math.round(minProt)}g/j) — le risque de catabolisme musculaire est limité. Continue ainsi.`
-          });
-        } else {
-          // Déficit élevé ET protéines insuffisantes → danger
-          ins.push({t:'danger',i:'<span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><line x1="8" y1="5.5" x2="8" y2="9"/><circle cx="8" cy="11" r="0.7" fill="currentColor" stroke="none"/></svg></span>',
-            title:`Déficit élevé + protéines insuffisantes`,
-            sub:`Déficit de ${fmt(absBal)} kcal/j · Protéines : ${avgProt!==null?avgProt.toFixed(0)+'g/j':'-'} (min recommandé : ${Math.round(minProt)}g/j). Combinaison à risque : perte musculaire probable. Augmente tes protéines en priorité.`
-          });
-        }
-      } else {
-        // Déficit élevé mais pas de données macro → message nuancé
-        ins.push({t:'warn',i:'<span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2L1.5 14h13z"/><line x1="8" y1="6.5" x2="8" y2="10"/><circle cx="8" cy="11.8" r="0.7" fill="currentColor" stroke="none"/></svg></span>',
-          title:`Déficit calorique élevé — données protéiques absentes`,
-          sub:`Déficit moyen de ${fmt(absBal)} kcal/j sur 7j. Sans données sur tes protéines, impossible d\'évaluer le risque musculaire. Enregistre tes macros pour une analyse complète. Si ton apport protéique est ≥${Math.round(minProt)}g/j, le risque est limité.`
-        });
-      }
-    }
-
-    // Surplus élevé
-    if(avgBal>500){
-      ins.push({t:'warn',i:'<span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2a4 4 0 014 4v3.2l1.5 2.3H2.5L4 9.2V6a4 4 0 014-4z"/><path d="M6.5 12.5a1.5 1.5 0 003 0"/></svg></span>',
-        title:`Surplus calorique élevé`,
-        sub:`Balance moy : +${fmt(avgBal)} kcal/j. Un surplus aussi important favorise la prise de gras. Vise +200-300 kcal/j maximum pour une prise de masse propre.`
-      });
-    }
-
-    // Déficit sans perte de poids
-    if(dp!==null&&avgBal<-200&&dp>0.2){
-      ins.push({t:'warn',i:'<span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 8A5.5 5.5 0 012.5 8"/><path d="M2.5 8A5.5 5.5 0 0113.5 8"/><polyline points="13.5,4.5 13.5,8 10,8"/><polyline points="2.5,11.5 2.5,8 6,8"/></svg></span>',
-        title:'Déficit sans perte de poids',
-        sub:`Déficit de ${fmt(Math.abs(avgBal))} kcal/j mais +${dp.toFixed(1)} kg sur la période. Vérifie tes apports réels ou envisage une semaine de pause diète (diet break).`
-      });
-    }
-
-    // Apport protéique insuffisant indépendamment de la balance
-    if(hasMacroData&&!protOk&&avgBal>=-400){
-      ins.push({t:'danger',i:'<span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M4 13c0-3 1.5-5 4-5s4 2 4 5"/><path d="M4 3c0 3 1.5 5 4 5s4-2 4-5"/><line x1="4" y1="3" x2="4" y2="13"/><line x1="12" y1="3" x2="12" y2="13"/></svg></span>',
-        title:'Apport protéique insuffisant',
-        sub:`Moy 7j : ${avgProt!==null?avgProt.toFixed(0):'-'}g/j · Minimum conseillé : ${Math.round(minProt)}g/j (1.6g/kg masse maigre). Risque de catabolisme musculaire même hors déficit marqué.`
-      });
-    } else if(!hasMacroData){
-      ins.push({t:'info',i:'<span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><line x1="3" y1="13" x2="3" y2="7"/><line x1="7" y1="13" x2="7" y2="4.5"/><line x1="11" y1="13" x2="11" y2="8.5"/><line x1="1" y1="13" x2="15" y2="13"/></svg></span>',
-        title:'Macros non enregistrées',
-        sub:`Saisis tes protéines, glucides et lipides dans "Apports" pour des recommandations nutritionnelles personnalisées. L\'analyse protéique est particulièrement importante en déficit.`
-      });
-    }
-  }
-
-  // ── 3. FFMI ── priorité profil sauvegardé (cohérent avec renderDashboardInsights)
-  const _prof=lsJSON('kcalos_profile',{});
-  const taille=parseFloat(_prof.taille||'0') || +document.getElementById('c-taille').value;
-  if(taille>0){
-    const ffmi=lbm/Math.pow(taille/100,2);
-    if(ffmi>=22) ins.push({t:'ok',i:'<span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="5.5" y1="8" x2="10.5" y2="8"/><line x1="1.5" y1="6" x2="1.5" y2="10"/><line x1="5" y1="5" x2="5" y2="11"/><line x1="11" y1="5" x2="11" y2="11"/><line x1="14.5" y1="6" x2="14.5" y2="10"/></svg></span>',title:`FFMI excellent (${ffmi.toFixed(1)})`,sub:'Bonne masse musculaire. Maintiens un apport protéique élevé pour préserver tes acquis.'});
-  }
-
-  if(!ins.length) ins.push({t:'ok',i:'✨',title:'Tout semble sous contrôle',sub:'Continue d\'enregistrer tes données pour affiner l\'analyse.'});
-
-  const insContainer = document.getElementById('insights-container');
-  if(insContainer) insContainer.innerHTML=ins.map(x=>`
-    <div class="insight-card ${x.t}">
-      <div class="ic-icon">${x.i}</div>
-      <div><div class="ic-title">${x.title}</div><div class="ic-sub">${x.sub}</div></div>
-    </div>`).join('');
-}
 
 /* ════════════════════════════════════════
    FOOD PAGE
@@ -9470,7 +9368,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v50';
+    const CACHE_NAME = 'kcalos-v51';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -10707,7 +10605,7 @@ async function _aiphCallApi(apiKey, plat){
       'anthropic-dangerous-direct-browser-access':'true',
     },
     body: JSON.stringify({
-      model:'claude-sonnet-5',
+      model:KCALOS_AI_MODEL,
       max_tokens:1500,
       messages:[{ role:'user', content }],
     }),
@@ -17112,7 +17010,7 @@ function loadRecapWidget(){
   if(barEl){ barEl.style.width = pct+'%'; barEl.style.background = scoreColor; }
   if(txtEl) txtEl.textContent = scored.length
     ? pct+'% de tes points cles sont actuellement maximises. Touche un point pour aller le corriger.'
-    : 'Renseigne sommeil, apports et seances pour activer ce recap.';
+    : 'Renseigne apports et séances pour activer ce récap.';
 
   // Mini-carte Récap dans la grille KPI du dashboard
   var kpiVal = document.getElementById('db-kpi-recap-val');
@@ -18047,6 +17945,7 @@ document.querySelectorAll('.nav-item,.bn-item').forEach(el => {
     }
     if(this.dataset.page === 'dashboard') {
       setTimeout(() => renderDashboard(), 60);
+      setTimeout(() => { if (typeof bilanReminderRender === 'function') bilanReminderRender(); }, 120);
     }
   });
 });
@@ -18060,6 +17959,7 @@ function openAccountPanel(tab){
   closeBubblesGroup?.();
   kcBubblesToggleHide?.();
   panel.classList.add('open');
+  if(typeof kcalosRefreshApiKeyStatus==='function') kcalosRefreshApiKeyStatus();
   // Pre-fill profile fields
   const p = lsJSON('kcalos_profile',{});
   const lastFit = DB.getLastFitness();
@@ -18118,6 +18018,7 @@ function switchAccountTab(tab){
   if(tab==='tendances') setTimeout(loadTrendGoalsFromProfile, 50);
   // Charger la page Amis
   if(tab==='amis') setTimeout(()=>frRenderAmisPanel(), 50);
+  if(typeof kcalosRefreshApiKeyStatus==='function') kcalosRefreshApiKeyStatus();
 }
 
 function saveAccountProfile(){
@@ -20162,7 +20063,7 @@ async function bfAnalyzePhotos(){
         'anthropic-dangerous-direct-browser-access':'true',
       },
       body: JSON.stringify({
-        model:'claude-sonnet-5',
+        model:KCALOS_AI_MODEL,
         max_tokens:600,
         messages:[{ role:'user', content }],
       }),
@@ -27496,7 +27397,8 @@ function bilanPaneBilan(r, vc, issuesHtml) {
       + '<div class="bp-hero-p">' + r.verdict.text + '</div>'
       + '<div class="bp-chips"><span class="bp-chip">' + phaseTxt + '</span>' + (r.goal ? '<span class="bp-chip">Objectif ' + fmt(r.goal) + ' kcal</span>' : '') + '<span class="bp-chip">' + r.period.days + ' jours</span></div>'
       + bilanSnapshotHtml(r)
-      + '<div class="bp-todo" style="border-left-color:' + C(dcCol) + '"><div class="bp-hero-k" style="color:' + C(dcCol) + '">Que faire</div><b>' + dc.title + '</b><div class="bp-check-det">' + dc.text + (r.diagnosis ? ' ' + r.diagnosis : '') + '</div></div>'
+      + '<div class="bp-todo" style="border-left-color:' + C(dcCol) + '"><div class="bp-hero-k" style="color:' + C(dcCol) + '">Que faire</div><b>' + dc.title + '</b><div class="bp-check-det">' + dc.text + (r.diagnosis ? ' ' + r.diagnosis : '') + '</div>'
+        + (dc.goalKcal && r.goal && Math.abs(dc.goalKcal - r.goal) >= 50 ? kcalosApplyGoalBtnHtml(dc.goalKcal, 'Appliquer ' + fmt(dc.goalKcal) + ' kcal/j (palier de 300 max)') : '') + '</div>'
       + (dataFirst ? issuesHtml : ''),
     detail: bilanDetail('<p>Le verdict compare ta <b>tendance de poids</b> à la plage de ta phase' + (r.spec ? ' (' + bilanSgn(r.spec.rateMin, 2) + ' à ' + bilanSgn(r.spec.rateMax, 2) + ' % du poids par semaine pour un ' + r.spec.label.toLowerCase() + ')' : '') + '. Le rond indique combien de contrôles sont « OK » (' + pass + ' sur ' + evald.length + '). Le bloc « Que faire » croise ce verdict avec tes apports, ta balance et ta dépense estimée pour dire s\'il faut changer ton objectif, ta dépense ou simplement attendre.</p>') });
 
@@ -27851,10 +27753,10 @@ var BILAN_AI_MAX = 40; // analyses gardées (les plus récentes)
 function bilanAiId(r) { return r.period.start + '|' + r.period.end + '|' + (r.phase || 'none'); }
 function bilanAiStore() { return lsJSON(BILAN_AI_KEY, {}); }
 function bilanAiGet(r) { return bilanAiStore()[bilanAiId(r)] || null; }
-function bilanAiSave(r, text) {
+function bilanAiSave(r, text, goalKcal) {
   var st = bilanAiStore();
   var e = { id: bilanAiId(r), start: r.period.start, end: r.period.end, phase: r.phase || null, ts: Date.now(),
-            verdictKey: r.verdict ? r.verdict.key : null, verdictTitle: r.verdict ? r.verdict.title : '', text: text };
+            verdictKey: r.verdict ? r.verdict.key : null, verdictTitle: r.verdict ? r.verdict.title : '', text: text, goalKcal: goalKcal || null };
   st[e.id] = e;
   var ids = Object.keys(st).sort(function(a, b) { return st[b].ts - st[a].ts; });
   ids.slice(BILAN_AI_MAX).forEach(function(k) { delete st[k]; });
@@ -27909,8 +27811,9 @@ function bilanAiBlockHtml(r) {
     + '<div style="font-size:0.65rem;color:var(--muted2);margin-top:5px">Obtenir une clé → <a href="https://console.anthropic.com" target="_blank" rel="noopener" style="color:var(--teal)">console.anthropic.com</a></div></div>'
     + '<div id="bp-ai-error" style="display:none;font-size:0.72rem;color:var(--red);background:rgba(255,90,90,0.08);border:1px solid var(--red);border-radius:var(--r-sm);padding:8px 10px;margin-bottom:0.6rem;line-height:1.5"></div>'
     + '<button type="button" class="btn teal" id="bp-ai-btn" onclick="bilanAiAnalyze()" style="width:100%">' + (saved ? '↻ Refaire l\'analyse' : '✨ Analyser avec l\'IA') + '</button>'
+    + '<button type="button" onclick="bilanAiCopy()" style="width:100%;margin-top:0.5rem;padding:0.55rem;background:var(--s2);border:1.5px solid var(--border2);border-radius:var(--r-sm);color:var(--muted);font-size:0.72rem;font-weight:600;cursor:pointer;font-family:Syne,sans-serif">📋 Copier le bilan pour une IA</button>'
     + '<div id="bp-ai-loading" style="display:none;text-align:center;padding:1rem 0;font-size:0.78rem;color:var(--muted)">⏳ Analyse en cours…</div>'
-    + '<div id="bp-ai-out" style="' + (saved ? '' : 'display:none;') + 'margin-top:0.8rem">' + (saved ? bilanAiFormat(saved.text, saved.ts) : '') + '</div>'
+    + '<div id="bp-ai-out" style="' + (saved ? '' : 'display:none;') + 'margin-top:0.8rem">' + (saved ? bilanAiFormat(saved.text, saved.ts, saved.goalKcal) : '') + '</div>'
     + '</div>';
 }
 
@@ -27921,6 +27824,83 @@ function bilanAiRound(k, v) {
   return v;
 }
 function bilanAiLast(arr, n) { return Array.isArray(arr) ? arr.slice(-n) : arr; }
+
+/* Clé API Anthropic (stockée uniquement sur cet appareil) : statut + suppression */
+function kcalosRefreshApiKeyStatus() {
+  var el = document.getElementById('apikey-status'), b = document.getElementById('apikey-clear-btn');
+  if (!el) return;
+  var k = ''; try { k = localStorage.getItem('kcalos_apikey') || ''; } catch (e) {}
+  el.textContent = k ? 'Clé enregistrée sur cet appareil (se termine par …' + k.slice(-4) + '). Elle n\'est jamais synchronisée ni envoyée ailleurs qu\'à api.anthropic.com.' : 'Aucune clé enregistrée. Elle te sera demandée à la première analyse IA.';
+  if (b) b.style.display = k ? 'block' : 'none';
+}
+function kcalosClearApiKey() {
+  if (!confirm('Supprimer ta clé API de cet appareil ?\nTu devras la saisir de nouveau pour utiliser l\'IA.')) return;
+  try { localStorage.removeItem('kcalos_apikey'); } catch (e) {}
+  ['aiph-api-key', 'bfph-api-key', 'bp-ai-key'].forEach(function(id) { var i = document.getElementById(id); if (i) i.value = ''; });
+  kcalosRefreshApiKeyStatus();
+  toast('🔑 Clé supprimée de cet appareil', 'var(--teal)');
+}
+window.addEventListener('load', function() { setTimeout(kcalosRefreshApiKeyStatus, 400); });
+
+/* Applique un objectif kcal proposé (bilan ou IA) : confirmation + plafond de 300 kcal par palier */
+function kcalosApplyGoal(kcal, btn) {
+  var val = Math.round(parseFloat(kcal) / 10) * 10;
+  var cur = parseInt(localStorage.getItem('kcalos_kcal_goal') || '0') || 0;
+  if (!isFinite(val) || val < 800 || val > 6000) { toast('Objectif invalide (800–6000 kcal)', 'var(--red)'); return; }
+  if (cur) val = Math.max(cur - 300, Math.min(cur + 300, val));
+  if (cur && val === cur) { toast('Ton objectif est déjà à ce niveau', 'var(--blue)'); return; }
+  var phase = getCurrentPhase();
+  var msg = 'Changer ton objectif calorique' + (cur ? ' de ' + cur + ' à ' + val + ' kcal/j (' + (val > cur ? '+' : '') + (val - cur) + ')' : ' à ' + val + ' kcal/j') + ' ?\nPhase conservée : ' + (phase || 'non définie') + '.\nTu pourras le modifier à tout moment dans Apports.';
+  if (!confirm(msg)) return;
+  try { localStorage.setItem('kcalos_kcal_goal', val); } catch (e) { toast('Enregistrement impossible (stockage plein ?)', 'var(--red)'); return; }
+  kcalGoalHistoryLog(val, phase);
+  if (typeof renderApDayBanner === 'function') renderApDayBanner();
+  if (btn) { btn.disabled = true; btn.textContent = '✓ Objectif appliqué : ' + val + ' kcal/j'; }
+  toast('🎯 Objectif : ' + val.toLocaleString('fr-FR') + ' kcal', 'var(--lime)');
+}
+function kcalosApplyGoalBtnHtml(kcal, label) {
+  return '<button type="button" class="btn teal" onclick="kcalosApplyGoal(' + Math.round(kcal) + ',this)" style="width:100%;margin-top:0.7rem">' + label + '</button>';
+}
+
+/* Rappel « ton bilan est prêt » : 4 semaines dans la phase en cours, assez de pesées et de saisies */
+function bilanReminderRender() {
+  var box = document.getElementById('bilan-reminder'); if (!box) return;
+  var hide = function() { box.style.display = 'none'; box.innerHTML = ''; };
+  try {
+    var hist = kcalGoalHistoryGet(); if (!hist.length) return hide();
+    var last = hist[hist.length - 1], t = today();
+    last = { date: getCurrentPhaseStartDate() || last.date, phase: last.phase }; // début de la phase en cours, pas du dernier changement d'objectif
+    var until = ''; try { until = localStorage.getItem('kcalos_bilan_reminder_until') || ''; } catch (e) {}
+    if (until && t < until) return hide();
+    var days = Math.round((new Date(t + 'T12:00') - new Date(last.date + 'T12:00')) / 86400000);
+    if (days < 28) return hide();
+    var weighs = DB.getFitness().filter(function(f) { return f.poids && f.date >= last.date && f.date <= t; }).length;
+    var foods = reportDateRange(last.date, t).filter(function(ds) { return getDayTotals(ds).kcal > 0; }).length;
+    if (weighs < 3 || foods < 14) return hide();
+    var lbl = (typeof REPORT_PHASE_LABELS !== 'undefined' && REPORT_PHASE_LABELS[last.phase]) || last.phase || 'ta phase';
+    box.innerHTML = '<div style="display:flex;align-items:center;gap:10px;padding:0.75rem 0.9rem;border-radius:var(--r-sm);background:var(--teal-bg);border:1px solid var(--teal-d)">'
+      + '<span style="font-size:1.2rem" aria-hidden="true">📊</span>'
+      + '<div style="flex:1;min-width:0"><div style="font-size:0.8rem;font-weight:700;color:var(--text)">Ton bilan est prêt</div>'
+      + '<div style="font-size:0.68rem;color:var(--muted);line-height:1.4">' + Math.floor(days / 7) + ' semaines en ' + lbl.toLowerCase() + ' : vérifie si tu es dans la cible.</div></div>'
+      + '<button type="button" class="btn teal" onclick="bilanReminderOpen()" style="width:auto;padding:0.45rem 0.85rem;font-size:0.72rem;flex-shrink:0">Voir</button>'
+      + '<button type="button" aria-label="Me le rappeler plus tard" onclick="bilanReminderLater()" style="background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;padding:0 2px;flex-shrink:0">×</button></div>';
+    box.style.display = 'block';
+  } catch (e) { hide(); }
+}
+function bilanReminderSnooze(nDays) {
+  try { localStorage.setItem('kcalos_bilan_reminder_until', bilanShiftDate(today(), nDays)); } catch (e) {}
+  var box = document.getElementById('bilan-reminder'); if (box) { box.style.display = 'none'; box.innerHTML = ''; }
+}
+function bilanReminderLater() { bilanReminderSnooze(7); }
+function bilanReminderOpen() {
+  bilanReminderSnooze(28);
+  try {
+    openReportPeriodPicker();
+    var cur = reportBuildPhasePeriods().filter(function(p) { return p.ongoing; }).pop();
+    if (cur) reportGenerateFromPhase(cur.start, cur.end, cur.phase);
+  } catch (e) {}
+}
+window.addEventListener('load', function() { setTimeout(bilanReminderRender, 900); });
 
 // Résumé de la période juste avant (même durée) pour comparer les tendances.
 // computeBilanReport écrase window.KCALOS_LAST_REPORT : on le restaure.
@@ -27973,20 +27953,21 @@ function bilanAiPayload(r) {
   };
 }
 
-function bilanAiPrompt(r) {
+function bilanAiPrompt(r, external) {
   return 'Tu es un coach nutrition et composition corporelle, factuel, rigoureux et prudent. Voici le dossier chiffré complet d\'une période de suivi (JSON, valeurs null = donnée manquante). '
     + 'Le verdict de l\'app est calculé de façon déterministe (poids réel vs théorique vs voulu, plage cible de la phase) : tu ne le contredis pas, tu l\'expliques, tu le nuances avec tout ce que tu vois dans les détails, et tu l\'enrichis.\n\n'
     + 'Réponds en français, tutoiement, ton de coach direct et encourageant quand c\'est mérité, 350 mots maximum au total, exactement en 3 parties, toutes obligatoires, dans cet ordre (ne t\'arrête jamais avant les Conseils). Chaque titre est seul sur sa ligne, en gras : **Conclusion**, puis **Analyse**, puis **Conseils**. Pas d\'autre titre, pas d\'introduction, pas de formule de politesse. Explique tout jargon (TDEE, balance) en quelques mots.\n'
     + '**Conclusion** (en premier) : 2 phrases maximum, verdict clair : la période colle-t-elle à la phase « ' + (r.phase || 'non définie') + ' », oui, en partie ou non, et la raison principale. Cohérent avec le verdict de l\'app. Si les données sont trop pauvres pour conclure, dis-le franchement ici.\n'
     + '**Analyse** : 4 à 6 puces de 30 mots maximum (chacune commence par "- " et un mot-clé en gras, ex. "- **Poids** : …"). Ne recopie pas les chiffres : relie-les entre eux et propose une cause probable (ex. écart entre poids réel et théorique expliqué par des apports sous-estimés le week-end, des saisies incomplètes, une dépense surestimée). Repère les tendances dans le temps (début vs fin, semaine par semaine) et compare avec la période précédente (periodePrecedente) si elle existe : mieux, pareil ou moins bien. Couvre : poids vs plage de la phase, balance et écart à l\'objectif, nutrition (régularité, protéines/glucides/lipides, semaine vs week-end), dépense/activité/fréquence de salle, fiabilité des données. Saute un point seulement si aucune donnée ne l\'alimente.\n'
     + '**Conseils** : 3 actions concrètes, applicables dès demain et priorisées pour les 1 à 2 prochaines semaines, en liste numérotée ("1. …"), chacune avec le chiffre ou le geste précis (ex. « ajoute 25 g de protéines au dîner », « pèse-toi 3 matins par semaine »).\n'
+    + (external ? '' : 'Si tu recommandes de modifier l\'objectif calorique, ajoute tout à la fin une dernière ligne exacte [[OBJECTIF:NNNN]] (kcal par jour, multiple de 10, écart de 300 kcal maximum avec l\'objectif actuel de ' + (r.goal || 'inconnu') + '). Sinon, n\'écris pas cette ligne.\n')
     + 'Règles : cite uniquement des valeurs présentes dans le JSON, n\'invente aucun chiffre ; repère les tendances dans le temps (début vs fin de période, semaines) ; si les données sont insuffisantes ou peu fiables, dis-le et demande de compléter pesées/saisies avant de changer l\'objectif ; ne propose pas de changement d\'objectif supérieur à 300 kcal par palier ; pas de conseil médical ; rappelle que le poids fluctue avec l\'eau et le sel quand la période est courte.\n\n'
     + 'DONNÉES :\n' + JSON.stringify(bilanAiPayload(r), bilanAiRound);
 }
 
 // Texte IA → HTML sûr : tout est échappé, puis mis en forme : titres (ligne en gras seule),
 // puces ("- "), listes numérotées ("1. "), **gras** en ligne.
-function bilanAiFormat(txt, ts) {
+function bilanAiFormat(txt, ts, goalKcal) {
   var inl = function(t) { return bilanEsc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>'); };
   var txtStyle = 'font-size:0.78rem;color:var(--text);line-height:1.6';
   var html = '', lines = String(txt).replace(/\r/g, '').split('\n');
@@ -28003,9 +27984,22 @@ function bilanAiFormat(txt, ts) {
       html += '<div style="margin-bottom:0.4rem;' + txtStyle + '">' + inl(l) + '</div>';
     }
   });
+  var curGoal = 0; try { curGoal = parseInt(localStorage.getItem('kcalos_kcal_goal') || '0') || 0; } catch (e) {}
+  if (goalKcal && goalKcal >= 800 && goalKcal <= 6000 && goalKcal !== curGoal) html += kcalosApplyGoalBtnHtml(goalKcal, 'Appliquer l\'objectif proposé : ' + goalKcal + ' kcal/j' + (curGoal ? ' (palier de 300 max)' : ''));
   return html + '<div style="font-size:0.62rem;color:var(--muted2);margin-top:0.8rem;line-height:1.5">'
     + (ts ? 'Analyse enregistrée le ' + bilanAiDateLabel(ts) + ' : tes données ont pu évoluer depuis. ' : '')
     + 'Générée par IA à partir de tes chiffres : repère indicatif, pas un avis médical.</div>';
+}
+
+// Copie le dossier complet + les consignes, à coller dans n'importe quelle IA.
+function bilanAiCopy() {
+  var r = window.KCALOS_LAST_REPORT;
+  if (!r || r.type !== 'bilan') { toast('Génère d\'abord un bilan de période', 'var(--red)'); return; }
+  var txt = bilanAiPrompt(r, true);
+  var done = function() { toast('📋 Bilan copié (' + Math.max(1, Math.round(txt.length / 1000)) + ' ko) : colle-le dans une IA', 'var(--teal)'); };
+  var fail = function() { toast('Copie impossible sur cet appareil', 'var(--red)'); };
+  var fb = function() { try { var ta = document.createElement('textarea'); ta.value = txt; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); var ok = document.execCommand('copy'); document.body.removeChild(ta); ok ? done() : fail(); } catch (e) { fail(); } };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, fb); else fb();
 }
 
 async function bilanAiAnalyze() {
@@ -28026,16 +28020,18 @@ async function bilanAiAnalyze() {
     var res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 8000, messages: [{ role: 'user', content: bilanAiPrompt(r) }] })
+      body: JSON.stringify({ model: KCALOS_AI_MODEL, max_tokens: 8000, messages: [{ role: 'user', content: bilanAiPrompt(r) }] })
     });
     if (!res.ok) { var err = await res.json().catch(function() { return {}; }); throw new Error((err && err.error && err.error.message) || ('Erreur API ' + res.status)); }
     var data = await res.json();
     var text = (data.content || []).map(function(b) { return b.text || ''; }).join('\n').trim();
     if (!text) throw new Error('Réponse vide, réessaie.');
+    var gm = text.match(/\[\[\s*OBJECTIF\s*:\s*(\d{3,4})\s*\]\]/i), goalKcal = gm ? parseInt(gm[1]) : null;
+    text = text.replace(/\[\[\s*OBJECTIF[^\]]*\]\]/gi, '').trim();
     // Réponse coupée par la limite de longueur : on ne l'enregistre pas (partie Conclusion/Conseils manquante)
     if (data.stop_reason === 'max_tokens' || !/conseil/i.test(text)) throw new Error('La réponse de l\'IA est incomplète (limite de longueur atteinte). Relance l\'analyse.');
-    var e = bilanAiSave(r, text);
-    out.innerHTML = bilanAiFormat(text, e.ts); out.style.display = 'block';
+    var e = bilanAiSave(r, text, goalKcal);
+    out.innerHTML = bilanAiFormat(text, e.ts, goalKcal); out.style.display = 'block';
     btn.textContent = '↻ Refaire l\'analyse';
   } catch (e) {
     errEl.textContent = '❌ ' + (e && e.message ? e.message : 'Erreur réseau'); errEl.style.display = 'block';
@@ -28168,22 +28164,6 @@ function computeSeanceReport(start, end) {
   };
 }
 
-function reportSessionCard(s) {
-  var durTxt = s.duration ? (s.duration + ' min · ') : '';
-  var html = '<div style="background:var(--s2);border:1px solid var(--border);border-left:3px solid ' + s.typeColor + ';border-radius:var(--r-sm);padding:0.65rem 0.8rem;margin-bottom:8px">'
-    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
-    + '<span style="font-size:0.78rem;font-weight:700;color:' + s.typeColor + '">' + s.typeLabel + '</span>'
-    + '<span style="font-size:0.65rem;color:var(--muted)">' + fmtDL(s.date) + '</span>'
-    + '</div>'
-    + '<div style="font-size:0.65rem;color:var(--muted);margin-bottom:6px">' + durTxt + fmt(s.vol) + ' kg de volume · ' + fmt(s.kcal) + ' kcal estimées</div>';
-  if (s.exos.length) {
-    html += '<div style="display:flex;flex-direction:column;gap:3px">' + s.exos.map(function(e) {
-      return '<div style="font-size:0.66rem;color:var(--text)"><b>' + e.name + '</b> <span style="color:var(--muted)">· ' + e.setsTxt + '</span></div>';
-    }).join('') + '</div>';
-  }
-  html += '</div>';
-  return html;
-}
 
 /* ══════════════════════════════════════════════
    GRAPHIQUE SODIUM / POTASSIUM  (semaine + jour)
@@ -28421,7 +28401,7 @@ function reportSessionCard(s) {
     { id:'nak',         name:'Balance Na/K',        desc:'Sodium et potassium du jour (repas)',    icon:'⚗️', defaultOn:false, locked:false, defaultSize:'half' },
     { id:'glycemie',    name:'Glycémie',            desc:'Courbe estimée du jour · zones de référence',  icon:'🩸', defaultOn:false, locked:false, defaultSize:'full' },
     { id:'sleep-score', name:'Score sommeil',        desc:'Historique 7 nuits · couleurs par qualité', icon:'🌙', defaultOn:false, locked:false, defaultSize:'full' },
-    { id:'recap',       name:'Récap Optimisation',  desc:'Score global + checklist sommeil/entraînement/diète', icon:'✅', defaultOn:true, locked:false, defaultSize:'full' },
+    { id:'recap',       name:'Récap Optimisation',  desc:'Score global + checklist entraînement/diète', icon:'✅', defaultOn:true, locked:false, defaultSize:'full' },
   ];
 
   /* Widgets liés au suivi sommeil, exclus du picker tant que la page
