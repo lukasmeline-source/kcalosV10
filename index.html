@@ -7463,7 +7463,7 @@ document.addEventListener('keydown', function (e) {
   };
 })();
 
-const APP_BUILD_VERSION = '2026-10-21.1';
+const APP_BUILD_VERSION = '2026-10-21.2';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -9406,7 +9406,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v52';
+    const CACHE_NAME = 'kcalos-v53';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -10585,7 +10585,7 @@ async function aiphHandleFile(evt, platId, kind){
     if(clearEl) clearEl.style.display = 'flex';
     if(kind==='plat'){
       plat.plateFull = full;
-      plat.plateThumb = await aiphCompressImage(file, 220, 0.6); // miniature stockée avec l'aliment
+      plat.plateThumb = await aiphCompressImage(file, 140, 0.55); // miniature stockée avec l'aliment
       _aiphSyncDescLabel(platId, true);
     } else {
       plat.restesFull = full;
@@ -10727,7 +10727,29 @@ async function aiAnalyzeMeal(){
   }
 }
 
-function aiphFinalizeAdd(note){
+/* Réduit les miniatures base64 déjà stockées dans kcalos_meals (macros intactes). */
+function kcShrinkMealThumbs(maxDim, quality){
+  const all = lsJSON('kcalos_meals',{});
+  const jobs = [];
+  Object.values(all).forEach(day => Object.values(day||{}).forEach(items => (items||[]).forEach(it => {
+    if(it && typeof it.image==='string' && it.image.startsWith('data:image') && it.image.length>4000) jobs.push(it);
+  })));
+  return Promise.all(jobs.map(it => new Promise(res => {
+    const img = new Image();
+    img.onload = () => { try {
+      const r = Math.min(1, maxDim/Math.max(img.width,img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.max(1,Math.round(img.width*r)); c.height = Math.max(1,Math.round(img.height*r));
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      const out = c.toDataURL('image/jpeg', quality);
+      if(out.length < it.image.length) it.image = out;
+    } catch(_){} res(); };
+    img.onerror = () => res();
+    img.src = it.image;
+  }))).then(() => { try { localStorage.setItem('kcalos_meals', JSON.stringify(all)); return true; } catch(e){ return false; } });
+}
+
+async function aiphFinalizeAdd(note){
   // Ajoute directement les aliments détectés par l'IA au repas courant, sans écran de validation
   // (la modification reste possible ensuite depuis le récap du repas, comme pour tout aliment).
   const items = AIPH.items.map(it=>({
@@ -10739,7 +10761,26 @@ function aiphFinalizeAdd(note){
     ts: Date.now(),
   }));
   if(!items.length){ toast('Rien à ajouter', 'var(--red)'); return; }
-  items.forEach(item=>{ saveMealItem(AP.date, AP.currentMeal, item); });
+  // Sauvegarde robuste au quota : si le stockage est plein, on propose de réduire les
+  // anciennes miniatures (macros intactes) ; en dernier recours on retire la miniature des
+  // nouveaux aliments pour que les macros soient quand même ajoutées.
+  let saved = 0;
+  const saveAll = ()=>{ for(; saved<items.length; saved++) saveMealItem(AP.date, AP.currentMeal, items[saved]); };
+  const isQuota = e => e && (e.name==='QuotaExceededError' || e.code===22 || e.code===1014 || /quota/i.test(e.message||''));
+  try { saveAll(); }
+  catch(e){
+    if(!isQuota(e)) throw e;
+    if(confirm('Stockage de l\'appli plein.\n\nRéduire la taille des anciennes miniatures photo ? (tes macros et repas ne sont pas modifiés)')){
+      await kcShrinkMealThumbs(96, 0.5);
+    }
+    try { saveAll(); }
+    catch(e2){
+      if(!isQuota(e2)) throw e2;
+      for(let i=saved; i<items.length; i++) items[i].image = '';
+      try { saveAll(); toast('⚠️ Ajouté sans miniature (stockage plein)', 'var(--orange)'); }
+      catch(e3){ toast('❌ Stockage plein : impossible d\'enregistrer' + (window.__kcQuotaInfo ? ' · '+window.__kcQuotaInfo : ''), 'var(--red)'); return; }
+    }
+  }
   closeAiPhotoPanel();
   renderMealFoodList();
   updateMealSummaryStrip();
