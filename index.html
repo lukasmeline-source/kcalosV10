@@ -7430,7 +7430,40 @@ document.addEventListener('keydown', function (e) {
   if (el && el.getAttribute && el.getAttribute('role') === 'button' && el.tagName !== 'BUTTON') { e.preventDefault(); el.click(); }
 });
 
-const APP_BUILD_VERSION = '2026-10-14.12';
+/* ── Garde-fou quota localStorage ──
+   Si setItem échoue (QuotaExceededError), on libère d'abord les clés jetables
+   (copie de sécurité de restauration, historique de recherche) puis on retente.
+   Aucune donnée utilisateur n'est supprimée. Si ça échoue encore, on affiche la
+   plus grosse clé pour identifier ce qui sature le stockage. */
+(function(){
+  const _set = Storage.prototype.setItem;
+  const DISPOSABLE = ['kcalos_pre_restore_snapshot','kcalos_food_search_hist'];
+  const isQuota = e => e && (e.name==='QuotaExceededError' || e.code===22 || e.code===1014);
+  function biggestKey(){
+    let best=['',0];
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i), n=(localStorage.getItem(k)||'').length;
+      if(n>best[1]) best=[k,n];
+    }
+    return best[0]+' ('+Math.round(best[1]/1024)+' Ko)';
+  }
+  Storage.prototype.setItem = function(k,v){
+    try { return _set.call(this,k,v); }
+    catch(e){
+      if(!isQuota(e) || this!==window.localStorage) throw e;
+      for(const dk of DISPOSABLE){
+        if(dk===k || this.getItem(dk)===null) continue;
+        this.removeItem(dk);
+        try { return _set.call(this,k,v); } catch(e2){ if(!isQuota(e2)) throw e2; }
+      }
+      try { console.warn('[KCALos] Stockage plein — plus grosse clé :', biggestKey()); } catch(_){}
+      window.__kcQuotaInfo = biggestKey();
+      throw e;
+    }
+  };
+})();
+
+const APP_BUILD_VERSION = '2026-10-21.1';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -7455,7 +7488,12 @@ function kcShowJsError(msg, line){
   const txt = document.getElementById('kc-js-error-text');
   if (txt) txt.textContent = '⚠️ Erreur JS : ' + msg + (line ? ' (ligne ' + line + ')' : '');
 }
-window.addEventListener('error', e => kcShowJsError((e.error && e.error.message) || e.message, e.lineno));
+window.addEventListener('error', e => {
+  const m = (e.error && e.error.message) || e.message;
+  if (m === 'Script error.' && !e.lineno) { console.warn('[KCALos] Script error muet (script externe)'); return; }
+  const extra = /quota/i.test(m||'') && window.__kcQuotaInfo ? ' — plus grosse clé : ' + window.__kcQuotaInfo : '';
+  kcShowJsError(m + extra, e.lineno);
+});
 window.addEventListener('unhandledrejection', e => kcShowJsError((e.reason && e.reason.message) || String(e.reason)));
 
 /* ── HARMONISATION POP-UPS : verrou de scroll du body pendant l'ouverture ──
@@ -9368,7 +9406,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v51';
+    const CACHE_NAME = 'kcalos-v52';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -31316,21 +31354,24 @@ else setTimeout(slInit,200);
     try{
       const fbApp = firebase.apps.length ? firebase.app() : firebase.initializeApp(FIREBASE_CONFIG);
       fbAuth=firebase.auth(fbApp);
+      /* Purge unique de l'ancien cache IndexedDB Firestore (saturé → "internal assertion failed").
+         Fait AVANT firebase.firestore(). Les données utilisateur sont dans localStorage + cloud. */
+      try {
+        if(!localStorage.getItem('kcalos_fs_idb_purged')){
+          ['firestore/[DEFAULT]/'+FIREBASE_CONFIG.projectId+'/main','firebase-heartbeat-database','firebase-installations-database']
+            .forEach(n => { try{ indexedDB.deleteDatabase(n); }catch(_){} });
+          localStorage.setItem('kcalos_fs_idb_purged','1');
+        }
+      } catch(_) {}
       fbDb=firebase.firestore(fbApp);
       window.fbDb = fbDb; // exposé pour le cache partagé food_search_cache (recherche alimentaire)
 
       /* ── Persistence offline : Firestore garde un cache local
          → les lectures marchent sans réseau
          → les écritures sont mises en file d'attente et envoyées quand le réseau revient ── */
-      fbDb.enablePersistence({ synchronizeTabs: true }).catch(e => {
-        if(e.code === 'failed-precondition'){
-          /* Plusieurs onglets ouverts — pas critique */
-          console.warn('[FB] Persistence désactivée (plusieurs onglets)');
-        } else if(e.code === 'unimplemented'){
-          /* Navigateur ne supporte pas — pas critique */
-          console.warn('[FB] Persistence non supportée par ce navigateur');
-        }
-      });
+      /* Persistance offline désactivée : le cache IndexedDB saturait (quota) et provoquait
+         "Firestore internal assertion failed". La sauvegarde envoie un snapshot complet
+         depuis localStorage, donc le cache offline n'est pas nécessaire. */
 
       fbAuth.onAuthStateChanged(async user=>{
         fbUser=user;
