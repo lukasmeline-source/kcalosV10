@@ -7463,7 +7463,7 @@ document.addEventListener('keydown', function (e) {
   };
 })();
 
-const APP_BUILD_VERSION = '2026-10-26.3';
+const APP_BUILD_VERSION = '2026-10-26.4';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -19271,20 +19271,48 @@ function renderBalDietWeight(pred){
     interp = `Ton poids réel évolue dans le sens opposé à ce que prédit la balance (écart : ${fmt1(pred.diffKg)} kg) — vérifie tes pesées ou ta saisie des repas.`;
   }
 
+  // Vue : 'weight' (poids attendu vs réel, défaut) ou 'delta' (variation depuis le début de phase)
+  window._balDietWeightPred = pred;
+  const view = baldietweightGetView();
+  const expectedWeight = pred.startWeight + pred.predictedDeltaKg;
+  const big = view==='weight' ? expectedWeight.toFixed(1) : fmt1(pred.predictedDeltaKg);
+  const bigAct = view==='weight' ? pred.nowWeight.toFixed(1) : fmt1(pred.actualDeltaKg);
+  const subPred = view==='weight' ? `${fmt1(pred.predictedDeltaKg)} kg depuis le départ` : `poids attendu : ${expectedWeight.toFixed(1)} kg`;
+  const subAct  = view==='weight' ? `${fmt1(pred.actualDeltaKg)} kg depuis le départ` : `poids réel : ${pred.nowWeight.toFixed(1)} kg`;
+  const lblPred = view==='weight' ? 'Poids attendu' : 'Variation prédite';
+  const lblAct  = view==='weight' ? 'Poids réel' : 'Variation réelle';
+  const sw = `<div class="mode-switch ap-day-mode-switch" style="margin-bottom:0.6rem" onclick="event.stopPropagation()">
+      <div role="button" tabindex="0" class="mode-btn${view==='weight'?' active':''}" onclick="event.stopPropagation();baldietweightSetView('weight')">Poids</div>
+      <div role="button" tabindex="0" class="mode-btn${view==='delta'?' active':''}" onclick="event.stopPropagation();baldietweightSetView('delta')">Variation</div>
+    </div>`;
+
   body.innerHTML = `
+    ${sw}
     <div style="display:flex;gap:0.8rem">
       <div style="flex:1">
-        <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:.05em;color:var(--orange-d)">Prédit (calcul)</div>
-        <div style="font-size:1.15rem;font-weight:700;color:${predColor}">${fmt1(pred.predictedDeltaKg)} kg</div>
+        <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:.05em;color:var(--orange-d)">${lblPred}</div>
+        <div style="font-size:1.15rem;font-weight:700;color:${predColor}">${big} kg</div>
+        <div style="font-size:0.62rem;color:var(--muted2);margin-top:1px">${subPred}</div>
       </div>
       <div style="width:1px;background:var(--border2)"></div>
       <div style="flex:1">
-        <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:.05em;color:var(--orange-d)">Réel (pesées)</div>
-        <div style="font-size:1.15rem;font-weight:700;color:${actualColor}">${fmt1(pred.actualDeltaKg)} kg</div>
+        <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:.05em;color:var(--orange-d)">${lblAct}</div>
+        <div style="font-size:1.15rem;font-weight:700;color:${actualColor}">${bigAct} kg</div>
+        <div style="font-size:0.62rem;color:var(--muted2);margin-top:1px">${subAct}</div>
       </div>
     </div>
     <div style="font-size:0.68rem;color:var(--muted2);margin-top:0.6rem;line-height:1.4">${interp}</div>
   `;
+}
+
+// Vue du widget « Poids prédit vs réel » : 'weight' (défaut) ou 'delta'. Mémorisée.
+function baldietweightGetView(){
+  try{ return localStorage.getItem('kcalos_baldietweight_view')==='delta' ? 'delta' : 'weight'; }
+  catch(e){ return 'weight'; }
+}
+function baldietweightSetView(view){
+  try{ localStorage.setItem('kcalos_baldietweight_view', view==='delta' ? 'delta' : 'weight'); }catch(e){}
+  if(window._balDietWeightPred) renderBalDietWeight(window._balDietWeightPred);
 }
 
 function renderDashboardInsights(){
@@ -20527,6 +20555,7 @@ function renderBalDietWeightModal(){
       <div style="height:1px;background:var(--border2);margin:0.5rem 0"></div>
       ${row('Poids de départ', pred.startWeight.toFixed(1)+' kg')}
       ${row('Poids actuel', pred.nowWeight.toFixed(1)+' kg')}
+      ${row('Poids attendu (calcul)', (pred.startWeight+pred.predictedDeltaKg).toFixed(1)+' kg', 'var(--teal)')}
       ${row('Variation prédite (calcul)', predSign+pred.predictedDeltaKg.toFixed(1)+' kg', 'var(--teal)')}
       ${row('Variation réelle (pesées)', actSign+pred.actualDeltaKg.toFixed(1)+' kg', 'var(--orange)')}
       ${row('Écart', diffSign+pred.diffKg.toFixed(1)+' kg')}
