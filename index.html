@@ -7463,7 +7463,7 @@ document.addEventListener('keydown', function (e) {
   };
 })();
 
-const APP_BUILD_VERSION = '2026-10-21.2';
+const APP_BUILD_VERSION = '2026-10-26.3';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -8372,10 +8372,9 @@ function loadTrendGoalsFromProfile(){
 
   // ── 1. Calculer la dépense moyenne sur les 7 derniers jours depuis la DB ──
   const fitness = DB.getFitness();
-  const today7 = [];
-  for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); today7.push(toLocalDateStr(d)); }
-  const recentDeps = today7.map(d=>{ const f=fitness.find(x=>x.date===d); return (f&&f.calories&&f.calories>500)?f.calories:null; }).filter(Boolean);
-  const avgDep = recentDeps.length ? Math.round(recentDeps.reduce((a,b)=>a+b,0)/recentDeps.length) : 0;
+  // Même source que le widget « Balance 7j » (jours inclus, dépense via computeTDEE)
+  const avgDep = kcalGetAvgDepense7();
+  const recentDeps = { length: kcalGetAvgDepense7Days() };
 
   // ── 2. Récupérer le poids (dernière valeur connue) ──
   const lastFitWithPoids = fitness.slice().sort((a,b)=>b.date.localeCompare(a.date)).find(d=>d.poids);
@@ -9406,7 +9405,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v53';
+    const CACHE_NAME = 'kcalos-v54';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -16771,10 +16770,10 @@ function tmgComputeRecap(){
     const auto = tmgGetSeancesReelles();
     if(auto!=null){
       const target = +(document.getElementById('tmg-c-seances')?.value || 4);
-      const ok = auto >= target;
+      const ok = auto >= Math.max(1, target-1); // tolérance : cible -1 séance/sem
       checks.push({status: ok?'ok':'warn', title:"Frequence d'entrainement", page:'page-workout',
         detail:`~${auto} seance(s)/semaine reellement saisies (cible actuelle : ${target}x). `
-          +(ok?'Frequence suffisante pour maximiser le signal anabolique hebdomadaire.':'En dessous de ta cible — chaque seance manquee reduit le nombre de fenetres anaboliques exploitees.')});
+          +(ok?'Frequence suffisante par rapport a ta cible (tolerance de 1 seance).':'Nettement en dessous de ta cible — ajuste la cible dans Timing si ton programme a change.')});
     } else {
       checks.push({status:'nodata', title:"Frequence d'entrainement", page:'page-workout', detail:'Aucune seance saisie recemment.'});
     }
@@ -16788,10 +16787,10 @@ function tmgComputeRecap(){
       sessions.sort((a,b)=>b.date.localeCompare(a.date));
       const last = sessions[0];
       if(last.duration){
-        const ok = last.duration <= 75;
+        const ok = last.duration <= 120;
         checks.push({status: ok?'ok':'warn', title:'Duree des seances', page:'page-workout',
           detail:`Derniere seance : ${last.duration} min. `
-            +(ok?'Sous 75 min — cortisol maitrise, fenetre anabolique preservee.':'Au-dela de 75 min — le cortisol prolonge peut freiner la testosterone et la recuperation.')});
+            +(ok?'Duree raisonnable (jusqu\'a 2 h).':'Au-dela de 2 h — la fatigue s\'accumule et la qualite des series baisse.')});
       } else {
         checks.push({status:'nodata', title:'Duree des seances', page:'page-workout', detail:'Duree non renseignee sur ta derniere seance.'});
       }
@@ -16928,14 +16927,15 @@ function tmgComputeRecap(){
         'Biceps':{min:8,max:14},'Triceps':{min:8,max:14},'Jambes':{min:10,max:20},'Abdos':{min:6,max:16}};
       const tracked = Object.keys(refs).filter(m=>byMuscle[m]!==undefined);
       if(tracked.length){
+        // Souple : repères élargis de 30 % de chaque côté, ≥50 % des groupes suivis
         const inRange = tracked.filter(m=>{
           const v = Math.round(byMuscle[m]);
-          return v >= refs[m].min && v <= refs[m].max;
+          return v >= refs[m].min*0.7 && v <= refs[m].max*1.3;
         });
-        const ok = inRange.length >= Math.ceil(tracked.length*0.7); // ≥70% des groupes suivis dans la plage
+        const ok = inRange.length >= Math.ceil(tracked.length*0.5);
         checks.push({status: ok?'ok':'warn', title:'Volume musculaire', page:'page-workout',
           detail:`${inRange.length}/${tracked.length} groupe(s) musculaire(s) dans la plage recommandee sur les 4 dernieres semaines. `
-            +(ok?'La majorite de tes groupes musculaires recoivent un volume optimal.':"Plusieurs groupes sont sous- ou sur-entraines vs les reperes recommandes — regarde le detail dans l'onglet Volume.")});
+            +(ok?'La majorite de tes groupes musculaires est dans une zone de volume correcte (reperes elargis).':"Plusieurs groupes sont tres eloignes des reperes — a nuancer selon tes objectifs, detail dans l'onglet Volume.")});
       } else {
         checks.push({status:'nodata', title:'Volume musculaire', page:'page-workout', detail:'Pas assez de seances sur les 4 dernieres semaines pour estimer le volume par muscle.'});
       }
@@ -17045,19 +17045,19 @@ function tmgComputeRecap(){
           });
         });
         const BIG_MUSCLES = ['Pectoraux','Dos','Jambes','Épaules'];
-        let conflictMuscle = null;
+        const conflicts = [];
         for(const m of BIG_MUSCLES){
           const dates = byMuscle[m] ? Array.from(byMuscle[m]).sort() : [];
           for(let i=1;i<dates.length;i++){
-            if((new Date(dates[i]+'T12:00') - new Date(dates[i-1]+'T12:00'))/86400000 <= 1){ conflictMuscle = m; break; }
+            if((new Date(dates[i]+'T12:00') - new Date(dates[i-1]+'T12:00'))/86400000 <= 1){ conflicts.push(m); break; }
           }
-          if(conflictMuscle) break;
         }
-        const ok = !conflictMuscle;
+        const conflictMuscle = conflicts.join(' et ');
+        const ok = conflicts.length < 2; // souple : alerte seulement si 2 gros groupes ou plus
         checks.push({status: ok?'ok':'warn', title:'Recuperation entre seances', page:'page-workout',
           detail: ok
-            ? 'Aucun grand groupe musculaire travaille deux jours consecutifs cette semaine — bonne fenetre de recuperation.'
-            : `${conflictMuscle} a ete travaille deux jours de suite cette semaine — moins de 48h de recuperation, ce qui peut limiter la surcompensation.`});
+            ? (conflicts.length ? `${conflictMuscle} travaille deux jours de suite, sans que ce soit un souci a lui seul.` : 'Aucun grand groupe musculaire travaille deux jours consecutifs cette semaine.')
+            : `${conflictMuscle} ont ete travailles deux jours de suite cette semaine — peu de recuperation sur plusieurs gros groupes.`});
       } else {
         checks.push({status:'nodata', title:'Recuperation entre seances', page:'page-workout', detail:'Pas assez de seances cette semaine pour analyser la recuperation.'});
       }
@@ -17075,14 +17075,14 @@ function loadRecapWidget(){
   if(!scoreEl) return;
 
   const checks = tmgComputeRecap();
-  const scored = checks.filter(c=>c.status!=='nodata');
+  const scored = checks.filter(c=>c.status==='ok'||c.status==='warn'); // 'info' et 'nodata' : affichés mais non comptés
   const okCount = scored.filter(c=>c.status==='ok').length;
   const pct = scored.length ? Math.round(okCount/scored.length*100) : 0;
   const scoreColor = pct>=80 ? '#35c9a0' : pct>=50 ? '#f0a030' : '#e83838';
 
-  const COLORS = { ok:'#35c9a0', warn:'#f0a030', nodata:'#454858' };
-  const ICONS  = { ok:'✅', warn:'⚠️', nodata:'➖' };
-  const BG     = { ok:'rgba(53,201,160,0.06)', warn:'rgba(240,160,48,0.06)', nodata:'var(--s2)' };
+  const COLORS = { ok:'#35c9a0', warn:'#f0a030', info:'#5bc8f0', nodata:'#454858' };
+  const ICONS  = { ok:'✅', warn:'⚠️', info:'ℹ️', nodata:'➖' };
+  const BG     = { ok:'rgba(53,201,160,0.06)', warn:'rgba(240,160,48,0.06)', info:'rgba(91,200,240,0.06)', nodata:'var(--s2)' };
 
   scoreEl.textContent = scored.length ? okCount+'/'+scored.length : '—';
   scoreEl.style.color = scoreColor;
@@ -17551,13 +17551,17 @@ function loadChartCalories(){
   // ── Dépense : recalculée via computeTDEE (même formule que dashboard /
   // balances 7j-30j-période diète / compte rendu), pour rester cohérente
   // avec les KPIs affichés plus bas (avgDep) plutôt que de dupliquer le calcul.
+  // Jours retirés à la main des widgets balance (feuilles 7j/30j/période) :
+  // exclus aussi du tracé (dépense, apport, balance) pour rester cohérent.
+  const balExcluded=new Set(getBal7Exclusions());
   const depense=filt.map(d=>{
+    if(balExcluded.has(d.date)) return null;
     const dayApport=getDayTotals(d.date).kcal||0;
     const comp=computeTDEE(d, dayApport, profile, d.steps||0);
     return comp?.tdee ?? (d.calories||null);
   });
 
-  const apport=filt.map(d=>{ const t=getDayTotals(d.date); return t.kcal>0?t.kcal:null; });
+  const apport=filt.map(d=>{ if(balExcluded.has(d.date)) return null; const t=getDayTotals(d.date); return t.kcal>0?t.kcal:null; });
   const balance=filt.map((_,i)=>(apport[i]!==null&&depense[i]!==null)?apport[i]-depense[i]:null);
 
   // ── Moyennes affichées (KPIs + résumé) : même logique que les widgets du
@@ -18687,6 +18691,7 @@ function initDashboardScrollObserver(){
 }
 
 function renderDashboard(){
+  kcalGoalAutoRefresh(); // objectif auto : suit la dépense moyenne 7j
   const fitness  = DB.getFitness();
   const food     = DB.getFood();
   const profile  = lsJSON('kcalos_profile',{});
@@ -23066,6 +23071,7 @@ function woRenderUserExoList(){
 /* ════════════════════════════════════════
    SESSION — Entraînement en cours
 ════════════════════════════════════════ */
+const WO_PRELOAD_SESSIONS = 6; // nb de séances passées d'un type dont on reprend les exos
 function woStartSession(type){
   const date = WO2.pickerDate || today();
   WO2.type = type;
@@ -23080,12 +23086,13 @@ function woStartSession(type){
         exercises: existingSess.exercises.map(e=>({...e, sets:[...(e.sets||[])]}))
       }, {pristine: true});
     } else {
-      // Pré-charger les exos des 2 dernières séances passées de ce type (union,
-      // pas juste la toute dernière) : un exo zappé une fois par mégarde (mais
-      // pas mis en veille explicitement) ne doit pas disparaître silencieusement
-      // de la pré-saisie suivante.
-      const paused        = new Set(woPausedGet());
-      const recentSessions = sessions.filter(s=>s.date<date).slice(-2).reverse(); // plus récente d'abord
+      // Pré-charger les exos des WO_PRELOAD_SESSIONS dernières séances passées de
+      // ce type (union, plus récente d'abord) : un exo zappé une ou deux fois par
+      // mégarde (mais pas mis en veille / supprimé explicitement) ne doit pas
+      // disparaître silencieusement de la pré-saisie suivante. Les exos supprimés
+      // définitivement ne sont jamais re-proposés.
+      const paused        = new Set([...woPausedGet(), ...woDeletedExosGet()]);
+      const recentSessions = sessions.filter(s=>s.date<date).slice(-WO_PRELOAD_SESSIONS).reverse();
       const seenNames = new Set();
       const preloaded = [];
       recentSessions.forEach(sess=>{
@@ -26017,20 +26024,12 @@ function openKcalGoalModal() {
 
   var sug = document.getElementById('kcal-goal-suggestions');
   if (sug) {
-    // TDEE depuis dépense réelle moyenne 7j (même logique que loadTrendGoalsFromProfile)
+    // Dépense moyenne 7j : MÊME source que le widget « Balance 7j » (jours inclus,
+    // dépense recalculée via computeTDEE), pour que les deux chiffres collent.
     var fitness = DB.getFitness();
-    var today7 = [];
-    for (var i = 6; i >= 0; i--) {
-      var dd = new Date(); dd.setDate(dd.getDate() - i);
-      today7.push(toLocalDateStr(dd));
-    }
-    var recentDeps = today7.map(function(d){
-      var f = fitness.find(function(x){ return x.date === d; });
-      return (f && f.calories && f.calories > 500) ? f.calories : null;
-    }).filter(Boolean);
-    var avgDep = recentDeps.length
-      ? Math.round(recentDeps.reduce(function(a,b){ return a+b; }, 0) / recentDeps.length)
-      : (S && S.tdee ? Math.round(S.tdee) : 0);
+    var avgDep  = kcalGetAvgDepense7();
+    var nDays   = kcalGetAvgDepense7Days();
+    var autoPhase = kcalGoalAutoGet();
 
     var prof  = lsJSON('kcalos_profile',{});
     var fit   = fitness.slice().sort(function(a,b){ return b.date.localeCompare(a.date); }).find(function(d){ return d.poids; });
@@ -26041,14 +26040,14 @@ function openKcalGoalModal() {
     if (avgDep > 0) {
       var base = avgDep;
       var gs = [
-        { lbl:'🔵 DÉFICIT',       kcal:Math.round(base*0.85), delta:'-15% · moy. '+fmt(base)+' kcal dép.', prot:lbm*2.0,   fat:Math.max((base*0.85*0.20)/9, poids/9), color:'#6ba3f5', border:'rgba(107,163,245,.4)', phase:'deficit' },
-        { lbl:'MAINTIEN',         kcal:Math.round(base),      delta:'Équilibre · '+fmt(base)+' kcal/j',    prot:poids*1.8, fat:(base*0.25)/9,                          color:'var(--lime)', border:'rgba(200,240,74,.35)', phase:'maintien' },
-        { lbl:'🟠 SURPLUS',       kcal:Math.round(base*1.10), delta:'+10% · moy. '+fmt(base)+' kcal dép.', prot:poids*1.8, fat:(base*1.10*0.25)/9,                    color:'var(--orange)', border:'rgba(251,146,60,.4)', phase:'surplus' }
+        { lbl:'🔵 DÉFICIT',       kcal:kcalGoalSuggestFor('deficit', base), delta:'-15% · moy. '+fmt(base)+' kcal dép.', prot:lbm*2.0,   fat:Math.max((kcalGoalSuggestFor('deficit', base)*0.20)/9, poids/9), color:'#6ba3f5', border:'rgba(107,163,245,.4)', phase:'deficit' },
+        { lbl:'MAINTIEN',         kcal:kcalGoalSuggestFor('maintien', base), delta:'Équilibre · '+fmt(base)+' kcal/j',    prot:poids*1.8, fat:(base*0.25)/9,                          color:'var(--lime)', border:'rgba(200,240,74,.35)', phase:'maintien' },
+        { lbl:'🟠 SURPLUS',       kcal:kcalGoalSuggestFor('surplus', base), delta:'+10% · moy. '+fmt(base)+' kcal dép.', prot:poids*1.8, fat:(kcalGoalSuggestFor('surplus', base)*0.25)/9,                    color:'var(--orange)', border:'rgba(251,146,60,.4)', phase:'surplus' }
       ];
 
       var cardsHtml = gs.map(function(g) {
         var carbs   = Math.round(Math.max(0, (g.kcal - g.prot*4 - g.fat*9) / 4));
-        var active  = cur && Math.abs(cur - g.kcal) < 30;
+        var active  = autoPhase ? autoPhase === g.phase : (cur && Math.abs(cur - g.kcal) < 30);
         var borderC = active ? g.color : 'var(--border)';
         return '<button onclick="selectKcalSuggestion(' + g.kcal + ',\'' + g.phase + '\')" style="background:var(--s2);border:2px solid ' + borderC + ';border-radius:var(--r);padding:0.75rem 0.4rem;cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent;position:relative;transition:border-color .15s" onmouseover="this.style.borderColor=\'' + g.color + '\'" onmouseout="this.style.borderColor=\'' + borderC + '\'">'
           + (active ? '<div style="position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:' + g.color + '"></div>' : '')
@@ -26063,8 +26062,12 @@ function openKcalGoalModal() {
       }).join('');
 
       sug.innerHTML = '<div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted2);margin-bottom:0.6rem">'
-        + 'Dépense réelle moy. ' + recentDeps.length + 'j — <strong style="color:var(--lime)">' + fmt(base) + ' kcal/j</strong></div>'
-        + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:1rem">' + cardsHtml + '</div>';
+        + 'Dépense moy. ' + nDays + 'j (comme Balance 7j) — <strong style="color:var(--lime)">' + fmt(base) + ' kcal/j</strong></div>'
+        + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:0.5rem">' + cardsHtml + '</div>'
+        + '<div style="font-size:0.62rem;color:var(--muted2);line-height:1.5;margin-bottom:1rem">'
+        + (autoPhase ? '🔄 Objectif <strong>auto</strong> : se réajuste tout seul avec ta dépense moyenne 7j. Saisis un objectif personnalisé ci-dessous pour le fixer.'
+                     : 'Choisis une carte pour un objectif qui suit ta dépense moyenne 7j, ou fixe ton propre chiffre ci-dessous.')
+        + '</div>';
     } else {
       sug.innerHTML = '<div style="font-size:0.7rem;color:var(--muted2);padding:0.5rem 0 0.75rem">Enregistre au moins un jour de dépense pour voir les suggestions.</div>';
     }
@@ -26226,7 +26229,10 @@ function getKcalGoalForDate(dateStr) {
     if (e.date <= dateStr) applicable = e; else break;
   }
   if (!applicable) applicable = hist[0]; // date antérieure à tout historique connu
-  return applicable.kcalGoal || null;
+  // Ajustements de l'objectif DANS la même phase (mode auto) : dernier ajustement <= date
+  let goal = applicable.kcalGoal || null;
+  (applicable.adj || []).forEach(a=>{ if (a.date <= dateStr) goal = a.kcalGoal; });
+  return goal;
 }
 
 // Phase (déficit/maintien/surplus) réellement en vigueur à une date donnée —
@@ -26270,8 +26276,17 @@ function kcalGoalHistoryLog(val, phaseOverride) {
 
   var last = hist[hist.length - 1];
 
-  // Évite les doublons si on re-sauvegarde la même valeur avec la même phase
-  if (last && last.kcalGoal === val && last.phase === phase) return;
+  // Même phase que la période en cours : PAS de nouvelle période. Si l'objectif
+  // a changé, on l'enregistre comme simple ajustement daté (champ adj) pour que
+  // getKcalGoalForDate reste exact jour par jour sans multiplier les phases.
+  if (last && last.phase === phase) {
+    var lastGoal = last.adj && last.adj.length ? last.adj[last.adj.length - 1].kcalGoal : last.kcalGoal;
+    if (lastGoal === val) return;
+    last.adj = (last.adj || []).filter(function(a){ return a.date !== today(); });
+    last.adj.push({ date: today(), kcalGoal: val });
+    localStorage.setItem('kcalos_kcal_goal_history', JSON.stringify(hist));
+    return;
+  }
 
   var entry = { date: today(), kcalGoal: val, phase: phase, source: phaseOverride ? 'manuel' : 'auto' };
 
@@ -26343,8 +26358,64 @@ function kcalGoalHistoryLog(val, phaseOverride) {
   } catch (e) {}
 })();
 
+/* ══════════════════════════════════════════════
+   OBJECTIF KCAL AUTO (suit la dépense moyenne 7j)
+   - Choisir une carte Déficit/Maintien/Surplus active le mode auto
+     (clé kcalos_kcal_goal_auto = phase) : l'objectif est recalculé tout seul
+     à partir de la dépense moyenne 7j du widget « Balance 7j ».
+   - Saisir un objectif personnalisé (ou l'appliquer depuis le bilan/IA)
+     désactive le mode auto : l'objectif reste fixe.
+══════════════════════════════════════════════ */
+const KCAL_AUTO_FACTORS = { deficit: 0.85, maintien: 1, surplus: 1.10 };
+const KCAL_AUTO_MIN_DELTA = 10; // écart mini (kcal) avant de modifier l'objectif (l'historique ne bouge qu'au changement de phase)
+
+function kcalGoalAutoGet() {
+  var v = null;
+  try { v = localStorage.getItem('kcalos_kcal_goal_auto'); } catch (e) {}
+  return (v && KCAL_AUTO_FACTORS[v]) ? v : null;
+}
+function kcalGoalAutoSet(phase) {
+  try {
+    if (phase && KCAL_AUTO_FACTORS[phase]) localStorage.setItem('kcalos_kcal_goal_auto', phase);
+    else localStorage.removeItem('kcalos_kcal_goal_auto');
+  } catch (e) {}
+}
+function kcalGoalSuggestFor(phase, base) {
+  return Math.round(base * (KCAL_AUTO_FACTORS[phase] || 1) / 10) * 10;
+}
+// Détail balance 7j (même fenêtre/exclusions que le widget dashboard)
+function kcalGetBal7Detail() {
+  try { return computeLast7BalanceDetail(DB.getFitness(), DB.getFood(), lsJSON('kcalos_profile',{})); }
+  catch (e) { return null; }
+}
+function kcalGetAvgDepense7() {
+  var d = kcalGetBal7Detail();
+  if (d && d.avgDepense !== null && d.avgDepense > 0) return Math.round(d.avgDepense);
+  return (typeof S !== 'undefined' && S && S.tdee) ? Math.round(S.tdee) : 0;
+}
+function kcalGetAvgDepense7Days() {
+  var d = kcalGetBal7Detail();
+  return d ? d.days.filter(function(x){ return x.included; }).length : 0;
+}
+// Recalcule l'objectif si le mode auto est actif. Sans effet sinon.
+function kcalGoalAutoRefresh() {
+  try {
+    var phase = kcalGoalAutoGet();
+    if (!phase) return;
+    var d = kcalGetBal7Detail();
+    if (!d || d.avgDepense === null || d.avgDepense <= 0) return; // pas de donnée fiable : on garde l'objectif
+    var val = kcalGoalSuggestFor(phase, d.avgDepense);
+    var cur = parseInt(localStorage.getItem('kcalos_kcal_goal') || '0') || 0;
+    if (cur && Math.abs(val - cur) < KCAL_AUTO_MIN_DELTA) return;
+    localStorage.setItem('kcalos_kcal_goal', val);
+    kcalGoalHistoryLog(val, phase);
+    if (typeof renderApDayBanner === 'function') renderApDayBanner();
+  } catch (e) {}
+}
+
 function selectKcalSuggestion(val, phase) {
   localStorage.setItem('kcalos_kcal_goal', val);
+  kcalGoalAutoSet(phase || null); // carte choisie = objectif qui suit la dépense 7j
   // Choisir une carte préfaite (déficit/maintien/surplus) vaut comme choix explicite
   // de phase actuelle : on synchronise Profil + Séance en même temps.
   if (phase) setCurrentPhase(phase);
@@ -26372,10 +26443,11 @@ function saveKcalGoal() {
   }
 
   localStorage.setItem('kcalos_kcal_goal', val);
+  kcalGoalAutoSet(null); // objectif personnalisé = fixe, plus de réajustement auto
   kcalGoalHistoryLog(val, getCurrentPhase());
   closeKcalGoalModal();
   if (typeof renderApDayBanner === 'function') renderApDayBanner();
-  toast('🎯 Objectif : ' + val.toLocaleString('fr-FR') + ' kcal sauvegardé', 'var(--lime)');
+  toast('🎯 Objectif : ' + val.toLocaleString('fr-FR') + ' kcal sauvegardé (fixe)', 'var(--lime)');
 }
 
 function closeKcalGoalModal() {
@@ -27932,6 +28004,7 @@ function kcalosApplyGoal(kcal, btn) {
   var msg = 'Changer ton objectif calorique' + (cur ? ' de ' + cur + ' à ' + val + ' kcal/j (' + (val > cur ? '+' : '') + (val - cur) + ')' : ' à ' + val + ' kcal/j') + ' ?\nPhase conservée : ' + (phase || 'non définie') + '.\nTu pourras le modifier à tout moment dans Apports.';
   if (!confirm(msg)) return;
   try { localStorage.setItem('kcalos_kcal_goal', val); } catch (e) { toast('Enregistrement impossible (stockage plein ?)', 'var(--red)'); return; }
+  kcalGoalAutoSet(null); // valeur proposée par le bilan/IA = objectif fixe
   kcalGoalHistoryLog(val, phase);
   if (typeof renderApDayBanner === 'function') renderApDayBanner();
   if (btn) { btn.disabled = true; btn.textContent = '✓ Objectif appliqué : ' + val + ' kcal/j'; }
@@ -30972,7 +31045,7 @@ else setTimeout(slInit,200);
 
   const SYNC_KEYS = [
     'kcalos_profile','kcalos_fitness','kcalos_food','kcalos_meals',
-    'kcalos_step_goal','kcalos_kcal_goal','kcalos_kcal_goal_history','kcalos_macro_goal',
+    'kcalos_step_goal','kcalos_kcal_goal','kcalos_kcal_goal_auto','kcalos_kcal_goal_history','kcalos_macro_goal',
     'kcalos_sleep_reports','kcalos_wo_v2','kcalos_custom_exos','kcalos_bilan_ai',
     'kcalos_wo_custom_types','kcalos_meal_templates',
     'kcalos_food_favs','kcalos_food_recents','kcalos_food_search_hist',
