@@ -840,7 +840,8 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 #report-modal .bp-dnav button span{display:none}
 #report-modal .bp-dnav button.on{width:auto;height:28px;padding:0 0.95rem;background:var(--acc)}
 #report-modal .bp-dnav button.on span{display:inline}
-#report-modal .bp-deck{align-items:flex-start;gap:14px;border-radius:0;margin-bottom:0;padding:2px 0 6px;overflow-y:hidden;transition:height .25s ease}
+#report-modal .bp-deck{align-items:flex-start;gap:14px;border-radius:0;margin-bottom:0;padding:2px 0 6px;overflow-y:hidden;overscroll-behavior-x:contain;scroll-behavior:auto;touch-action:pan-x pan-y;transition:height .2s ease}
+#report-modal .bp-deck .bp-dcard{scroll-snap-stop:always}
 #report-modal .bp-dcard{--acc:var(--muted);padding:1rem 1rem 1.15rem;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;border:1px solid var(--border);box-shadow:var(--shadow-card);background:var(--s2);background:linear-gradient(165deg,color-mix(in srgb,var(--acc) 13%,var(--s2)),var(--s2) 58%)}
 #report-modal .bp-dcard .bp-slide-k{font-size:0.66rem;letter-spacing:0.09em;margin-bottom:0.8rem;color:var(--acc)}
 #report-modal .bp-dcard .bp-slide-k i{width:8px;height:8px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 22%,transparent)}
@@ -865,6 +866,18 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 #report-modal .bp-modes button.on{background:var(--mc);border-color:var(--mc);color:var(--bg)}
 #report-modal .bp-modes button.nodata{opacity:0.5}
 #report-modal .bp-modes button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+#report-modal .bp-layers{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:0 0 0.4rem}
+#report-modal .bp-layers button{flex:0 1 auto;border:1.5px solid var(--border2);background:transparent;color:var(--muted);font-family:inherit;font-size:0.68rem;font-weight:700;padding:0.35rem 0.7rem;border-radius:var(--r-pill);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;display:inline-flex;align-items:center;gap:5px;transition:all var(--trans)}
+#report-modal .bp-layers button i{width:8px;height:8px;border-radius:50%;background:var(--mc);flex-shrink:0}
+#report-modal .bp-layers button.on{background:color-mix(in srgb,var(--mc) 18%,transparent);border-color:var(--mc);color:var(--text)}
+#report-modal .bp-layers button.nodata{opacity:0.4}
+#report-modal .bp-ch-hero{display:flex;justify-content:space-between;gap:10px;margin-bottom:0.5rem}
+#report-modal .bp-ch-k{font-size:0.62rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted2);font-weight:600}
+#report-modal .bp-ch-v{font-size:1.55rem;font-weight:700;letter-spacing:-0.02em;line-height:1.1;margin-top:2px}
+#report-modal .bp-ch-v small{font-size:0.7rem;font-weight:500;color:var(--muted);margin-left:3px}
+#report-modal .bp-ch-s{font-size:0.64rem;color:var(--muted);margin-top:2px}
+#report-modal .bp-ch-box{background:color-mix(in srgb,var(--s3) 55%,transparent);border-radius:var(--r-sm);padding:0.5rem 0.35rem 0.2rem}
+#report-modal .bp-dcard .bp-readout{padding:0.5rem 0.2rem 0.5rem;min-height:2.6em;text-align:center}
 #report-modal .bp-sc{width:100%;height:auto;display:block}
 #report-modal .bp-sc-txt{font-size:0.72rem;line-height:1.55;color:var(--text);margin-top:0.3rem}
 #report-modal .bp-dots{display:flex;justify-content:center;gap:6px;margin:0.4rem 0 0.6rem}
@@ -7462,7 +7475,7 @@ document.addEventListener('keydown', function (e) {
   };
 })();
 
-const APP_BUILD_VERSION = '2026-10-27.4';
+const APP_BUILD_VERSION = '2026-10-27.7';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -9404,7 +9417,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v58';
+    const CACHE_NAME = 'kcalos-v61';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -27577,89 +27590,130 @@ function bilanDeck(cards) {
       return '<div class="bp-dpanel' + (i ? '' : ' on') + '"><div class="bp-h" style="margin-top:0.6rem"><b>Détail · ' + c.short + '</b><span>explication et calcul</span></div>' + c.detail + '</div>';
     }).join('') + '</div>';
 }
-// Carte « au centre » = celle dont le bord gauche est le plus proche du bord gauche du carrousel.
-function bilanDeckIndex(el) {
-  var best = 0, bd = 1e9, k = el.children;
-  for (var i = 0; i < k.length; i++) { var d = Math.abs(k[i].offsetLeft - el.offsetLeft - el.scrollLeft); if (d < bd) { bd = d; best = i; } }
-  return best;
-}
+// Pas d'une carte à l'autre (largeur + gap) : plus fiable que les offsetLeft.
+function bilanDeckStep(el) { var k = el.children, d = k.length > 1 ? (k[1].offsetLeft - k[0].offsetLeft) : 0; return d > 0 ? d : (el.clientWidth || 1); }
+function bilanDeckIndex(el) { var i = Math.round(el.scrollLeft / bilanDeckStep(el)); if (!isFinite(i)) i = 0; return Math.max(0, Math.min(el.children.length - 1, i)); }
 // La hauteur du carrousel suit celle de la carte affichée (pas de vide sous les cartes courtes).
 function bilanDeckFit(id) {
   var el = document.getElementById(id); if (!el) return;
-  var h = el.children[bilanDeckIndex(el)].offsetHeight;
-  if (h > 0) el.style.height = (h + 8) + 'px';
-  if (!el._ro && window.ResizeObserver) { el._ro = new ResizeObserver(function() { bilanDeckFit(id); }); Array.prototype.forEach.call(el.children, function(c) { el._ro.observe(c); }); }
+  var card = el.children[bilanDeckIndex(el)]; if (!card) return;
+  var h = card.offsetHeight;
+  if (h > 0 && Math.abs((parseFloat(el.style.height) || 0) - (h + 8)) > 1) el.style.height = (h + 8) + 'px';
+  if (!el._ro && window.ResizeObserver) { el._ro = new ResizeObserver(function() { if (!el._busy) bilanDeckFit(id); }); Array.prototype.forEach.call(el.children, function(c) { el._ro.observe(c); }); }
 }
+// Pendant le glissement : seule la pastille bouge (rAF). Panneau détail + hauteur : une fois la carte posée.
 function bilanDeckScroll(el) {
-  var i = bilanDeckIndex(el), nav = document.getElementById(el.id + '-nav'), p = document.getElementById(el.id + '-p');
-  if (nav) Array.prototype.forEach.call(nav.children, function(b, j) { b.classList.toggle('on', j === i); });
+  el._busy = true;
+  if (!el._raf) el._raf = requestAnimationFrame(function() {
+    el._raf = 0;
+    var i = bilanDeckIndex(el), nav = document.getElementById(el.id + '-nav');
+    if (nav) Array.prototype.forEach.call(nav.children, function(b, j) { b.classList.toggle('on', j === i); });
+  });
+  clearTimeout(el._t);
+  el._t = setTimeout(function() { bilanDeckSettle(el); }, 140);
+}
+function bilanDeckSettle(el) {
+  el._busy = false;
+  var i = bilanDeckIndex(el), p = document.getElementById(el.id + '-p');
   if (p) Array.prototype.forEach.call(p.children, function(d, j) { d.classList.toggle('on', j === i); });
   bilanDeckFit(el.id);
 }
-function bilanDeckGo(id, i) { var el = document.getElementById(id); if (el && el.children[i]) el.scrollTo({ left: el.children[i].offsetLeft - el.offsetLeft, behavior: 'smooth' }); }
+function bilanDeckGo(id, i) { var el = document.getElementById(id); if (el && el.children[i]) el.scrollTo({ left: i * bilanDeckStep(el), behavior: 'smooth' }); }
 function bilanDetail(html) { return '<div class="bp-dtext">' + html + '</div>'; }
 
-/* Graphique épuré : UNE courbe à la fois (réel, théorique ou voulu), pesées en repère discret. */
-var BILAN_CURVES = {
-  real: { label: 'Réel', color: 'var(--lime)' },
-  theo: { label: 'Théorique', color: 'var(--blue)' },
-  want: { label: 'Voulu', color: 'var(--teal)' }
+/* Graphique du poids : pesées + courbe théorique (comme le widget « Poids prédit »).
+   Couches activables : théorique, régression réelle, régression prédite, zone raisonnable, voulu. */
+var BILAN_LAYERS = {
+  real:    { label: 'Courbe des pesées', color: 'var(--text)',   on: true },
+  theo:    { label: 'Prédit',            color: 'var(--blue)',   on: true },
+  regReal: { label: 'Régression réelle', color: 'var(--orange)', on: false },
+  regPred: { label: 'Régression prédite', color: 'var(--pink)',  on: false },
+  zone:    { label: 'Zone raisonnable',  color: 'var(--lime)',   on: false }
 };
-function bilanCurveOf(r, mode) {
-  var c = r.chart; if (!c) return null;
-  return mode === 'real' ? c.trend : mode === 'theo' ? c.theo : c.want;
+var BILAN_LAYER_ORDER = ['real', 'theo', 'regReal', 'regPred', 'zone'];
+// Moindres carrés : droite y = a + b·x sur des points {x,y}, tracée de 0 à nb. null si < 2 points distincts.
+function bilanLeastSquares(pts, nb) {
+  var n = pts.length; if (n < 2) return null;
+  var mx = 0, my = 0; pts.forEach(function(p) { mx += p.x; my += p.y; }); mx /= n; my /= n;
+  var sxx = 0, sxy = 0; pts.forEach(function(p) { sxx += (p.x - mx) * (p.x - mx); sxy += (p.x - mx) * (p.y - my); });
+  if (sxx < 1e-9) return null;
+  var b = sxy / sxx, a = my - b * mx;
+  return [{ x: 0, y: a }, { x: nb, y: a + b * nb }];
 }
-function bilanSimpleChartSvg(r, mode) {
-  var c = r.chart, nb = c.nb, W = 340, H = 220, L = 38, R = 14, T = 22, B = 26;
-  var cv = bilanCurveOf(r, mode), col = BILAN_CURVES[mode].color;
-  if (mode === 'real') col = (BILAN_STATUS[(r.checks[0] || {}).status] || BILAN_STATUS.na).color;
-  var ys = [c.w0].concat(c.points.map(function(p) { return p.y; })); if (cv) cv.forEach(function(p) { ys.push(p.y); });
-  if (mode === 'want' && c.zone) c.zone.forEach(function(q) { ys.push(q.lo, q.hi); });
+// Courbe d'une couche (null si les données manquent). La zone = bande autour du prédit.
+function bilanLayerData(r, k) {
+  var c = r.chart; if (!c) return null;
+  if (k === 'theo') return c.theo;
+  if (k === 'real') return c.points.length >= 2 ? c.points : null;
+  if (k === 'regReal') return bilanLeastSquares(c.points, c.nb);
+  if (k === 'regPred') return c.theo ? bilanLeastSquares(c.theo, c.nb) : null;
+  if (k === 'zone') return c.theo ? c.theo.map(function(q) { var h = BILAN_PLAN.baseKg + BILAN_PLAN.tolKgWeek * q.x / 7; return { x: q.x, y: q.y, lo: q.y - h, hi: q.y + h }; }) : null;
+  return null;
+}
+function bilanLayerState() { if (!window.bilanLayersOn) { window.bilanLayersOn = {}; BILAN_LAYER_ORDER.forEach(function(k) { window.bilanLayersOn[k] = BILAN_LAYERS[k].on; }); } return window.bilanLayersOn; }
+function bilanSimpleChartSvg(r) {
+  var c = r.chart, nb = c.nb, W = 340, H = 220, L = 38, R = 14, T = 10, B = 26, on = bilanLayerState();
+  var D = {}; BILAN_LAYER_ORDER.forEach(function(k) { D[k] = on[k] ? bilanLayerData(r, k) : null; });
+  var ys = [c.w0].concat(c.points.map(function(p) { return p.y; }));
+  ['theo', 'regReal', 'regPred'].forEach(function(k) { if (D[k]) D[k].forEach(function(p) { ys.push(p.y); }); });
+  if (D.zone) D.zone.forEach(function(q) { ys.push(q.lo, q.hi); });
   var lo = Math.min.apply(null, ys), hi = Math.max.apply(null, ys), pad = Math.max(0.3, (hi - lo) * 0.12); lo -= pad; hi += pad;
   var X = function(x) { return +(L + (W - L - R) * x / Math.max(1, nb)).toFixed(1); }, Y = function(y) { return +(T + (H - T - B) * (1 - (y - lo) / (hi - lo))).toFixed(1); };
   var pts = function(a) { return a.map(function(p) { return X(p.x) + ',' + Y(p.y); }).join(' '); };
-  var gid = 'bg' + mode, svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="bp-sc" role="img" data-l="' + L + '" data-r="' + R + '" style="touch-action:pan-y" onpointermove="bilanSimpleMove(event,this)" onpointerdown="bilanSimpleMove(event,this)" aria-label="Courbe ' + BILAN_CURVES[mode].label.toLowerCase() + ' du poids"><defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:' + col + '" stop-opacity="0.38"/><stop offset="1" style="stop-color:' + col + '" stop-opacity="0"/></linearGradient></defs>';
+  var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="bp-sc" role="img" data-l="' + L + '" data-r="' + R + '" style="touch-action:pan-y" onpointermove="bilanSimpleMove(event,this)" onpointerdown="bilanSimpleMove(event,this)" aria-label="Évolution du poids : pesées et poids prédit"><defs><linearGradient id="bgtheo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--blue)" stop-opacity="0.3"/><stop offset="1" style="stop-color:var(--blue)" stop-opacity="0"/></linearGradient></defs>';
   for (var i = 0; i < 3; i++) { var v = lo + (hi - lo) * i / 2, yy = Y(v); svg += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + yy + '" y2="' + yy + '" style="stroke:var(--border)" stroke-width="1" stroke-dasharray="2 5"/><text x="' + (L - 6) + '" y="' + (yy + 3) + '" text-anchor="end" style="fill:var(--muted2)" font-size="9">' + bilanNum(v, 1) + '</text>'; }
   svg += '<text x="' + L + '" y="' + (H - 6) + '" style="fill:var(--muted2)" font-size="9">' + bilanShortDate(r.period.start) + '</text><text x="' + (W - R) + '" y="' + (H - 6) + '" text-anchor="end" style="fill:var(--muted2)" font-size="9">' + bilanShortDate(r.period.end) + '</text>';
-  if (mode === 'want' && c.zone) svg += '<polygon points="' + c.zone.map(function(q) { return X(q.x) + ',' + Y(q.hi); }).join(' ') + ' ' + c.zone.slice().reverse().map(function(q) { return X(q.x) + ',' + Y(q.lo); }).join(' ') + '" style="fill:' + col + '" opacity="0.16"/>';
-  c.points.forEach(function(p) { svg += '<circle cx="' + X(p.x) + '" cy="' + Y(p.y) + '" r="2.6" style="fill:var(--text)" opacity="0.38"/>'; });
-  if (cv && cv.length) {
-    svg += '<polygon points="' + pts(cv) + ' ' + X(cv[cv.length - 1].x) + ',' + (H - B) + ' ' + X(cv[0].x) + ',' + (H - B) + '" style="fill:url(#' + gid + ')"/>'
-      + '<polyline points="' + pts(cv) + '" fill="none" style="stroke:' + col + '" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" opacity="0.16"/>'
-      + '<polyline points="' + pts(cv) + '" fill="none" style="stroke:' + col + '" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>';
-    var e = cv[cv.length - 1], ex = X(e.x), ey = Y(e.y);
-    svg += '<circle cx="' + ex + '" cy="' + ey + '" r="5.5" style="fill:' + col + ';stroke:var(--s2)" stroke-width="2.5"/>'
-      + '<text x="' + (W - R) + '" y="11" text-anchor="end" style="fill:' + col + '" font-size="14" font-weight="700">' + bilanNum(e.y, 1) + ' kg</text>';
-  }
+  if (D.zone) svg += '<polygon points="' + D.zone.map(function(q) { return X(q.x) + ',' + Y(q.hi); }).join(' ') + ' ' + D.zone.slice().reverse().map(function(q) { return X(q.x) + ',' + Y(q.lo); }).join(' ') + '" style="fill:var(--lime);stroke:var(--lime)" fill-opacity="0.18" stroke-opacity="0.45" stroke-width="1"/>';
+  if (D.theo) svg += '<polygon points="' + pts(D.theo) + ' ' + X(D.theo[D.theo.length - 1].x) + ',' + (H - B) + ' ' + X(D.theo[0].x) + ',' + (H - B) + '" style="fill:url(#bgtheo)"/>';
+  if (D.theo) svg += '<polyline points="' + pts(D.theo) + '" fill="none" style="stroke:var(--blue)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>';
+  if (D.regPred) svg += '<polyline points="' + pts(D.regPred) + '" fill="none" style="stroke:var(--pink)" stroke-width="2.2" stroke-dasharray="2 5" stroke-linecap="round"/>';
+  if (D.regReal) svg += '<polyline points="' + pts(D.regReal) + '" fill="none" style="stroke:var(--orange)" stroke-width="2.6" stroke-linecap="round"/>';
+  if (D.real) svg += '<polyline points="' + pts(D.real) + '" fill="none" style="stroke:var(--text)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.55"/>';
+  c.points.forEach(function(p) { svg += '<circle cx="' + X(p.x) + '" cy="' + Y(p.y) + '" r="3.2" style="fill:var(--s2);stroke:var(--text)" stroke-width="1.6" opacity="0.85"/>'; });
+  if (D.theo) { var e = D.theo[D.theo.length - 1]; svg += '<circle cx="' + X(e.x) + '" cy="' + Y(e.y) + '" r="5" style="fill:var(--blue);stroke:var(--s2)" stroke-width="2.5"/>'; }
   svg += '<circle cx="' + X(0) + '" cy="' + Y(c.w0) + '" r="4" style="fill:var(--s2);stroke:var(--muted)" stroke-width="2"/>'
     + '<line class="bp-cur2" x1="0" x2="0" y1="' + T + '" y2="' + (H - B) + '" style="stroke:var(--text);display:none" stroke-width="1" opacity="0.5"/></svg>';
   return svg;
 }
-function bilanSimpleChartInner(r, mode) {
-  var c = r.chart, cv = bilanCurveOf(r, mode), nb = r.period.days, txt;
-  if (!cv) txt = mode === 'real' ? 'Pas assez de pesées pour tracer ta tendance.' : mode === 'theo' ? 'Balance non calculable sur la période.' : 'Il faut un objectif kcal et une dépense calculable.';
-  else {
-    var end = cv[cv.length - 1].y, d = end - c.w0;
-    txt = mode === 'real' ? 'Ta tendance réelle (droite passant dans tes pesées) finit à <b>' + bilanNum(end, 1) + ' kg</b>, soit <b>' + bilanSgn(d, 1) + ' kg</b> depuis le départ (' + bilanNum(c.w0, 1) + ' kg).'
-      : mode === 'theo' ? 'Si ton corps suivait exactement ta balance (apports − dépense), tu finirais à <b>' + bilanNum(end, 1) + ' kg</b> (' + bilanSgn(d, 1) + ' kg).'
-      : 'En suivant ton objectif kcal chaque jour, tu devrais finir à <b>' + bilanNum(end, 1) + ' kg</b> (' + bilanSgn(d, 1) + ' kg). La zone colorée est la tolérance autour du plan.';
-  }
-  return bilanSimpleChartSvg(r, mode) + '<div class="bp-sc-txt">' + txt + ' <span style="color:var(--muted2)">Points gris : tes pesées.</span></div>';
+function bilanSimpleChartInner(r) {
+  var c = r.chart, on = bilanLayerState(), parts = [], last = c.points.length ? c.points[c.points.length - 1] : null;
+  var pe = c.theo ? c.theo[c.theo.length - 1].y : null;
+  var hero = '<div class="bp-ch-hero"><div><div class="bp-ch-k">Poids prédit</div><div class="bp-ch-v" style="color:var(--blue)">' + (pe !== null ? bilanNum(pe, 1) + '<small>kg</small>' : '—') + '</div><div class="bp-ch-s">' + (pe !== null ? bilanSgn(pe - c.w0, 1) + ' kg depuis ' + bilanNum(c.w0, 1) + ' kg' : 'balance non calculable') + '</div></div>'
+    + '<div style="text-align:right"><div class="bp-ch-k">Dernière pesée</div><div class="bp-ch-v">' + (last ? bilanNum(last.y, 1) + '<small>kg</small>' : '—') + '</div><div class="bp-ch-s">' + (last && pe !== null ? 'écart ' + bilanSgn(last.y - pe, 1) + ' kg vs prédit' : (last ? '' : 'aucune pesée')) + '</div></div></div>';
+  if (on.regReal) { var rr = bilanLayerData(r, 'regReal'); parts.push(rr ? 'Régression réelle : <b>' + bilanSgn((rr[1].y - rr[0].y) / c.nb * 7, 2) + ' kg/sem</b>.' : 'Régression réelle : pas assez de pesées.'); }
+  if (on.regPred) { var rp = bilanLayerData(r, 'regPred'); if (rp) parts.push('Régression prédite : <b>' + bilanSgn((rp[1].y - rp[0].y) / c.nb * 7, 2) + ' kg/sem</b>.'); }
+  if (on.zone && !c.theo) parts.push('Zone indisponible sans courbe prédite.');
+  return hero + '<div class="bp-ch-box">' + bilanSimpleChartSvg(r) + '</div>' + '<div class="bp-readout" id="bp-sc-read">Touche le graphique pour lire jour par jour.</div>'
+    + '<div id="bp-sc-lex">' + bilanLayerButtons(r) + '</div>' + (parts.length ? '<div class="bp-sc-txt">' + parts.join(' ') + '</div>' : '');
 }
-// Lecture au toucher : date + poids de la courbe affichée (interpolation linéaire).
+function bilanLayerButtons(r) {
+  var on = bilanLayerState();
+  return '<div class="bp-layers" role="group" aria-label="Éléments du graphique">' + BILAN_LAYER_ORDER.map(function(k) {
+    var ok = !!bilanLayerData(r, k);
+    return '<button type="button" data-k="' + k + '" aria-pressed="' + (on[k] ? 'true' : 'false') + '" class="' + (on[k] ? 'on' : '') + (ok ? '' : ' nodata') + '" style="--mc:' + BILAN_LAYERS[k].color + '" onclick="bilanToggleLayer(this,\'' + k + '\')"><i></i>' + BILAN_LAYERS[k].label + '</button>';
+  }).join('') + '</div>';
+}
+function bilanToggleLayer(btn, k) {
+  var r = window.KCALOS_LAST_REPORT, box = document.getElementById('bp-sc'); if (!r || !r.chart || !box) return;
+  var on = bilanLayerState(); on[k] = !on[k];
+  box.innerHTML = bilanSimpleChartInner(r);
+}
+// Lecture au toucher : date + poids prédit (+ régressions et zone si affichées).
 function bilanSimpleMove(ev, svg) {
-  var r = window.KCALOS_LAST_REPORT, box = document.getElementById('bp-sc'); if (!r || !r.chart || !box) return;
-  var cv = bilanCurveOf(r, box.getAttribute('data-mode')), rd = document.getElementById('bp-sc-read'); if (!cv || !rd) return;
-  var rc = svg.getBoundingClientRect(), W = 340, L = +svg.getAttribute('data-l'), R = +svg.getAttribute('data-r'), nb = r.chart.nb;
+  var r = window.KCALOS_LAST_REPORT, rd = document.getElementById('bp-sc-read'); if (!r || !r.chart || !rd) return;
+  var c = r.chart, on = bilanLayerState(), nb = c.nb;
+  var rc = svg.getBoundingClientRect(), W = 340, L = +svg.getAttribute('data-l'), R = +svg.getAttribute('data-r');
   var px = (ev.clientX - rc.left) / rc.width * W, k = Math.max(0, Math.min(nb, Math.round((px - L) / (W - L - R) * nb)));
-  var y = null; for (var i = 0; i < cv.length - 1; i++) if (k >= cv[i].x && k <= cv[i + 1].x) { var t = cv[i + 1].x === cv[i].x ? 0 : (k - cv[i].x) / (cv[i + 1].x - cv[i].x); y = cv[i].y + t * (cv[i + 1].y - cv[i].y); break; }
+  var at = function(cv) { if (!cv) return null; for (var i = 0; i < cv.length - 1; i++) if (k >= cv[i].x && k <= cv[i + 1].x) { var t = cv[i + 1].x === cv[i].x ? 0 : (k - cv[i].x) / (cv[i + 1].x - cv[i].x); return cv[i].y + t * (cv[i + 1].y - cv[i].y); } return null; };
   var cur = svg.querySelector('.bp-cur2'); if (cur) { var x = L + (W - L - R) * k / Math.max(1, nb); cur.setAttribute('x1', x); cur.setAttribute('x2', x); cur.style.display = ''; }
-  if (y !== null) rd.innerHTML = '<b>' + fmtDL(bilanShiftDate(r.period.start, Math.min(k, nb - 1))) + '</b> · ' + bilanNum(y, 1) + ' kg';
-}
-function bilanChartMode(btn, mode) {
-  var r = window.KCALOS_LAST_REPORT, box = document.getElementById('bp-sc'); if (!r || !r.chart || !box) return;
-  box.setAttribute('data-mode', mode); box.innerHTML = bilanSimpleChartInner(r, mode);
-  Array.prototype.forEach.call(btn.parentNode.children, function(b) { b.classList.toggle('on', b === btn); });
+  var out = ['<b>' + fmtDL(bilanShiftDate(r.period.start, Math.min(k, nb - 1))) + '</b>'];
+  var pt = c.points.filter(function(p) { return p.x === k; })[0]; if (pt) out.push('pesée ' + bilanNum(pt.y, 1) + ' kg');
+  var v;
+  if ((v = at(c.theo)) !== null) out.push('prédit ' + bilanNum(v, 1) + ' kg');
+  if (on.zone && (v = at(c.theo)) !== null) { var h = BILAN_PLAN.baseKg + BILAN_PLAN.tolKgWeek * k / 7; out.push('zone ' + bilanNum(v - h, 1) + '–' + bilanNum(v + h, 1)); }
+  if (on.regReal && (v = at(bilanLayerData(r, 'regReal'))) !== null) out.push('régr. réelle ' + bilanNum(v, 1));
+  if (on.regPred && (v = at(bilanLayerData(r, 'regPred'))) !== null) out.push('régr. prédite ' + bilanNum(v, 1));
+  rd.innerHTML = out.join(' · ');
 }
 
 function bilanTdeeBody(r) {
@@ -27714,14 +27768,13 @@ function bilanPaneBilan(r, vc, issuesHtml) {
     detail: bilanDetail('<p><b>Réel</b> : pente de tes pesées. <b>Théorique</b> : ce que dit ta balance (apports − dépense, ÷ 7 700 kcal par kg). <b>Voulu</b> : ce que donnerait ton objectif kcal (objectif − dépense). Les pastilles se lisent sur une échelle en % du poids par semaine ; la zone verte est la plage cible de ta phase, l\'orange la marge « à surveiller ». Plus les trois sont proches, plus tes données sont cohérentes.</p>'
       + (r.calc.avgBal !== null ? '<p>Calcul théorique : ' + bilanSgn(r.calc.avgBal, 0) + ' kcal/j × 7 ÷ 7 700 = <b>' + bilanSgn(r.theory.balancePerWeek, 2) + ' kg/sem</b>.</p>' : '')) });
 
-  // 3 · Graphique épuré, une courbe à la fois
+  // 3 · Graphique : pesées + poids prédit, couches activables
   var c = r.chart;
   if (c && c.hasAny) {
-    var modes = ['real', 'theo', 'want'].filter(function(m) { return bilanCurveOf(r, m); }), m0 = modes[0] || 'real';
     cards.push({ short: 'Graphique', title: 'Évolution du poids', color: C('teal'),
-      body: '<div class="bp-modes">' + ['real', 'theo', 'want'].map(function(m) { var ok = !!bilanCurveOf(r, m); return '<button type="button" class="' + (m === m0 ? 'on' : '') + (ok ? '' : ' nodata') + '" style="--mc:' + (m === 'real' ? st0.color : BILAN_CURVES[m].color) + '" onclick="bilanChartMode(this,\'' + m + '\')">' + BILAN_CURVES[m].label + '</button>'; }).join('') + '</div>'
-        + '<div class="bp-readout" id="bp-sc-read" style="margin-bottom:0.2rem">Touche le graphique pour lire jour par jour.</div><div id="bp-sc" data-mode="' + m0 + '">' + bilanSimpleChartInner(r, m0) + '</div>',
-      detail: bilanDetail('<p>Une seule courbe à la fois, pour une lecture claire. <b>Réel</b> : ta tendance, la couleur dit si tu es dans la cible (vert), à surveiller (orange) ou hors cible (rouge). <b>Théorique</b> : ton poids de départ, mis à jour chaque jour avec ta balance. <b>Voulu</b> : la trajectoire de ton objectif kcal, avec sa zone de tolérance. Les points gris sont tes pesées brutes ; elles bougent avec l\'eau et le sel, seule la direction d\'ensemble compte. Départ : ' + bilanNum(c.w0, 1) + ' kg.</p>') });
+      body: '<div id="bp-sc">' + bilanSimpleChartInner(r) + '</div>',
+      detail: bilanDetail('<p>Le graphique de base compare tes <b>pesées</b> (points reliés par une courbe) au <b>poids prédit</b> : ton poids de départ (' + bilanNum(c.w0, 1) + ' kg), mis à jour chaque jour avec ta balance (apports − dépense, ÷ 7 700 kcal par kg), comme dans le widget. Touche les pastilles pour ajouter ou retirer des éléments :</p>'
+        + '<p><b>Régression réelle</b> : droite des moindres carrés passant au plus près de tes pesées (sa pente = ta vitesse réelle). <b>Régression prédite</b> : même méthode appliquée à la courbe prédite. <b>Zone raisonnable</b> : bande verte autour du poids attendu (± ' + String(BILAN_PLAN.baseKg).replace('.', ',') + ' kg + ' + String(BILAN_PLAN.tolKgWeek).replace('.', ',') + ' kg par semaine écoulée) : des pesées dedans sont normales, l\'eau et le sel suffisent à les faire bouger.</p>') });
   }
 
   // 4 · Où te situes-tu
