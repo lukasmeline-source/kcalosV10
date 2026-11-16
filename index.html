@@ -200,6 +200,9 @@ window.lsJSON = function (key, fallback) {
 ::-webkit-scrollbar-thumb:hover{background:var(--muted2)}
 ::-webkit-scrollbar-corner{background:transparent}
 html{scroll-behavior:smooth;color-scheme:dark;overflow-x:hidden;overscroll-behavior-x:none;width:100%}
+/* Anti double-tap-zoom iOS : des taps rapides sur un bouton déclenchaient un zoom/décalage du viewport
+   visuel (écran décalé, clics tombant 1-2 cm plus haut). */
+html,body,button,a,select,label,summary,[onclick],[role="button"],.nav-item{touch-action:manipulation}
 .light-mode,.pastel-green,.pastel-blue,.pastel-orange,.pastel-pink,.pastel-purple{color-scheme:light}
 /* ── Désactive la sélection de texte par appui long sur mobile (gêne le drag des widgets,
    les swipes, les longs-press sur les boutons, etc.) — sauf dans les champs éditables,
@@ -589,6 +592,17 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 #ap-panel-tendances .hero-lbl{display:block;margin-bottom:0.7rem}
 #ap-panel-tendances #nak-kpi-row{grid-template-columns:repeat(3,1fr);margin-bottom:0.85rem}
 #ap-panel-tendances .sub-card{background:var(--s2);text-align:center;position:relative;overflow:hidden}
+/* ── Tendances : switch global Jour/Semaine + cartes colorées ── */
+#ap-panel-tendances[data-view="day"] .td-only-week,
+#ap-panel-tendances[data-view="week"] .td-only-day{display:none!important}
+#ap-panel-tendances #nak-card .hero-row .mode-switch{display:none}
+#ap-panel-tendances .td-switch{display:flex;background:var(--s1);border-radius:var(--r-pill);padding:3px;gap:3px;margin:0 0 1rem;position:sticky;top:6px;z-index:5;box-shadow:var(--shadow-card)}
+#ap-panel-tendances .td-switch button{flex:1;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.78rem;font-weight:600;padding:0.55rem 0.4rem;border-radius:var(--r-pill);cursor:pointer;transition:all var(--trans);-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+#ap-panel-tendances .td-switch button.active{background:var(--s2);color:var(--teal)}
+.td-nav{display:flex;align-items:center;justify-content:space-between;gap:6px;margin:-0.35rem 0 0.8rem;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
+.td-nav button{border:none;background:var(--s1);color:var(--text);height:34px;min-width:40px;border-radius:var(--r-pill);font-size:1.1rem;font-weight:600;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;box-shadow:var(--shadow-card)}
+.td-nav button:disabled{opacity:0.3;cursor:default}
+.td-nav .td-nav-lbl{flex:1;font-size:0.78rem;font-weight:600;color:var(--teal)}
 #ap-panel-tendances .td-sec{font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted2);margin:1.5rem 0.2rem 0.6rem}
 #ap-panel-tendances>.card{margin-bottom:0.8rem}
 #ap-panel-tendances .td-today{padding:1rem 1rem 0.6rem}
@@ -656,6 +670,28 @@ input[type="range"]{width:100%;height:4px;background:var(--s3);border-radius:2px
 #page-steps .stepcounter-num{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-weight:700;color:var(--teal);letter-spacing:-0.02em}
 #page-steps .sc-progress-fill{background:linear-gradient(90deg,var(--teal),var(--blue))}
 #page-steps #sc-goal-label,#page-steps #sc-source-label{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
+#page-steps .st-quick{margin-top:1.1rem;padding-top:1rem;border-top:1px solid var(--border);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif}
+#page-steps .st-quick-lbl{font-size:0.65rem;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--muted2);margin-bottom:0.5rem}
+#page-steps .st-chips{display:grid;grid-template-columns:repeat(4,1fr);gap:0.45rem}
+#page-steps .st-chip{border:none;background:var(--s2);color:var(--teal);font-family:inherit;font-size:0.8rem;font-weight:700;padding:0.65rem 0.2rem;border-radius:var(--r-sm);cursor:pointer;transition:all var(--trans);touch-action:manipulation;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:44px}
+#page-steps .st-chip:active{transform:scale(0.95);background:var(--teal-bg)}
+#page-steps .st-chip:disabled{opacity:0.35;cursor:default;transform:none}
+#page-steps .st-chip-acc{grid-column:span 2;flex-direction:row;justify-content:space-between;padding:0.6rem 0.85rem;color:var(--blue)}
+#page-steps .st-chip-acc span{font-size:0.7rem;font-weight:600;color:var(--muted)}
+#page-steps .st-chip-acc b{font-size:0.85rem}
+#page-steps .st-input-row{display:flex;gap:0.5rem}
+#page-steps .st-input-row input{flex:1;min-width:0;padding:0.7rem 0.8rem;font-size:1.05rem;font-family:inherit;font-weight:700;border-radius:var(--r-sm);border:1.5px solid var(--border2);background:var(--bg);color:var(--text);text-align:center;-webkit-user-select:text;user-select:text}
+#page-steps .st-input-row input:focus{outline:none;border-color:var(--teal)}
+#page-steps .st-save{border:none;background:var(--teal-bg);color:var(--teal);font-family:inherit;font-size:0.8rem;font-weight:700;padding:0 1.1rem;border-radius:var(--r-sm);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+#page-steps .st-save{transition:transform .15s,background .25s,color .25s}
+#page-steps .st-save:active{transform:scale(0.95)}
+#page-steps .st-save.saved{animation:stSavedPulse .45s ease-out}
+/* flash vert qui retombe toujours sur l'état d'origine (aucune couleur persistante) */
+@keyframes stSavedPulse{0%{background:var(--teal);color:#fff;transform:scale(0.95)}100%{background:var(--teal-bg);color:var(--teal);transform:scale(1)}}
+#page-steps .st-undo{border:none;background:var(--red-bg);color:var(--red);font-family:inherit;font-size:0.8rem;font-weight:700;padding:0 0.9rem;border-radius:var(--r-sm);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;white-space:nowrap}
+#page-steps .st-undo{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;transition:transform .15s,background .6s linear}
+#page-steps .st-undo:active{transform:scale(0.95)}
+#page-steps .st-undo.pressing{background:var(--red);color:#fff;transform:scale(0.95)}
 #page-steps .stepcounter-actions button{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif!important}
 /* ── #page-workout : style Apple Health (accent lime, cohérent avec le reste de la page) ── */
 #page-workout .sh-tabs{background:var(--s1);border-bottom:none;border-radius:var(--r-pill);padding:3px;margin-left:0;margin-right:0;gap:4px}
@@ -4555,12 +4591,23 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
   </div><!-- fin panel piste -->
 
   <!-- ── TAB 2 : TENDANCES (graphique + historique) ── -->
-  <div class="sh-tab-panel" id="ap-panel-tendances">
+  <div class="sh-tab-panel" id="ap-panel-tendances" data-view="day">
 
-    <div class="td-sec" style="margin-top:0.2rem">Aujourd'hui</div>
+    <!-- Switch global : pilote toutes les cartes de l'onglet (Jour = aujourd'hui, Semaine = 7 derniers jours) -->
+    <div class="td-switch" role="tablist" aria-label="Période">
+      <button type="button" id="td-sw-day" class="active" role="tab" onclick="tdSetView('day')">Jour</button>
+      <button type="button" id="td-sw-week" role="tab" onclick="tdSetView('week')">Semaine</button>
+    </div>
+    <div class="td-nav td-only-day" id="td-nav">
+      <button type="button" aria-label="Jour précédent" onclick="tdShiftDay(-1)">‹</button>
+      <button type="button" class="td-nav-lbl" id="td-nav-lbl" onclick="tdGoToday()">Aujourd'hui</button>
+      <button type="button" aria-label="Jour suivant" id="td-nav-next" onclick="tdShiftDay(1)">›</button>
+    </div>
+
+    <div class="td-sec" id="td-refs-sec" style="margin-top:1.1rem">Repères du jour</div>
     <div id="today-card" class="card td-today"></div>
-    <div class="td-sec">Cette semaine</div>
-    <div class="card">
+    <div class="td-sec td-only-week" style="margin-top:1.1rem">Cette semaine</div>
+    <div class="card td-only-week">
         <div class="mini-chart-wrap" style="margin-top:0">
           <div class="mc-title">Apports &amp; dépenses · 7 derniers jours (kcal)</div>
           <div style="position:relative;height:190px"><canvas id="weekChart"></canvas></div>
@@ -4586,7 +4633,7 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
     </div>
     <div class="td-sec">Analyses</div>
     <!-- ── Graphique glycémie estimée (EN HAUT) ── -->
-    <div id="glycemia-card" class="card" style="margin-bottom:0.9rem;display:none">
+    <div id="glycemia-card" class="card td-only-day" style="margin-bottom:0.9rem;display:none">
       <!-- Header -->
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.5rem;flex-wrap:wrap">
         <div style="flex:1;min-width:0">
@@ -5782,26 +5829,30 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
         <div class="sc-progress" style="margin-top:0.75rem"><div class="sc-progress-fill" id="sc-progress-fill" style="width:0%"></div></div>
         <div style="font-size:0.68rem;color:var(--muted);margin-top:5px" id="sc-goal-label">objectif 10 000 pas</div>
       </div>
-      <div class="stepcounter-actions">
+    </div>
 
+    <!-- ── AJOUT RAPIDE + SAISIE DIRECTE (toujours visibles, plus de bouton « Saisie manuelle ») ── -->
+    <div class="st-quick" id="st-quick">
+      <div class="st-quick-lbl">Ajout rapide</div>
+      <div class="st-chips">
+        <button type="button" class="st-chip" onclick="stQuickAdd(500)">+500</button>
+        <button type="button" class="st-chip" onclick="stQuickAdd(1000)">+1&#8239;000</button>
+        <button type="button" class="st-chip" onclick="stQuickAdd(5000)">+5&#8239;000</button>
+        <button type="button" class="st-chip" onclick="stQuickAdd(10000)">+10&#8239;000</button>
+        <button type="button" class="st-chip st-chip-acc" id="st-chip-avg" onclick="stQuickAddRef('avg')"><span>Moy. 7 j</span><b>—</b></button>
+        <button type="button" class="st-chip st-chip-acc" id="st-chip-yday" onclick="stQuickAddRef('yday')"><span>Hier</span><b>—</b></button>
+      </div>
+      <div class="st-quick-lbl" style="margin-top:0.9rem">Total du jour</div>
+      <div class="st-input-row">
+        <input type="number" id="sh-steps-input" placeholder="ex : 8 450" inputmode="numeric" min="0" max="80000" onkeydown="if(event.key==='Enter'){event.preventDefault();shSaveSteps();}" onfocus="this.select()">
+        <button type="button" class="st-save" onclick="shSaveSteps()">Enregistrer</button>
+        <button type="button" class="st-undo" id="st-undo" style="display:none" onclick="stUndoClick()" oncontextmenu="return false" title="Appui court : annuler le dernier ajout · Appui long : effacer les pas du jour">↩ Annuler</button>
+      </div>
 
-        <!-- SAISIE MANUELLE -->
-        <button type="button" onclick="shTogglePanel()"
-          style="width:100%;padding:7px 14px;font-size:0.74rem;font-family:Syne,sans-serif;border:1px solid var(--border2);border-radius:7px;background:transparent;color:var(--muted);cursor:pointer;margin-top:2px">
-          <span class="ico" style="margin-right:4px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2l3 3-8.5 8.5H2v-3z"/><line x1="9" y1="4" x2="12" y2="7"/></svg></span> Saisie manuelle
-        </button>
-        <div id="sh-panel" style="display:none;background:var(--s2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:0.9rem;margin-top:4px">
-          <input type="number" id="sh-steps-input" placeholder="ex : 8 450" inputmode="numeric" min="0" max="80000"
-            style="width:100%;padding:9px 12px;font-size:1rem;font-family:Syne,sans-serif;font-weight:600;border-radius:7px;border:1.5px solid var(--lime-d);background:var(--bg);color:var(--text);box-sizing:border-box;text-align:center;margin-bottom:8px">
-          <button type="button" onclick="shSaveSteps()"
-            style="width:100%;padding:8px;font-size:0.8rem;font-family:Syne,sans-serif;font-weight:700;border:1.5px solid var(--lime-d);border-radius:7px;background:var(--lime-bg);color:var(--lime);cursor:pointer">
-            <span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><polyline points="5,8 7.2,10.2 11,6"/></svg></span> Enregistrer
-          </button>
-        </div>
-
+      <div style="margin-top:0.9rem">
         <!-- IMPORT (Apple Santé / Samsung Health / CSV) -->
         <button type="button" onclick="stImportTogglePanel()"
-          style="width:100%;padding:7px 14px;font-size:0.74rem;font-family:Syne,sans-serif;border:1px solid var(--border2);border-radius:7px;background:transparent;color:var(--muted);cursor:pointer;margin-top:8px">
+          style="width:100%;padding:7px 14px;font-size:0.74rem;font-family:Syne,sans-serif;border:1px solid var(--border2);border-radius:7px;background:transparent;color:var(--muted);cursor:pointer;margin-top:0">
           <span class="ico" style="margin-right:4px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M2 5l6-3 6 3v8l-6 3-6-3z"/><line x1="8" y1="2" x2="8" y2="14"/><polyline points="2,5 8,8 14,5"/></svg></span> Importer mes pas
         </button>
         <div id="st-import-panel" style="display:none;background:var(--s2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:0.9rem;margin-top:4px">
@@ -5823,8 +5874,6 @@ input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.2)}
             <div class="import-log" id="st-import-log" style="max-height:120px"></div>
           </div>
         </div>
-
-
       </div>
     </div>
   </div>
@@ -7475,7 +7524,7 @@ document.addEventListener('keydown', function (e) {
   };
 })();
 
-const APP_BUILD_VERSION = '2026-10-27.7';
+const APP_BUILD_VERSION = '2026-11-16.10';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -7684,6 +7733,46 @@ function kcNudgeRepaint(el){
   const el = document.getElementById(id);
   if(el) el.addEventListener('animationend', () => kcNudgeRepaint(el));
 });
+
+/* ── Fix iOS : viewport visuel "décalé" (clics qui tombent 1-2 cm au-dessus du bouton) ──
+   Des taps rapides (ou la fermeture du clavier) peuvent laisser iOS avec un viewport visuel zoomé
+   (scale != 1) ou décalé (offsetTop != 0) : l'affichage paraît glissé vers le bas et la zone tactile
+   ne correspond plus. Le décalage survit à la fermeture de l'app et ne disparaît qu'au bout d'un moment.
+   On surveille donc le viewport visuel et on le recale dès qu'il dérive (hors clavier ouvert). */
+(function kcViewportGuard(){
+  const vv = window.visualViewport;
+  const meta = document.querySelector('meta[name="viewport"]');
+  if (!vv || !meta) return;
+  const BASE = meta.getAttribute('content');
+  let timer = null;
+  function keyboardOpen(){
+    const a = document.activeElement;
+    return a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && (window.innerHeight - vv.height) > 120;
+  }
+  function heal(){
+    timer = null;
+    if (keyboardOpen()) return;
+    // Zoom parasite : on force iOS à revenir à l'échelle 1 en réappliquant le viewport.
+    if (Math.abs(vv.scale - 1) > 0.01) {
+      meta.setAttribute('content', BASE.replace(/maximum-scale=[^,]*/,'maximum-scale=1.0') + ', minimum-scale=1.0');
+      requestAnimationFrame(() => meta.setAttribute('content', BASE));
+    }
+    // Décalage résiduel : on recale le scroll de la page sans le modifier visuellement.
+    if (vv.offsetTop > 1 || Math.abs(vv.offsetLeft) > 1) {
+      const y = window.scrollY;
+      window.scrollTo(0, y + 1);
+      requestAnimationFrame(() => window.scrollTo(0, y));
+    }
+  }
+  function schedule(){ if (timer === null) timer = setTimeout(heal, 250); }
+  vv.addEventListener('resize', schedule);
+  vv.addEventListener('scroll', schedule);
+  document.addEventListener('focusout', () => setTimeout(schedule, 150));
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) schedule(); });
+  window.addEventListener('pageshow', schedule);
+  // Pincement parasite (geste multi-doigts) : jamais de zoom dans l'app.
+  document.addEventListener('gesturestart', e => e.preventDefault());
+})();
 
 /* ── ICON MAP ── */
 const ICONS={
@@ -8326,23 +8415,22 @@ function tdRefRow(label, dot, valHtml, st, bar, scale, note) {
 }
 function renderTodayRefs() {
   var box = document.getElementById('today-card'); if (!box) return;
-  var ds = today(), t = getDayTotals(ds), fit = DB.getFitness();
-  var goal = (typeof getKcalGoalForDate === 'function') ? getKcalGoalForDate(ds) : null;
-  var phase = (typeof getPhaseForDate === 'function') ? getPhaseForDate(ds) : null;
-  var prof = {}; try { prof = lsJSON('kcalos_profile',{}); } catch (e) {}
-  var w = getLastWeightOnOrBefore(fit, ds) || parseFloat(prof.poids) || S.poids || 0;
+  var C = tdCtx(), t = C.t, ds = C.ds, goal = C.goal, phase = C.phase, w = C.w, lbm = C.lbm, wk = C.week;
   var f1 = function(v) { return String(Math.round(v * 10) / 10).replace('.', ','); };
-  var h = '<div class="td-head"><b>Repères du jour</b><span>' + fmtDL(ds) + ' · journée en cours</span></div>';
+  var isToday = !wk && ds === today();
+  var secEl = document.getElementById('td-refs-sec'); if (secEl) secEl.textContent = wk ? 'Repères moyens · 7 jours' : (isToday ? 'Repères du jour' : 'Repères du ' + fmtDL(ds));
+  var h = '<div class="td-head"><b>' + (wk ? 'Repères de la semaine' : 'Repères du jour') + '</b><span>' + (wk ? 'moyenne sur ' + C.n + ' jour' + (C.n > 1 ? 's' : '') + ' saisi' + (C.n > 1 ? 's' : '') : fmtDL(ds) + (isToday ? ' · journée en cours' : '')) + '</span></div>';
+  var noun = wk ? 'sur la semaine' : (isToday ? 'aujourd\'hui' : 'ce jour-là');
   // kcal vs objectif
   if (goal) {
     var lo = goal * 0.9, hi = goal * 1.1, st = t.kcal === 0 ? 'todo' : t.kcal < lo ? 'todo' : t.kcal <= hi ? 'ok' : 'over', rest = Math.round(goal - t.kcal);
     var col = st === 'ok' ? 'var(--lime)' : st === 'over' ? 'var(--orange)' : 'var(--blue)';
-    h += '<div class="td-big" style="color:' + col + '">' + fmt(t.kcal) + '<small>/ ' + fmt(goal) + ' kcal</small></div>'
+    h += '<div class="td-big" style="color:' + col + '">' + fmt(t.kcal) + '<small>/ ' + fmt(goal) + ' kcal' + (wk ? ' par jour' : '') + '</small></div>'
       + tdRefBar(t.kcal, lo, hi, Math.max(goal * 1.3, t.kcal * 1.05), col)
       + '<div class="td-bar-lbl"><span>0</span><span>zone ±10 % de l\'objectif</span><span>' + fmt(Math.round(Math.max(goal * 1.3, t.kcal * 1.05))) + '</span></div>'
-      + '<div class="td-note" style="margin-bottom:0.5rem">' + (t.kcal === 0 ? 'Aucun repas saisi aujourd\'hui : il te reste ' + fmt(goal) + ' kcal à répartir.' : rest > goal * 0.1 ? 'Il te reste ≈ <b>' + fmt(rest) + ' kcal</b> pour atteindre ton objectif.' : rest >= -goal * 0.1 ? 'Objectif atteint, tu es dans la zone cible.' : '<b>' + fmt(-rest) + ' kcal</b> au-dessus de ton objectif.') + '</div>';
+      + '<div class="td-note" style="margin-bottom:0.5rem">' + (t.kcal === 0 ? 'Aucun repas saisi ' + noun + (isToday ? ' : il te reste ' + fmt(goal) + ' kcal à répartir.' : '.') : rest > goal * 0.1 ? 'Il te reste ≈ <b>' + fmt(rest) + ' kcal</b> pour atteindre ton objectif.' : rest >= -goal * 0.1 ? 'Objectif atteint, tu es dans la zone cible.' : '<b>' + fmt(-rest) + ' kcal</b> au-dessus de ton objectif.') + '</div>';
   } else {
-    h += '<div class="td-big">' + fmt(t.kcal) + '<small>kcal aujourd\'hui</small></div><div class="td-note" style="margin-bottom:0.5rem">Aucun objectif kcal défini : définis-le dans ton profil pour voir ta progression.</div>';
+    h += '<div class="td-big">' + fmt(t.kcal) + '<small>kcal ' + (wk ? 'par jour' : noun) + '</small></div><div class="td-note" style="margin-bottom:0.5rem">Aucun objectif kcal défini : définis-le dans ton profil pour voir ta progression.</div>';
   }
   // macros en g, repères en g/kg (adulte actif, indicatifs)
   if (w) {
@@ -8354,16 +8442,16 @@ function renderTodayRefs() {
     ];
     mac.forEach(function(m) {
       var st = m[2] < m[3] ? 'todo' : m[2] <= m[4] ? 'ok' : 'over', max = Math.max(m[4] * 1.35, m[2] * 1.05), col = st === 'ok' ? 'var(--lime)' : st === 'over' ? 'var(--orange)' : 'var(--blue)';
-      h += tdRefRow(m[0], m[1], Math.round(m[2]) + ' g<small>' + f1(m[2] / w) + ' g/kg</small>', st, tdRefBar(m[2], m[3], m[4], max, col),
+      h += tdRefRow(m[0], m[1], Math.round(m[2]) + ' g<small>' + f1(m[2] / w) + ' g/kg PDC' + (lbm ? ' · ' + f1(m[2] / lbm) + ' g/kg MS' : '') + '</small>', st, tdRefBar(m[2], m[3], m[4], max, col),
         '<span>0</span><span>' + Math.round(m[3]) + '–' + Math.round(m[4]) + ' g</span><span>' + Math.round(max) + '</span>',
         st === 'todo' ? 'Il manque ≈ ' + Math.round(m[3] - m[2]) + ' g pour atteindre le bas du repère (' + m[5] + ', poids ' + f1(w) + ' kg).' : st === 'ok' ? m[5] + ' : atteint pour ' + f1(w) + ' kg.' : 'Au-dessus du haut du repère (' + m[5] + ').');
     });
   } else {
-    h += '<div class="td-note">Renseigne ton poids pour comparer tes macros aux repères g/kg. Aujourd\'hui : ' + t.prot + ' g de protéines · ' + t.gluc + ' g de glucides · ' + t.lip + ' g de lipides.</div>';
+    h += '<div class="td-note">Renseigne ton poids pour comparer tes macros aux repères g/kg. Total : ' + t.prot + ' g de protéines · ' + t.gluc + ' g de glucides · ' + t.lip + ' g de lipides.</div>';
   }
   // fibres, sodium, potassium (seulement si renseignés par les aliments saisis)
   var fSt = t.fibres <= 0 ? 'na' : t.fibres >= 25 ? 'ok' : 'todo';
-  h += tdRefRow('Fibres', 'var(--teal)', t.fibres > 0 ? t.fibres + ' g' : '—', fSt, t.fibres > 0 ? tdRefBar(t.fibres, 25, null, 50, fSt === 'ok' ? 'var(--lime)' : 'var(--blue)') : '', t.fibres > 0 ? '<span>0</span><span>≥ 25 g</span><span>50</span>' : '', t.fibres > 0 ? 'Repère OMS : au moins 25 g par jour.' : 'Aucun aliment saisi aujourd\'hui ne renseigne les fibres.');
+  h += tdRefRow('Fibres', 'var(--teal)', t.fibres > 0 ? t.fibres + ' g' : '—', fSt, t.fibres > 0 ? tdRefBar(t.fibres, 25, null, 50, fSt === 'ok' ? 'var(--lime)' : 'var(--blue)') : '', t.fibres > 0 ? '<span>0</span><span>≥ 25 g</span><span>50</span>' : '', t.fibres > 0 ? 'Repère OMS : au moins 25 g par jour.' : 'Aucun aliment saisi ' + noun + ' ne renseigne les fibres.');
   if (t.sodium > 0) {
     var nSt = t.sodium <= 2000 ? 'ok' : 'over';
     h += tdRefRow('Sodium', '#e85c5c', fmt(t.sodium) + '<small>mg</small>', nSt, tdRefBar(t.sodium, 0, 2000, Math.max(3000, t.sodium * 1.05), nSt === 'ok' ? 'var(--lime)' : 'var(--orange)'), '<span>0</span><span>max 2 000 mg</span><span>' + fmt(Math.round(Math.max(3000, t.sodium * 1.05))) + '</span>', 'Repère OMS : moins de 2 g de sodium par jour.');
@@ -8372,8 +8460,80 @@ function renderTodayRefs() {
     var kSt = t.potassium >= 3500 ? 'ok' : 'todo';
     h += tdRefRow('Potassium', '#a78bfa', fmt(t.potassium) + '<small>mg</small>', kSt, tdRefBar(t.potassium, 3500, null, 5000, kSt === 'ok' ? 'var(--lime)' : 'var(--blue)'), '<span>0</span><span>≥ 3 500 mg</span><span>5 000</span>', 'Repère OMS : au moins 3,5 g de potassium par jour.');
   }
-  h += '<div class="td-foot">Repères adultes actifs, indicatifs. La journée n\'est pas finie : « à compléter » est normal avant ton dernier repas, « au-dessus » est à surveiller.</div>';
+  h += '<div class="td-foot">PDC = poids de corps' + (w ? ' (' + f1(w) + ' kg)' : '') + ' · MS = masse sèche' + (lbm ? ' (' + f1(lbm) + ' kg, ' + f1(C.bf) + ' % de masse grasse)' : ' (renseigne ton % de masse grasse pour l\'afficher)') + '. Repères adultes actifs, indicatifs.' + (isToday ? ' La journée n\'est pas finie : « à compléter » est normal avant ton dernier repas, « au-dessus » est à surveiller.' : '') + '</div>';
   box.innerHTML = h;
+  if (typeof renderTdOverview === 'function') renderTdOverview();
+}
+
+
+/* ════════════════════════════════════════
+   TENDANCES — switch global Jour / Semaine + cartes de synthèse colorées
+   Vue "day" = aujourd'hui · vue "week" = 7 derniers jours (moyennes).
+   Le switch pilote aussi la carte Sodium/Potassium (nakSwitchView).
+════════════════════════════════════════ */
+let _tdDate = null; // jour affiché en vue Jour (null = aujourd'hui)
+function tdSelDate(){ return (_tdDate && _tdDate < today()) ? _tdDate : today(); }
+function tdShiftDay(n){
+  const [y,m,d] = tdSelDate().split('-').map(Number);
+  const ds = toLocalDateStr(new Date(y, m-1, d+n));
+  _tdDate = ds >= today() ? null : ds;
+  tdRefreshAll();
+}
+function tdGoToday(){ _tdDate = null; tdRefreshAll(); }
+function tdRefreshAll(){
+  renderTodayRefs();   // rappelle renderTdOverview
+  if(typeof renderGlycemiaChart === 'function') renderGlycemiaChart(tdSelDate());
+}
+/* Contexte commun (jour sélectionné OU moyenne des jours saisis sur 7 j) pour repères + cartes */
+function tdCtx(){
+  const fit = DB.getFitness(), week = _tdView === 'week', todayStr = today();
+  let t, goal, n = 1;
+  const ds = week ? todayStr : tdSelDate();
+  if(!week){
+    t = getDayTotals(ds);
+    goal = (typeof getKcalGoalForDate === 'function') ? getKcalGoalForDate(ds) : null;
+  } else {
+    const rows = [];
+    for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); const k=toLocalDateStr(d); rows.push({k, t:getDayTotals(k)}); }
+    const logged = rows.filter(r=>r.t.kcal>0); n = logged.length;
+    t = {};
+    ['kcal','prot','gluc','lip','sucres','satfat'].forEach(k=>{ t[k] = n ? Math.round(logged.reduce((a,r)=>a+r.t[k],0)/n) : 0; });
+    ['fibres','sodium','potassium'].forEach(k=>{ const v = logged.filter(r=>r.t[k]>0); t[k] = v.length ? Math.round(v.reduce((a,r)=>a+r.t[k],0)/v.length) : 0; });
+    const gs = rows.map(r=>(typeof getKcalGoalForDate==='function')?getKcalGoalForDate(r.k):null).filter(Boolean);
+    goal = gs.length ? Math.round(gs.reduce((a,b)=>a+b,0)/gs.length) : null;
+  }
+  const phase = (typeof getPhaseForDate === 'function') ? getPhaseForDate(ds) : null;
+  let prof = {}; try { prof = lsJSON('kcalos_profile',{}); } catch(e) {}
+  const w = getLastWeightOnOrBefore(fit, ds) || parseFloat(prof.poids) || S.poids || 0;
+  // % de masse grasse : dernière mesure enregistrée à la date, sinon profil
+  const lastBf = fit.filter(d=>d.bf && d.date<=ds).sort((a,b)=>b.date.localeCompare(a.date))[0];
+  const bf = lastBf ? parseFloat(lastBf.bf) : (parseFloat(prof.bf) || 0);
+  const lbm = (w && bf > 0 && bf < 60) ? w*(1-bf/100) : 0;
+  return { t, goal, phase, w, bf, lbm, n, ds, week, fit };
+}
+let _tdView = 'day';
+try { _tdView = localStorage.getItem('kcalos_td_view') === 'week' ? 'week' : 'day'; } catch(e) {}
+function tdSetView(mode){
+  _tdView = mode === 'week' ? 'week' : 'day';
+  try { localStorage.setItem('kcalos_td_view', _tdView); } catch(e) {}
+  const panel = document.getElementById('ap-panel-tendances');
+  if(panel) panel.dataset.view = _tdView;
+  document.getElementById('td-sw-day')?.classList.toggle('active', _tdView==='day');
+  document.getElementById('td-sw-week')?.classList.toggle('active', _tdView==='week');
+  renderTodayRefs();
+  if(typeof nakSwitchView === 'function') nakSwitchView(_tdView);
+  if(_tdView==='week' && typeof renderWeekChart === 'function') setTimeout(renderWeekChart, 30);
+  if(_tdView==='day' && typeof renderGlycemiaChart === 'function') setTimeout(function(){ renderGlycemiaChart(tdSelDate()); }, 30);
+}
+/* Met à jour l'état du switch Jour/Semaine et de la navigation entre les jours */
+function renderTdOverview(){
+  const panel = document.getElementById('ap-panel-tendances');
+  if(panel) panel.dataset.view = _tdView;
+  document.getElementById('td-sw-day')?.classList.toggle('active', _tdView==='day');
+  document.getElementById('td-sw-week')?.classList.toggle('active', _tdView==='week');
+  const ds = tdSelDate(), isToday = ds === today();
+  const nl = document.getElementById('td-nav-lbl'); if(nl) nl.textContent = isToday ? 'Aujourd\'hui · '+fmtDL(ds) : fmtDL(ds)+' · revenir à aujourd\'hui';
+  const nx = document.getElementById('td-nav-next'); if(nx) nx.disabled = isToday;
 }
 
 /* Charge les objectifs macros depuis les DONNÉES RÉELLES (dépenses moyennes 7j) */
@@ -9076,7 +9236,7 @@ function applyImportStepsOnly(rows){
   rows.forEach(row=>{
     if(!row.date || !row.steps) return;
     j++;
-    DB.upsertFitness({date:row.date, steps:row.steps});
+    DB.upsertFitness({date:row.date, steps:row.steps, stepsSrc:'import'});
     logLines.push(`✅ ${fmtDL(row.date)} · ${row.steps.toLocaleString('fr-FR')} pas`);
   });
   return {j, logLines};
@@ -9417,7 +9577,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v61';
+    const CACHE_NAME = 'kcalos-v71';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -9517,7 +9677,7 @@ function hidePWABanner(){ document.getElementById('pwa-banner')?.classList.remov
   const steps = parseInt(params.get('steps'), 10);
   if(!isNaN(steps) && steps >= 0 && steps <= 80000){
     // Enregistrer immédiatement
-    DB.upsertFitness({ date: today(), steps });
+    DB.upsertFitness({ date: today(), steps, stepsSrc:'shortcut' });
     recomputeAllTDEE?.();
     if(typeof S !== 'undefined' && S.bmr) liveCalc?.();
     // Nettoyer l\'URL sans recharger la page
@@ -9580,7 +9740,7 @@ function shSaveSteps(){
   const v = parseInt(raw, 10);
   if(isNaN(v) || v < 0 || v > 80000){ toast('Nombre de pas invalide (entre 0 et 80 000)','var(--red)'); return; }
   const saveDate = (typeof SP !== 'undefined' ? SP.date : null) || today();
-  DB.upsertFitness({ date: saveDate, steps: v });
+  DB.upsertFitness({ date: saveDate, steps: v, stepsSrc:'manual' });
   if(saveDate === today()){ SC.savedToday = v; SC.count = 0; scUpdateUI(); }
   recomputeAllTDEE?.();
   // Recalcul TDEE : utiliser liveCalc si BMR dispo, sinon computeTDEE direct
@@ -9593,11 +9753,100 @@ function shSaveSteps(){
     if(dep?.tdee){ S.tdee=dep.tdee; DB.upsertFitness({date:saveDate,calories:dep.tdee}); }
     renderDashboard?.();
   }
-  if(document.getElementById('page-steps')?.classList.contains('active')) loadStepsPage();
+  if(document.getElementById('page-steps')?.classList.contains('active')){ const keepD = SP.date; loadStepsPage(); SP.date = keepD; stepsRefreshDateUI(); }
   const now = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
   localStorage.setItem('kcalos_sh_last', saveDate===today() ? "aujourd\'hui à " + now : saveDate);
-  document.getElementById('sh-panel').style.display = 'none';
+  const shp = document.getElementById('sh-panel'); if(shp) shp.style.display = 'none';
   toast('✅ ' + v.toLocaleString('fr-FR') + ' pas enregistrés (' + fmtDL(saveDate) + ')', 'var(--teal)');
+}
+
+/* ── STEPS — ajout rapide (+500 / +1000 / +5000 / +10000 / moyenne 7 j / hier) ──
+   Chaque ajout s'additionne au total du jour affiché puis passe par shSaveSteps (même logique
+   d'enregistrement + recalcul TDEE que la saisie directe). */
+let _stUndoPrev = null;
+function stCurrentSteps(){
+  const d = SP.date, fit = DB.getFitness().find(x => x.date === d);
+  return ((d === today() ? SC.savedToday + SC.count : 0) || fit?.steps || 0);
+}
+function stRefValues(){
+  const fit = DB.getFitness(), base = new Date(SP.date + 'T12:00:00');
+  const byDate = {}; fit.forEach(f => { if (f.steps > 0) byDate[f.date] = f.steps; });
+  const prev = n => { const d = new Date(base); d.setDate(d.getDate() - n); return toLocalDateStr(d); };
+  const yday = byDate[prev(1)] || 0;
+  const vals = []; for (let i = 1; i <= 7; i++) { const v = byDate[prev(i)]; if (v) vals.push(v); }
+  const avg = vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
+  return { yday, avg };
+}
+function stRenderQuick(){
+  const r = stRefValues(), isToday = SP.date === today();
+  [['st-chip-avg', 'avg', 'Moy. 7 j'], ['st-chip-yday', 'yday', isToday ? 'Hier' : 'Veille']].forEach(([id, k, lbl]) => {
+    const b = document.getElementById(id); if (!b) return;
+    b.querySelector('span').textContent = lbl;
+    b.querySelector('b').textContent = r[k] ? '+' + r[k].toLocaleString('fr-FR') : '—';
+    b.disabled = !r[k];
+  });
+}
+function stQuickAdd(n){
+  const cur = stCurrentSteps(), next = Math.min(80000, cur + n);
+  const inp = document.getElementById('sh-steps-input'); if (!inp) return;
+  inp.value = next;
+  shSaveSteps();
+  _stUndoPrev = cur; // après shSaveSteps (qui rafraîchit l'écran et réinitialise l'annulation)
+  stUpdateUndoBtn();
+}
+function stQuickAddRef(kind){ const v = stRefValues()[kind]; if (v) stQuickAdd(v); }
+/* Bouton rouge à côté d'Enregistrer :
+   · « ↩ Annuler » (après un ajout rapide) : appui court = annule le dernier ajout
+   · « Effacer » (sinon, si le jour a des pas)  : appui court = rappel, appui LONG = efface les pas du jour
+   · appui long dans les deux cas = efface les pas du jour (annulable ensuite via « ↩ Annuler »). */
+let _stLongFired = false, _stPressTimer = null;
+function stUpdateUndoBtn(){
+  const b = document.getElementById('st-undo'); if (!b) return;
+  const canUndo = _stUndoPrev !== null, has = stCurrentSteps() > 0;
+  b.style.display = (canUndo || has) ? 'block' : 'none';
+  b.textContent = canUndo ? '↩ Annuler' : 'Effacer';
+}
+function stUndoClick(){
+  if (_stLongFired) { _stLongFired = false; return; }
+  if (_stUndoPrev !== null) stUndo();
+  else toast('Maintiens le bouton pour effacer les pas du jour', 'var(--muted)');
+}
+function stErase(){
+  const cur = stCurrentSteps(); if (cur <= 0) return;
+  const inp = document.getElementById('sh-steps-input'); if (!inp) return;
+  inp.value = 0;
+  shSaveSteps();
+  _stUndoPrev = cur;           // on peut revenir en arrière avec « ↩ Annuler »
+  inp.value = '';
+  stUpdateUndoBtn();
+}
+(function stBindSaveAnim(){
+  const b = document.querySelector('#page-steps .st-save'); if (!b) return;
+  b.addEventListener('click', () => {
+    b.classList.remove('saved'); void b.offsetWidth; b.classList.add('saved');
+    setTimeout(() => b.classList.remove('saved'), 500);
+  });
+})();
+(function stBindLongPress(){
+  const b = document.getElementById('st-undo'); if (!b) return;
+  const start = () => {
+    b.classList.add('pressing');
+    _stPressTimer = setTimeout(() => {
+      _stPressTimer = null; _stLongFired = true; b.classList.remove('pressing');
+      try { navigator.vibrate && navigator.vibrate(30); } catch(e) {}
+      stErase();
+    }, 600);
+  };
+  const cancel = () => { b.classList.remove('pressing'); if (_stPressTimer) { clearTimeout(_stPressTimer); _stPressTimer = null; } };
+  b.addEventListener('pointerdown', start);
+  ['pointerup','pointerleave','pointercancel'].forEach(ev => b.addEventListener(ev, cancel));
+})();
+function stUndo(){
+  if (_stUndoPrev === null) return;
+  const inp = document.getElementById('sh-steps-input'); if (!inp) return;
+  inp.value = _stUndoPrev; _stUndoPrev = null;
+  shSaveSteps();
+  stUpdateUndoBtn();
 }
 
 /* ── STEPS DATE NAVIGATION ── */
@@ -9622,10 +9871,17 @@ function stepsRefreshDateUI(){
   const fill = document.getElementById('sc-progress-fill');
   if(fill) fill.style.width = Math.min(100, stepsVal/goal*100) + '%';
   const lbl2 = document.getElementById('sc-source-label');
-  if(lbl2) lbl2.textContent = fit?.steps ? (isToday ? 'Apple Santé' : fmtDL(SP.date)) : '';
-  // Pre-fill manual input
+  if(lbl2){
+    // Source réelle de la donnée (avant : « Apple Santé » affiché pour toute valeur, même saisie à la main)
+    const srcName = ({ manual:'Saisie manuelle', import:'Import de fichier', shortcut:'Raccourci iOS' })[fit?.stepsSrc] || '';
+    lbl2.textContent = fit?.steps ? srcName : '';
+    lbl2.style.display = lbl2.textContent ? '' : 'none';
+  }
+  // Pre-fill manual input (vidé si aucune donnée ce jour-là, pour ne pas garder la valeur d'un autre jour)
   const inp = document.getElementById('sh-steps-input');
-  if(inp && stepsVal > 0) inp.value = stepsVal;
+  if(inp && document.activeElement !== inp) inp.value = stepsVal > 0 ? stepsVal : '';
+  _stUndoPrev = null;
+  stRenderQuick(); stUpdateUndoBtn();
 }
 
 function stepsChangeDay(delta){
@@ -9671,8 +9927,6 @@ function scUpdateUI(){
   if(el) el.textContent = total.toLocaleString('fr-FR');
   const fill = document.getElementById('sc-progress-fill');
   if(fill) fill.style.width = Math.min(100, total/goal*100) + '%';
-  const lbl = document.getElementById('sc-source-label');
-  if(lbl) lbl.textContent = '';
   const goalLbl = document.getElementById('sc-goal-label');
   if(goalLbl) goalLbl.textContent = 'objectif ' + goal.toLocaleString('fr-FR') + ' pas';
 }
@@ -17317,7 +17571,7 @@ function switchApTab(tab) {
   document.getElementById('ap-panel-' + tab)?.classList.add('active');
   // Rafraîchir le graphique si on passe sur Tendances
   if(tab === 'tendances'){
-    setTimeout(()=>{ renderTodayRefs(); renderWeekChart(); renderFoodHistory(); loadTrendGoalsFromProfile(); renderGlycemiaChart(); loadNaKChart(); }, 80);
+    setTimeout(()=>{ renderTodayRefs(); renderWeekChart(); renderFoodHistory(); loadTrendGoalsFromProfile(); renderGlycemiaChart(tdSelDate()); if(typeof nakSwitchView==='function') nakSwitchView(_tdView); else loadNaKChart(); }, 80);
   }
   // Initialiser / rafraîchir le timing des macros
   if(tab === 'timing'){
