@@ -7525,7 +7525,7 @@ document.addEventListener('keydown', function (e) {
   };
 })();
 
-const APP_BUILD_VERSION = '2026-11-17.1';
+const APP_BUILD_VERSION = '2026-11-17.2';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -9578,7 +9578,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v72';
+    const CACHE_NAME = 'kcalos-v73';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -11123,6 +11123,31 @@ function kcShrinkMealThumbs(maxDim, quality){
     try { localStorage.setItem('kcalos_meals', JSON.stringify(fresh)); return true; } catch(e){ return false; }
   });
 }
+
+/* Nettoyage auto : retire les miniatures base64 des repas de plus de 2 mois (noms, kcal et macros
+   intacts). Une seule exécution par jour, au démarrage. Les images URL (Open Food Facts) sont conservées. */
+function kcPurgeOldMealThumbs(days) {
+  try {
+    const pad = n => String(n).padStart(2,'0');
+    const ymd = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+    const today = ymd(new Date());
+    if (localStorage.getItem('kcalos_thumb_purge_day') === today) return 0;
+    const lim = new Date(); lim.setDate(lim.getDate() - (days || 60));
+    const cutoff = ymd(lim);
+    const all = lsJSON('kcalos_meals',{});
+    let n = 0;
+    Object.keys(all).forEach(date => {
+      if (date >= cutoff) return;
+      Object.values(all[date]||{}).forEach(items => (items||[]).forEach(it => {
+        if (it && typeof it.image==='string' && it.image.startsWith('data:image')) { it.image = ''; n++; }
+      }));
+    });
+    if (n) localStorage.setItem('kcalos_meals', JSON.stringify(all));
+    localStorage.setItem('kcalos_thumb_purge_day', today);
+    return n;
+  } catch(_) { return 0; }
+}
+window.addEventListener('load', () => setTimeout(() => kcPurgeOldMealThumbs(60), 3000));
 
 async function aiphFinalizeAdd(note){
   // Ajoute directement les aliments détectés par l'IA au repas courant, sans écran de validation
