@@ -7501,12 +7501,13 @@ document.addEventListener('keydown', function (e) {
   const DISPOSABLE = ['kcalos_pre_restore_snapshot','kcalos_food_search_hist'];
   const isQuota = e => e && (e.name==='QuotaExceededError' || e.code===22 || e.code===1014);
   function biggestKey(){
-    let best=['',0];
+    const rows=[]; let total=0;
     for(let i=0;i<localStorage.length;i++){
       const k=localStorage.key(i), n=(localStorage.getItem(k)||'').length;
-      if(n>best[1]) best=[k,n];
+      total+=n; rows.push([k,n]);
     }
-    return best[0]+' ('+Math.round(best[1]/1024)+' Ko)';
+    rows.sort((a,b)=>b[1]-a[1]);
+    return rows.slice(0,3).map(r=>r[0]+' ('+Math.round(r[1]/1024)+' Ko)').join(' · ')+' · total '+Math.round(total/1024)+' Ko';
   }
   Storage.prototype.setItem = function(k,v){
     try { return _set.call(this,k,v); }
@@ -7524,7 +7525,7 @@ document.addEventListener('keydown', function (e) {
   };
 })();
 
-const APP_BUILD_VERSION = '2026-11-16.10';
+const APP_BUILD_VERSION = '2026-11-17.1';
 document.addEventListener('DOMContentLoaded', () => {
   const elV = document.getElementById('app-build-version');
   if(elV) elV.textContent = 'Build v' + APP_BUILD_VERSION;
@@ -7552,7 +7553,7 @@ function kcShowJsError(msg, line){
 window.addEventListener('error', e => {
   const m = (e.error && e.error.message) || e.message;
   if (m === 'Script error.' && !e.lineno) { console.warn('[KCALos] Script error muet (script externe)'); return; }
-  const extra = /quota/i.test(m||'') && window.__kcQuotaInfo ? ' — plus grosse clé : ' + window.__kcQuotaInfo : '';
+  const extra = /quota/i.test(m||'') && window.__kcQuotaInfo ? ' — clés les plus lourdes : ' + window.__kcQuotaInfo : '';
   kcShowJsError(m + extra, e.lineno);
 });
 window.addEventListener('unhandledrejection', e => kcShowJsError((e.reason && e.reason.message) || String(e.reason)));
@@ -9577,7 +9578,7 @@ function recomputeAllTDEE(){
   // SW blob refers correctly to the https:// page, not the blob URL.
   // We also pass the scope so cache.addAll() fetches the right resource.
   if ('serviceWorker' in navigator) {
-    const CACHE_NAME = 'kcalos-v71';
+    const CACHE_NAME = 'kcalos-v72';
     // Embed the real URL at SW creation time (avoids wrong `location` inside blob)
     const swCode = `
 const CACHE = '${CACHE_NAME}';
@@ -9975,12 +9976,52 @@ function getMealsForDate(date) {
 function getMealItems(date, mealKey) {
   return getMealsForDate(date)[mealKey] || [];
 }
-function saveMealItem(date, mealKey, item) {
+/* Écriture robuste de kcalos_meals. mutate(all, sansMiniature) modifie l'objet lu.
+   Si le stockage est plein : réduction auto des miniatures en arrière-plan puis nouvel essai
+   (en dernier recours, l'aliment est enregistré sans miniature : macros toujours conservées).
+   strict=true : relance l'erreur quota telle quelle (l'appelant gère lui-même la récupération). */
+function kcIsQuotaErr(e) {
+  return !!e && (e.name==='QuotaExceededError' || e.code===22 || e.code===1014 || /quota/i.test(e.message||''));
+}
+function kcWriteMeals(mutate, strict) {
   const all = lsJSON('kcalos_meals',{});
-  if (!all[date]) all[date] = {};
-  if (!all[date][mealKey]) all[date][mealKey] = [];
-  all[date][mealKey].push(item);
-  localStorage.setItem('kcalos_meals', JSON.stringify(all));
+  mutate(all, false);
+  try { localStorage.setItem('kcalos_meals', JSON.stringify(all)); return true; }
+  catch(e) {
+    if (!kcIsQuotaErr(e) || strict) throw e;
+    kcQueueMealsRecovery(mutate);
+    return false;
+  }
+}
+let _kcMealsRecovery = Promise.resolve();
+function kcQueueMealsRecovery(mutate) {
+  toast('⏳ Stockage plein — optimisation des miniatures…', 'var(--orange)');
+  _kcMealsRecovery = _kcMealsRecovery.then(async () => {
+    try { await kcShrinkMealThumbs(96, 0.5); } catch(_) {}
+    for (const sansMiniature of [false, true]) {
+      const all = lsJSON('kcalos_meals',{});
+      mutate(all, sansMiniature);
+      try {
+        localStorage.setItem('kcalos_meals', JSON.stringify(all));
+        toast(sansMiniature ? '⚠️ Enregistré sans miniature (stockage plein)' : '✅ Enregistré (miniatures optimisées)',
+              sansMiniature ? 'var(--orange)' : 'var(--teal)');
+        kcRefreshMealsUI();
+        return;
+      } catch(e) { if (!kcIsQuotaErr(e)) { kcShowJsError((e && e.message) || String(e)); return; } }
+    }
+    toast('❌ Stockage plein : impossible d\'enregistrer' + (window.__kcQuotaInfo ? ' · ' + window.__kcQuotaInfo : ''), 'var(--red)');
+  });
+}
+function kcRefreshMealsUI() {
+  ['renderMealFoodList','updateMealSummaryStrip','renderMealCards','renderApDayBanner','renderMealSuggestions']
+    .forEach(n => { try { if (typeof window[n]==='function') window[n](); } catch(_) {} });
+}
+function saveMealItem(date, mealKey, item, strict) {
+  kcWriteMeals((all, sansMiniature) => {
+    if (!all[date]) all[date] = {};
+    if (!all[date][mealKey]) all[date][mealKey] = [];
+    all[date][mealKey].push(sansMiniature ? { ...item, image: '' } : item);
+  }, strict);
 }
 function deleteMealItem(date, mealKey, idx) {
   const all = lsJSON('kcalos_meals',{});
@@ -9990,12 +10031,12 @@ function deleteMealItem(date, mealKey, idx) {
   }
 }
 function updateMealItem(date, mealKey, idx, item) {
-  const all = lsJSON('kcalos_meals',{});
-  if (all[date]?.[mealKey] && all[date][mealKey][idx]) {
-    const orig = all[date][mealKey][idx];
-    all[date][mealKey][idx] = { ...item, ts: orig.ts || item.ts };
-    localStorage.setItem('kcalos_meals', JSON.stringify(all));
-  }
+  kcWriteMeals((all, sansMiniature) => {
+    if (all[date]?.[mealKey] && all[date][mealKey][idx]) {
+      const orig = all[date][mealKey][idx];
+      all[date][mealKey][idx] = { ...item, ...(sansMiniature ? { image: '' } : {}), ts: orig.ts || item.ts };
+    }
+  });
 }
 
 /* ── Compute totals for a date ── */
@@ -11055,11 +11096,12 @@ async function aiAnalyzeMeal(){
 /* Réduit les miniatures base64 déjà stockées dans kcalos_meals (macros intactes). */
 function kcShrinkMealThumbs(maxDim, quality){
   const all = lsJSON('kcalos_meals',{});
-  const jobs = [];
+  const uniq = new Set();
   Object.values(all).forEach(day => Object.values(day||{}).forEach(items => (items||[]).forEach(it => {
-    if(it && typeof it.image==='string' && it.image.startsWith('data:image') && it.image.length>4000) jobs.push(it);
+    if(it && typeof it.image==='string' && it.image.startsWith('data:image') && it.image.length>4000) uniq.add(it.image);
   })));
-  return Promise.all(jobs.map(it => new Promise(res => {
+  const map = new Map(); // ancienne miniature -> miniature réduite (décodée une seule fois même si dupliquée)
+  return Promise.all([...uniq].map(src => new Promise(res => {
     const img = new Image();
     img.onload = () => { try {
       const r = Math.min(1, maxDim/Math.max(img.width,img.height));
@@ -11067,11 +11109,19 @@ function kcShrinkMealThumbs(maxDim, quality){
       c.width = Math.max(1,Math.round(img.width*r)); c.height = Math.max(1,Math.round(img.height*r));
       c.getContext('2d').drawImage(img,0,0,c.width,c.height);
       const out = c.toDataURL('image/jpeg', quality);
-      if(out.length < it.image.length) it.image = out;
+      if(out.length < src.length) map.set(src, out);
     } catch(_){} res(); };
     img.onerror = () => res();
-    img.src = it.image;
-  }))).then(() => { try { localStorage.setItem('kcalos_meals', JSON.stringify(all)); return true; } catch(e){ return false; } });
+    img.src = src;
+  }))).then(() => {
+    if(!map.size) return true;
+    // Relecture fraîche : évite d'écraser un ajout/suppression fait pendant le décodage des images.
+    const fresh = lsJSON('kcalos_meals',{});
+    Object.values(fresh).forEach(day => Object.values(day||{}).forEach(items => (items||[]).forEach(it => {
+      if(it && map.has(it.image)) it.image = map.get(it.image);
+    })));
+    try { localStorage.setItem('kcalos_meals', JSON.stringify(fresh)); return true; } catch(e){ return false; }
+  });
 }
 
 async function aiphFinalizeAdd(note){
@@ -11090,7 +11140,7 @@ async function aiphFinalizeAdd(note){
   // anciennes miniatures (macros intactes) ; en dernier recours on retire la miniature des
   // nouveaux aliments pour que les macros soient quand même ajoutées.
   let saved = 0;
-  const saveAll = ()=>{ for(; saved<items.length; saved++) saveMealItem(AP.date, AP.currentMeal, items[saved]); };
+  const saveAll = ()=>{ for(; saved<items.length; saved++) saveMealItem(AP.date, AP.currentMeal, items[saved], true); };
   const isQuota = e => e && (e.name==='QuotaExceededError' || e.code===22 || e.code===1014 || /quota/i.test(e.message||''));
   try { saveAll(); }
   catch(e){
